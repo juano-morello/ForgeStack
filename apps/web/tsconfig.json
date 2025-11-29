@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "preserve",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*", "next-env.d.ts"],
+  "exclude": ["node_modules", ".next", "dist", "src/test/**/*", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.stories.tsx"],
+  "references": [
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/shared" }
+  ]
+}
+
