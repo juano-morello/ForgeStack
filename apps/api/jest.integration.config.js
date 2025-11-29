@@ -31,6 +31,8 @@ module.exports = {
   maxWorkers: 1,
   // Verbose output for debugging
   verbose: true,
+  // Force Jest to exit after tests complete (safety net for open handles)
+  forceExit: true,
   // Collect coverage from integration tests
   collectCoverageFrom: [
     'src/**/*.(t|j)s',

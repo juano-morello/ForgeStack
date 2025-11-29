@@ -12,7 +12,7 @@
 export const DB_VERSION = '0.0.1';
 
 // Database client and schema
-export { db, pool, schema } from './client.js';
+export { db, pool, schema, closePool } from './client.js';
 
 // Re-export drizzle-orm operators to avoid version conflicts in consumers
 export { eq, and, or, sql, desc, asc, ilike, like, count, inArray, gt, lt } from 'drizzle-orm';

@@ -10,7 +10,7 @@
  * 4. Cross-tenant isolation is enforced
  */
 
-import { setupTestDatabase, cleanupTestDatabase, type TestContext } from './setup';
+import { setupTestDatabase, cleanupTestDatabase, closeDatabasePool, type TestContext } from './setup';
 import {
   withTenantContext,
   withServiceContext,
@@ -39,6 +39,8 @@ describe('RLS Integration Tests', () => {
     if (ctx) {
       await cleanupTestDatabase();
     }
+    // Close the database pool to allow Jest to exit cleanly
+    await closeDatabasePool();
   });
 
   describe('RLS Setup Verification', () => {

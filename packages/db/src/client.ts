@@ -25,3 +25,11 @@ export { pool };
 // Export schema for convenience
 export { schema };
 
+/**
+ * Close the database pool
+ * Should be called when shutting down the application or after tests
+ */
+export async function closePool(): Promise<void> {
+  await pool.end();
+}
+

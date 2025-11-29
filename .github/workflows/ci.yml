@@ -40,6 +40,7 @@ jobs:
   test-api:
     name: API Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16
@@ -115,6 +116,7 @@ jobs:
   test-web:
     name: Web Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -151,6 +153,7 @@ jobs:
   test-db:
     name: Database Package Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:16

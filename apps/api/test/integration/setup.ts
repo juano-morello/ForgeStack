@@ -19,6 +19,7 @@ import {
   organizations,
   organizationMembers,
   projects,
+  closePool,
   type User,
   type Organization,
 } from '@forgestack/db';
@@ -141,7 +142,7 @@ export async function setupTestDatabase(): Promise<TestContext> {
 
 /**
  * Clean up all test data
- * 
+ *
  * Deletes all test data in reverse order of dependencies.
  * Uses service context to bypass RLS.
  */
@@ -153,5 +154,14 @@ export async function cleanupTestDatabase(): Promise<void> {
     await db.delete(organizations);
     await db.delete(users);
   });
+}
+
+/**
+ * Close the database pool
+ *
+ * Should be called after all tests are complete to allow Jest to exit cleanly.
+ */
+export async function closeDatabasePool(): Promise<void> {
+  await closePool();
 }
 
