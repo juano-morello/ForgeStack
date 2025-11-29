@@ -237,10 +237,10 @@ describe('MemberList', () => {
       />
     );
 
-    // Check for formatted dates (format: "Dec 31, 2023" due to timezone)
-    expect(screen.getByText(/Dec 31, 2023/)).toBeInTheDocument();
-    expect(screen.getByText(/Jan 14, 2024/)).toBeInTheDocument();
-    expect(screen.getByText(/Jan 31, 2024/)).toBeInTheDocument();
+    // Check for formatted dates in UTC timezone
+    expect(screen.getByText(/Jan 1, 2024/)).toBeInTheDocument();
+    expect(screen.getByText(/Jan 15, 2024/)).toBeInTheDocument();
+    expect(screen.getByText(/Feb 1, 2024/)).toBeInTheDocument();
   });
 
   it('displays email when name is null', () => {

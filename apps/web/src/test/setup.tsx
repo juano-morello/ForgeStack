@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Set timezone to UTC for consistent date formatting across all environments
+process.env.TZ = 'UTC';
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
