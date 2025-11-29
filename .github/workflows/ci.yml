@@ -84,11 +84,11 @@ jobs:
       - name: Build packages
         run: pnpm turbo build --filter='./packages/*'
 
-      - name: Run database migrations
+      - name: Push database schema
         working-directory: packages/db
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forgestack_test
-        run: pnpm db:push
+        run: npx drizzle-kit push --force
 
       - name: Run API unit tests
         working-directory: apps/api
@@ -183,8 +183,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared package
-        run: pnpm turbo build --filter=@forgestack/shared
+      - name: Build packages (shared and db)
+        run: pnpm turbo build --filter='./packages/*'
+
+      - name: Push database schema
+        working-directory: packages/db
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forgestack_test
+        run: npx drizzle-kit push --force
 
       - name: Run DB tests
         working-directory: packages/db
