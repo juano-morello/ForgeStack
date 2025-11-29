@@ -1,241 +1,312 @@
-# ForgeStack – agents.md
+# ForgeStack – agents.md (V2)
 
 ## 1. Project Summary
-ForgeStack is a production‑ready **multi-tenant SaaS starter** built with:
-- **Next.js 16 (App Router)** + Tailwind + shadcn/ui  
-- **NestJS** for backend APIs  
-- **Drizzle ORM** + **Postgres RLS** for strict data isolation  
-- **BullMQ + Redis** for background jobs  
-- **better-auth** for authentication  
-- **pnpm + Turborepo** monorepo structure  
-- **Docker Compose** for local dev
 
-**Primary goal of v1:**  
-Deliver a clean, functional skeleton with authentication, org creation, org switching, project CRUD, and fully enforced RLS.
+ForgeStack is a **production-grade multi-tenant SaaS starter**, built for engineering teams that want:
 
----
+- Real multi-tenancy with **PostgreSQL Row-Level Security (RLS)**
+- A clean monorepo architecture
+- Fully tested auth + orgs + roles + invitations
+- Extensible modules for billing, webhooks, API keys, audit logs, file uploads, notifications, and feature flags
 
-## 2. Current Milestone (v1 Scope)
+ForgeStack is the foundation for **real** SaaS products, not a toy boilerplate.
 
-### Included:
-- Next.js + better-auth signup/login
-- Users, Organizations, Memberships
-- Org switching UI
-- Postgres schema with Drizzle
-- Full **RLS-based multi-tenancy** (`app.current_org_id`)
-- NestJS API with tenant context interceptor
-- CRUD for `projects` (org-scoped)
-- BullMQ worker with one demo job
-- Docker Compose (Postgres + Redis + services)
-- Test infrastructure (TDD)
-- Storybook setup (frontend)
-- Playwright setup (flows)
-
-### Excluded (future milestones):
-- Stripe billing
-- Audit logs
-- Advanced role/permissions matrix
-- AI features
-- External integrations
-- Deployment + Terraform infra
+Primary goal (V2): expand ForgeStack into a complete SaaS platform with robust infrastructure modules and polished UX flows.
 
 ---
 
-## 3. Hard Tech Constraints
+## 2. Monorepo Structure
 
-### Monorepo
-```
-/apps/api       → NestJS  
-/apps/web       → NextJS 16  
-/apps/worker    → BullMQ worker  
-/packages/db    → Drizzle ORM + schema + migrations  
-/packages/shared  
-/packages/ui  
-/docs
-```
+ForgeStack/  
+├── apps/  
+│   ├── api/ — NestJS backend  
+│   ├── web/ — Next.js frontend  
+│   └── worker/ — BullMQ jobs  
+├── packages/  
+│   ├── db/ — Drizzle ORM + schema + migrations + RLS  
+│   ├── shared/ — Types, DTOs, constants  
+│   └── ui/ — Shared UI components + design system  
+└── docs/  
+├── agents.md  
+└── specs/ — Spec-driven development
+
+---
+
+## 3. Existing Features (Preserved)
+
+### Authentication (better-auth)
+- Email/password signup + login
+- Sessions via secure cookies
+- UUID user IDs
+- Organizations + roles
+- Invitation workflows
+
+### Multi-tenancy
+- Full RLS
+- Tenant context enforcement
+- Owner/member role logic
+- Protection against removing last owner
+
+### Projects Module
+- CRUD
+- Organization-scoped
+- Fully tested
+
+### Infrastructure
+- PostgreSQL
+- Drizzle ORM
+- Redis + BullMQ
+- Docker Compose
+- Resend integration
+- Test coverage >90%
+
+---
+
+## 4. V2 feature modules (New)
+
+Agents MUST implement these modules:
+
+### Billing (Stripe)
+- Customer creation
+- Subscription management
+- Billing portal
+- Stripe webhooks via worker
+- RLS-safe billing records
+
+### File Uploads (Cloudflare R2 default; S3 optional)
+- Presigned URLs
+- Direct uploads
+- Metadata validation
+- Optional AWS S3 adapter
+
+### API Keys
+- Hashed keys
+- Key creation + revocation
+- Scopes: read/write/admin
+- Nest API key guard
+- UI to manage keys
+
+### Outgoing Webhooks
+- Endpoints table
+- Event queue
+- Retry logic
+- Signing secrets
+- Delivery logs
+- RLS scoped
+
+### Incoming Webhooks
+- Signed payload verification
+- Worker processing
+- Idempotency keys
+- Logging
+
+### Audit Logs (Immutable)
+- Append only
+- Org-scoped
+- Event types: auth, org, billing, API keys, etc.
+
+### Activity Feed
+- Human-readable
+- Grouped events
+- Dashboard view
+
+### Notifications
+- In-app notifications
+- Read/unread states
+- Email triggers via Resend
+
+### Feature Flags (GrowthBook)
+- Server-side evaluation
+- Per-user/org targeting
+- UI for toggles
+- Caching
+
+### Rate Limiting
+- NestJS-level
+- User/org/API key aware
+
+### User Settings
+- Profile
+- Avatar upload
+- Email change
+- Password reset
+
+### Organization Settings
+- Logo upload
+- Preferences
+
+---
+
+## 5. Third-Party Integrations (Defaults)
+
+- Transactional emails → Resend
+- Marketing emails → Customer.io (optional: Mailchimp)
+- Feature flags → GrowthBook (optional: LaunchDarkly, Unleash)
+- File storage → Cloudflare R2 (optional: AWS S3)
+- Billing → Stripe
+- Queues → Redis/BullMQ
+
+---
+
+## 6. Architecture Rules (Hard constraints)
+
+### Multi-tenancy
+- RLS is mandatory
+- All org tables must include org_id
+- All DB access must use:
+
+withTenantContext({ orgId, userId, role }, (db) => ...)
 
 ### Backend
 - NestJS only
-- Drizzle (`pg-node`)
-- No Prisma, MikroORM, or SQL abstraction layers
-- All org-scoped queries must go through **withTenantContext()**
-- RLS is enforced in Postgres, not in application code
+- Drizzle ORM only
+- No direct SQL bypassing RLS
+- DTOs/types must live in packages/shared
 
 ### Frontend
-- NextJS 16 App Router
-- Tailwind + shadcn/ui
-- Storybook for every component
-- No Chakra/MUI/Material/etc.
+- Next.js App Router
+- shadcn/ui
+- Shared UI in packages/ui
+- Strict TypeScript
+- Server components by default
 
-### Auth
-- **better-auth** (default)
-- Cognito optional for future
-
-### Multi-tenancy
-- **RLS ONLY**
-- Org isolation via:
-  ```
-  SET LOCAL app.current_org_id = '<org_uuid>';
-  SET LOCAL app.current_user_id = '<user_uuid>';
-  SET LOCAL app.current_role = '<role>';
-  ```
+### Workers
+- All async logic via BullMQ
+- Webhooks/emails/audit logs/notifications must be worker-driven
 
 ---
 
-## 4. Architecture Overview
+## 7. Development Methodology (SDD + TDD + strict subagent workflow)
 
-### Request Flow:
-1. User logs in via Next.js + better-auth  
-2. User selects active org  
-3. Frontend sends:
-   - JWT/session token  
-   - `X-Org-Id` header  
-4. Nest guard resolves:
-   - user_id  
-   - org_id  
-   - role  
-5. API calls DB using:
-   ```
-   withTenantContext({ orgId, userId, role }, (db) => ...)
-   ```
-6. RLS policies enforce row-level access
-7. Worker consumes background jobs using same Drizzle schema
+### Spec-Driven Development (SDD)
+- Every feature MUST begin with a spec at:
+  /docs/specs/<epic>/<story>.md
+- Specs contain:
+    - Context
+    - User story
+    - Acceptance criteria
+    - Tasks (backend/frontend/worker/tests)
+    - Test plan
+- Written ONLY by forge-spec-writer
+- Implementation may not begin without a spec.
 
----
+### Test-Driven Development (TDD)
 
-## 5. Data Model (v1)
+#### Backend
+- ~100% unit test coverage
+- Integration tests for flows (auth, orgs, billing, keys, webhooks)
 
-### users
-- id, email, created_at
-
-### organizations
-- id, name, owner_user_id
-
-### organization_members
-- org_id, user_id, role (OWNER, MEMBER)
-
-### projects
-- id, org_id, name, description, timestamps
-
-### invitations (optional)
-- org_id, email, role, token, expires_at
-
----
-
-## 6. Development Methodology (TDD + SDD)
-
-### Spec Driven Development (SDD)
-- Every feature begins with a spec under:
-```
-/docs/specs/<epic>/<story>.md
-```
-- No feature may be implemented without a spec
-- Behavior changes → spec must be updated
-
-### Test Driven Development (TDD)
-Backend:
-- ~100% unit coverage for domain logic
-- Integration tests for every API flow (Nest + Drizzle + RLS)
-Frontend:
+#### Frontend
 - Storybook stories for every component
-- Unit tests for all components
-- Playwright flows for all key user actions
+- Unit tests for state/logic
+- Playwright flows for all core paths
 
-Workers:
+#### Workers
 - Unit tests for handlers
-- Integration tests for queue and Redis interactions
-
-No PR may merge without passing tests.
+- Integration tests for multi-step external interactions
 
 ---
 
-## 7. Docs Structure
+## 8. Subagent Roles (Strict boundaries)
 
-```
-/docs
-  agents.md
-  specs/
-    epic-auth/
-      login.md
-      signup.md
-    epic-orgs/
-      create-org.md
-      switch-org.md
-    epic-projects/
-      create-project.md
-      list-projects.md
-```
+### forge-spec-writer
+- ONLY modifies /docs/specs/**
+- Writes specs, acceptance criteria, and test plans
+- NO code changes allowed
 
-Each story contains:
-- Overview
-- Acceptance criteria
-- Tasks & subtasks
-- Test plan
+### forge-backend
+- ONLY modifies:
+    - apps/api/**
+    - apps/worker/**
+    - packages/db/**
+    - packages/shared/**
+- Implements backend + worker logic according to specs
+- Writes backend tests
+- MUST NOT modify frontend files
 
----
+### forge-frontend
+- ONLY modifies:
+    - apps/web/**
+    - packages/ui/**
+    - Storybook stories
+    - Frontend unit tests
+    - Playwright specs
+- Implements UI/pages according to specs
+- MUST NOT modify backend or db schema
 
-## 8. Implementation Priorities (v1)
-
-1. Monorepo + Docker Compose  
-2. Drizzle schema + base migrations  
-3. RLS policies + `withTenantContext()`  
-4. NestJS API skeleton  
-5. better-auth integration  
-6. Org creation + membership  
-7. Org switcher UI  
-8. Projects CRUD (API + web)  
-9. Worker + sample job  
-10. Full test suite (unit + integration + e2e)
+### forge-code-review
+- Reviews code written by forge-backend or forge-frontend
+- May refactor, restructure, or improve tests
+- May NOT expand features beyond the spec
+- Ensures compliance with architecture, RLS, and TDD rules
+- Runs after EVERY code contribution
 
 ---
 
-## 9. Agent Behavior Guidelines (AugmentCode / Auggie)
+## 9. Mandatory workflow for EVERY feature
 
-- Follow **spec-first, test-first** at all times  
-- Never introduce new libraries without explicit instruction  
-- Respect monorepo boundaries (`apps` vs `packages`)  
-- Prefer small, focused changes  
-- Always use existing patterns (`withTenantContext`, DTOs, folders)  
-- Never bypass RLS with raw SQL that ignores tenant context  
-- Update specs when implementing or modifying behavior  
-- If unsure, choose **explicit**, not “clever,” solutions
+1. forge-spec-writer  
+   → writes/updates spec file
 
----
+2. forge-backend / forge-frontend  
+   → implement feature + tests
 
-## 10. CI/CD Policy (GitHub Actions)
+3. forge-code-review  
+   → mandatory review + refinements
 
-PR pipeline must pass:
-- Lint  
-- Type-check  
-- Backend unit tests  
-- Backend integration tests (Postgres + Redis via Docker)  
-- Frontend unit tests  
-- Storybook build  
-- Playwright tests  
+4. Done only after code-review passes
 
-PRs must:
-- Be based on updated specs  
-- Not merge directly into `main`  
-- Not reduce test coverage  
-
-Main pipeline:
-- All PR checks  
-- Coverage report  
-- Build artifacts (optional future)
+NO feature may skip this pipeline.
 
 ---
 
-## 11. Future Extensions (Not in v1)
-- Billing (Stripe)
-- Audit logs
-- Advanced RBAC
-- Webhooks framework
-- AI-enabled flows
-- Deployments (AWS/Terraform)
-- Real dashboards (Tremor/Recharts)
+## 10. Documentation Structure
 
-This section is for reference; agents should ignore until instructed.
+/docs  
+agents.md  
+specs/  
+epic-auth/  
+epic-orgs/  
+epic-projects/  
+epic-billing/  
+epic-webhooks/  
+epic-api-keys/  
+epic-audit-logs/  
+epic-feature-flags/  
+epic-storage/
 
 ---
 
-*End of agents.md*
+## 11. Implementation Priorities (V2)
+
+1. Billing
+2. File uploads
+3. API keys
+4. Outgoing webhooks
+5. Incoming webhooks
+6. Audit logs
+7. Activity feed
+8. Notifications
+9. Feature flags
+10. Rate limiting
+11. User settings
+12. Org settings
+13. Design system
+14. Dashboard
+15. Marketing site
+16. Onboarding
+17. MDX docs site
+
+---
+
+## 12. Global Rules
+
+- Never add libraries without instruction
+- Never bypass RLS
+- Never skip tests
+- Always update specs when behavior changes
+- Always use strict TypeScript
+- Prefer explicitness over cleverness
+- Changes must be PR-sized and well-scoped
+
+---
