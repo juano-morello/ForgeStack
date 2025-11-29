@@ -19,7 +19,7 @@ import {
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto, UpdateOrganizationDto, QueryOrganizationsDto } from './dto';
 import { NoOrgRequired } from '../core/decorators/no-org-required.decorator';
-import type { RequestWithUser, RequestWithTenantContext } from '../core/types';
+import type { RequestWithUser } from '../core/types';
 
 @Controller('organizations')
 export class OrganizationsController {

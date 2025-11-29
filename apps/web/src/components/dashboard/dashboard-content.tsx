@@ -21,7 +21,7 @@ interface DashboardContentProps {
   userName: string | null;
 }
 
-export function DashboardContent({ userId, userEmail, userName }: DashboardContentProps) {
+export function DashboardContent({ userId: _userId, userEmail: _userEmail, userName }: DashboardContentProps) {
   const { organizations, currentOrg, isLoading } = useOrgContext();
 
   const hasOrgs = organizations.length > 0;

@@ -13,7 +13,7 @@ jest.mock('@forgestack/db', () => ({
   invitations: {},
 }));
 
-import { eq, and, gt, lt, count, withServiceContext } from '@forgestack/db';
+import { gt, lt, withServiceContext } from '@forgestack/db';
 
 describe('InvitationsRepository', () => {
   let repository: InvitationsRepository;

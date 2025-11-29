@@ -8,7 +8,7 @@
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { pool } from './client.js';
 import * as schema from './schema/index.js';
-import type { TenantContext, ServiceContext, DatabaseContext } from './types/index.js';
+import type { DatabaseContext } from './types/index.js';
 import { isServiceContext } from './types/index.js';
 import { UUID_REGEX } from '@forgestack/shared';
 

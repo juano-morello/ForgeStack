@@ -3,7 +3,7 @@
  * Handles session verification with better-auth
  */
 
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export interface BetterAuthUser {

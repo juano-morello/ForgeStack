@@ -7,7 +7,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   eq,
   and,
-  count,
   inArray,
   withServiceContext,
   withTenantContext,

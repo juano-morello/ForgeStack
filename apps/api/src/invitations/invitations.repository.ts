@@ -13,7 +13,6 @@ import {
   withServiceContext,
   invitations,
   type Invitation,
-  type NewInvitation,
   type OrgRole,
 } from '@forgestack/db';
 

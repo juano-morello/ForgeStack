@@ -13,7 +13,6 @@
 
 import 'dotenv/config';
 import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import * as schema from './schema/index.js';
 import { withTenantContext, withServiceContext } from './context.js';
@@ -83,13 +82,13 @@ async function testRLS() {
 
   // Test 2: Verify withTenantContext sets session variables correctly
   console.log('\nTest 2: Verify withTenantContext sets session variables...');
-  const sessionVars = await withTenantContext(
+  await withTenantContext(
     {
       orgId: testData.org.id,
       userId: testData.user.id,
       role: testData.membership.role,
     },
-    async (db) => {
+    async (_db) => {
       // Query current_setting to verify variables are set
       const client3 = await pool.connect();
       try {

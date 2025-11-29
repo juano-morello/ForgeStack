@@ -1,4 +1,4 @@
-import { Worker, Job, Processor } from 'bullmq';
+import { Worker, Processor } from 'bullmq';
 import IORedis from 'ioredis';
 import { config } from './config';
 import { QUEUE_NAMES } from './queues';

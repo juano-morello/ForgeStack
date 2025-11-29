@@ -14,10 +14,9 @@ import { useProjects } from '@/hooks/use-projects';
 import { DeleteProjectDialog } from '@/components/projects/delete-project-dialog';
 import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Edit, Trash2, Calendar, Clock } from 'lucide-react';
 import type { Project } from '@/types/project';
 

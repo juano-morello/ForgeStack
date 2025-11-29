@@ -15,9 +15,6 @@ jest.mock('@forgestack/db', () => ({
 }));
 
 import {
-  eq,
-  and,
-  inArray,
   withServiceContext,
   withTenantContext,
 } from '@forgestack/db';

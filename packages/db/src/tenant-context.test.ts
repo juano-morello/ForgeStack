@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { withTenantContext, withServiceContext } from './context.js';
-import { createTestUser, createTestOrg, cleanupTestData, createTestProject } from './test/helpers.js';
+import { createTestUser, createTestOrg, cleanupTestData } from './test/helpers.js';
 import { projects } from './schema/index.js';
 import { sql } from 'drizzle-orm';
 

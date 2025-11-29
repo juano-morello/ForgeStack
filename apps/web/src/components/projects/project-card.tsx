@@ -10,7 +10,6 @@
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { FolderKanban, Calendar, Edit, Trash2 } from 'lucide-react';
 import type { Project } from '@/types/project';
 import { cn } from '@/lib/utils';

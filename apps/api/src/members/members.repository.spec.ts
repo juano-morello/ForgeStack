@@ -12,7 +12,7 @@ jest.mock('@forgestack/db', () => ({
   organizationMembers: {},
 }));
 
-import { eq, and, withServiceContext } from '@forgestack/db';
+import { withServiceContext } from '@forgestack/db';
 
 describe('MembersRepository', () => {
   let repository: MembersRepository;

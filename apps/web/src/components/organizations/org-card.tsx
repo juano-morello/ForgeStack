@@ -7,7 +7,7 @@
  * Shows name, role badge, created date, and action buttons.
  */
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, Calendar, Settings, Trash2 } from 'lucide-react';

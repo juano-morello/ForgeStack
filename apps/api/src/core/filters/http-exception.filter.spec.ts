@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  HttpException,
   HttpStatus,
   BadRequestException,
   NotFoundException,
   UnauthorizedException,
   ForbiddenException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { ArgumentsHost } from '@nestjs/common';

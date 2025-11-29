@@ -7,7 +7,6 @@ global.fetch = jest.fn();
 
 describe('AuthService', () => {
   let service: AuthService;
-  let configService: jest.Mocked<ConfigService>;
   const mockAuthServerUrl = 'http://localhost:3000';
 
   beforeEach(async () => {
@@ -32,7 +31,6 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    configService = module.get(ConfigService);
 
     // Clear all mocks before each test
     jest.clearAllMocks();

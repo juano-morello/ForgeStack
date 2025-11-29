@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProjectList } from './project-list';
-import type { Project } from '@/types/project';
 
 // Mock hooks
 const mockFetchProjects = vi.fn();
@@ -30,15 +29,7 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => mockSearchParams,
 }));
 
-const createMockProject = (overrides: Partial<Project> = {}): Project => ({
-  id: 'project-1',
-  orgId: 'org-1',
-  name: 'Test Project',
-  description: 'A test project description',
-  createdAt: '2024-01-15T00:00:00.000Z',
-  updatedAt: '2024-01-15T00:00:00.000Z',
-  ...overrides,
-});
+
 
 describe('ProjectList', () => {
   beforeEach(() => {

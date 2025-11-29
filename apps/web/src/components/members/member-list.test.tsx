@@ -434,7 +434,6 @@ describe('MemberList', () => {
   });
 
   it('should prevent removing the last owner', async () => {
-    const user = userEvent.setup();
     const singleOwnerMembers: Member[] = [
       {
         userId: 'user-1',

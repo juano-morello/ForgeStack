@@ -166,8 +166,6 @@ describe('ProjectForm', () => {
   });
 
   it('should show validation error for description exceeding 2000 characters', async () => {
-    const user = userEvent.setup();
-
     render(<ProjectForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     const descriptionInput = screen.getByLabelText(/description/i);
