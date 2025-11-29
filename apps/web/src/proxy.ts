@@ -1,5 +1,5 @@
 /**
- * Next.js Middleware for Authentication
+ * Next.js Proxy for Authentication
  *
  * Handles route protection by checking for valid session cookies.
  * Redirects unauthenticated users to the login page.
@@ -14,7 +14,7 @@ const publicRoutes = ['/', '/login', '/signup', '/invitations/decline'];
 // Routes that start with these prefixes are public
 const publicPrefixes = ['/api/auth', '/_next', '/favicon.ico'];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a public route

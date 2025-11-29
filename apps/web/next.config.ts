@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    // Enable Turbopack file system caching for faster dev server startup
+    turbopackFileSystemCacheForDev: true,
   },
 };
 

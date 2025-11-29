@@ -139,8 +139,8 @@ This specification defines the integration of **better-auth** for authentication
 - [ ] Redirect to dashboard on success
 - [ ] Link to login page
 
-#### 7. Create Auth Middleware for Protected Routes
-- [ ] Create `apps/web/src/middleware.ts`
+#### 7. Create Auth Proxy for Protected Routes
+- [ ] Create `apps/web/src/proxy.ts` (Next.js 16 renamed middleware to proxy)
 - [ ] Check for valid session on protected routes
 - [ ] Redirect to `/login` if not authenticated
 - [ ] Allow public routes (login, signup, landing page)

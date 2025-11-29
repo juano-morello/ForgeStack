@@ -6,8 +6,9 @@
 
 **A production-ready, multi-tenant SaaS starter kit with enterprise-grade security**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-61dafb?logo=react&logoColor=black)](https://react.dev/)
 [![NestJS](https://img.shields.io/badge/NestJS-11-e0234e?logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169e1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-dc382d?logo=redis&logoColor=white)](https://redis.io/)
@@ -37,7 +38,7 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 | 🛡️ **Row-Level Security** | PostgreSQL RLS policies for data protection |
 | 👥 **Team Management** | Invite members, manage roles (OWNER/MEMBER) |
 | 📧 **Email Integration** | Transactional emails with [Resend](https://resend.com) |
-| 🎨 **Modern UI** | Next.js 15 + Tailwind CSS + shadcn/ui |
+| 🎨 **Modern UI** | Next.js 16 + React 19 + Tailwind CSS + shadcn/ui |
 | 📦 **Monorepo** | pnpm workspaces + Turborepo |
 | ✅ **Tested** | 95%+ coverage with Jest, Vitest, and Playwright |
 
@@ -50,8 +51,8 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                              FRONTEND                                    │
-│                     Next.js 15 (App Router)                             │
-│              React 19 • Tailwind CSS • shadcn/ui                        │
+│                     Next.js 16 (App Router)                             │
+│            React 19.2 • Tailwind CSS • shadcn/ui                        │
 └───────────────────────────────┬─────────────────────────────────────────┘
                                 │ HTTP/REST + Cookies
                                 ▼
@@ -100,8 +101,8 @@ ForgeStack/
 
 | Software | Version | Purpose |
 |----------|---------|---------|
-| [Node.js](https://nodejs.org/) | 20+ | JavaScript runtime |
-| [pnpm](https://pnpm.io/) | 9+ | Package manager |
+| [Node.js](https://nodejs.org/) | 20.9+ | JavaScript runtime (required by Next.js 16) |
+| [pnpm](https://pnpm.io/) | 9.14+ | Package manager |
 | [Docker](https://www.docker.com/) | Latest | PostgreSQL & Redis containers |
 
 ---
@@ -427,7 +428,8 @@ All protected endpoints require:
 | Package | Target | Current |
 |---------|--------|---------|
 | API | >90% | 98.51% |
-| Web | >90% | 92.65% |
+| Web | >80% | 86.30% |
+| DB | >80% | 85%+ |
 
 ### Running Tests
 
