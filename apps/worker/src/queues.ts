@@ -8,5 +8,6 @@ export const QUEUE_NAMES = {
   INCOMING_WEBHOOK_PROCESSING: 'incoming-webhook-processing',
   AUDIT_LOGS: 'audit-logs',
   ACTIVITIES: 'activities',
+  NOTIFICATION_EMAIL: 'notification-email',
 } as const;
 

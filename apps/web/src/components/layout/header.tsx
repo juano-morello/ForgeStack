@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { User, Settings, LogOut, CreditCard, Key, Webhook, ScrollText } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard, Key, Webhook, ScrollText, Bell } from 'lucide-react';
 import { signOut, useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { MobileNav } from '@/components/layout/mobile-nav';
 import { OrgSelector } from '@/components/organizations/org-selector';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -89,6 +90,7 @@ export function Header() {
           <div className="hidden sm:block">
             <OrgSelector />
           </div>
+          <NotificationBell />
           <ThemeToggle />
 
           {/* User menu */}
@@ -152,6 +154,12 @@ export function Header() {
                 <Link href="/settings/audit-logs">
                   <ScrollText className="mr-2 h-4 w-4" />
                   <span>Audit Logs</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings/notifications">
+                  <Bell className="mr-2 h-4 w-4" />
+                  <span>Notifications</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

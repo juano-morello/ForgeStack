@@ -25,6 +25,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { IncomingWebhooksModule } from './incoming-webhooks/incoming-webhooks.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { ActivitiesModule } from './activities/activities.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ActivitiesModule } from './activities/activities.module';
     IncomingWebhooksModule,
     AuditLogsModule,
     ActivitiesModule,
+    NotificationsModule,
   ],
   providers: [
     {

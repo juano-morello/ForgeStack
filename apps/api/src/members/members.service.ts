@@ -20,6 +20,7 @@ import {
 import { MembersRepository } from './members.repository';
 import { UpdateMemberRoleDto, QueryMembersDto } from './dto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class MembersService {
@@ -28,6 +29,7 @@ export class MembersService {
   constructor(
     private readonly membersRepository: MembersRepository,
     private readonly auditLogsService: AuditLogsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   /**
@@ -112,6 +114,31 @@ export class MembersService {
     this.logger.log(
       `Role updated for member ${targetUserId} in org ${ctx.orgId}`,
     );
+
+    // Send notification to the affected member
+    const org = await withServiceContext('MembersService.getOrg', async (tx) => {
+      const [orgRecord] = await tx
+        .select()
+        .from(organizations)
+        .where(eq(organizations.id, ctx.orgId))
+        .limit(1);
+      return orgRecord;
+    });
+
+    if (org) {
+      await this.notificationsService.send({
+        userId: targetUserId,
+        orgId: ctx.orgId,
+        type: 'member.role_changed',
+        title: 'Role Updated',
+        body: `Your role in ${org.name} has been changed to ${dto.role}`,
+        link: `/organizations/${ctx.orgId}/settings`,
+        metadata: {
+          previousRole: targetMember.role,
+          newRole: dto.role,
+        },
+      });
+    }
 
     // Return updated member
     return this.membersRepository.findByUserIdAndOrgId(targetUserId, ctx.orgId);

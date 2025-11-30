@@ -31,6 +31,12 @@ export { webhookDeliveries, webhookDeliveriesRelations } from './webhook-deliver
 export { incomingWebhookEvents, incomingWebhookEventsRelations } from './incoming-webhook-events';
 export { auditLogs, auditLogsRelations } from './audit-logs';
 export { activities, activitiesRelations } from './activities';
+export {
+  notifications,
+  notificationsRelations,
+  notificationPreferences,
+  notificationPreferencesRelations,
+} from './notifications';
 
 // Types
 export type {
@@ -53,4 +59,10 @@ export type { WebhookDelivery, NewWebhookDelivery } from './webhook-deliveries';
 export type { IncomingWebhookEvent, NewIncomingWebhookEvent } from './incoming-webhook-events';
 export type { AuditLog, NewAuditLog } from './audit-logs';
 export type { Activity, NewActivity } from './activities';
+export type {
+  Notification,
+  NewNotification,
+  NotificationPreference,
+  NewNotificationPreference,
+} from './notifications';
 

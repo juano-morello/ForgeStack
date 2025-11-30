@@ -62,6 +62,10 @@ export {
   auditLogsRelations,
   activities,
   activitiesRelations,
+  notifications,
+  notificationsRelations,
+  notificationPreferences,
+  notificationPreferencesRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -97,5 +101,9 @@ export type {
   NewAuditLog,
   Activity,
   NewActivity,
+  Notification,
+  NewNotification,
+  NotificationPreference,
+  NewNotificationPreference,
 } from './schema/index.js';
 

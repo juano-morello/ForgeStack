@@ -7,6 +7,7 @@ import {
 import { MembersService } from './members.service';
 import { MembersRepository } from './members.repository';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { createMockTenantContext, mockUUID } from '../../test/test-utils';
 
 // Mock the @forgestack/db module
@@ -47,6 +48,10 @@ describe('MembersService', () => {
       log: jest.fn().mockResolvedValue(undefined),
     };
 
+    const mockNotificationsService = {
+      send: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MembersService,
@@ -57,6 +62,10 @@ describe('MembersService', () => {
         {
           provide: AuditLogsService,
           useValue: mockAuditLogsService,
+        },
+        {
+          provide: NotificationsService,
+          useValue: mockNotificationsService,
         },
       ],
     }).compile();

@@ -11,6 +11,7 @@ import { handleWebhookDelivery, WebhookDeliveryJobData } from './handlers/webhoo
 import { handleIncomingWebhookProcessing, IncomingWebhookJobData } from './handlers/incoming-webhook-processing.handler';
 import { handleAuditLog, AuditLogJobData } from './handlers/audit-log.handler';
 import { handleActivity, ActivityJobData } from './handlers/activity.handler';
+import { handleNotificationEmail, NotificationEmailJobData } from './handlers/notification-email.handler';
 
 const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
 
@@ -50,6 +51,7 @@ createWorker<WebhookDeliveryJobData>(QUEUE_NAMES.WEBHOOK_DELIVERY, handleWebhook
 createWorker<IncomingWebhookJobData>(QUEUE_NAMES.INCOMING_WEBHOOK_PROCESSING, handleIncomingWebhookProcessing);
 createWorker<AuditLogJobData>(QUEUE_NAMES.AUDIT_LOGS, handleAuditLog);
 createWorker<ActivityJobData>(QUEUE_NAMES.ACTIVITIES, handleActivity);
+createWorker<NotificationEmailJobData>(QUEUE_NAMES.NOTIFICATION_EMAIL, handleNotificationEmail);
 
 // Graceful shutdown
 async function shutdown() {

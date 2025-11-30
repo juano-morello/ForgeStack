@@ -9,9 +9,14 @@ import {
   customers,
   subscriptions,
   billingEvents,
+  organizations,
   eq,
 } from '@forgestack/db';
 import type Stripe from 'stripe';
+import { NotificationEmailJobData } from './notification-email.handler';
+import { Queue } from 'bullmq';
+import IORedis from 'ioredis';
+import { config } from '../config';
 
 export interface StripeWebhookJobData {
   eventId: string;
@@ -213,8 +218,8 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
     return;
   }
 
-  // Update subscription status to past_due
-  await withServiceContext('StripeWebhook.updateSubscriptionPastDue', async (tx) => {
+  // Update subscription status to past_due and get org info
+  const orgInfo = await withServiceContext('StripeWebhook.updateSubscriptionPastDue', async (tx) => {
     await tx
       .update(subscriptions)
       .set({
@@ -222,9 +227,48 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
         updatedAt: new Date(),
       })
       .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
+
+    // Get subscription and org info for notification
+    const [sub] = await tx
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+      .limit(1);
+
+    if (!sub) return null;
+
+    const [org] = await tx
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, sub.orgId))
+      .limit(1);
+
+    return org ? { orgId: org.id, orgName: org.name, ownerUserId: org.ownerUserId } : null;
   });
 
   console.log(`[StripeWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
-  // Future: Send notification to user about failed payment
+
+  // Send notification to org owner about failed payment
+  if (orgInfo) {
+    try {
+      const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
+      const notificationQueue = new Queue('notification-email', { connection });
+
+      await notificationQueue.add('notification-email', {
+        userId: orgInfo.ownerUserId,
+        orgId: orgInfo.orgId,
+        type: 'billing.payment_failed',
+        title: 'Payment Failed',
+        body: `Payment failed for ${orgInfo.orgName}. Please update your payment method.`,
+        link: `/organizations/${orgInfo.orgId}/settings/billing`,
+      } as NotificationEmailJobData);
+
+      await connection.quit();
+      console.log(`[StripeWebhook] Queued payment failed notification for org ${orgInfo.orgId}`);
+    } catch (error) {
+      console.error('[StripeWebhook] Failed to queue payment failed notification:', error);
+      // Don't throw - payment failure handling is more important than notification
+    }
+  }
 }
 
