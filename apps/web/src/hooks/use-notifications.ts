@@ -168,46 +168,101 @@ export function useNotifications({
  * useUnreadCount Hook
  *
  * Hook for fetching and polling unread notification count.
+ * Handles authentication state and network errors gracefully.
  */
 export function useUnreadCount(pollInterval: number = 30000) {
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-  const fetchCount = useCallback(async () => {
+  const fetchCount = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await getUnreadCount();
-      setCount(response.count);
+      // Only update state if not aborted
+      if (!signal?.aborted) {
+        setCount(response.count);
+      }
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : 'Failed to fetch unread count';
-      setError(message);
-      console.error('Error fetching unread count:', err);
+      // Don't update state if aborted (component unmounted)
+      if (signal?.aborted) return;
+
+      // Handle different error types
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        // Network error - API might be unavailable
+        // Silently fail in development, user might not be logged in
+        setError('Unable to connect to server');
+        // Only log in development for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.debug('[useUnreadCount] Network error - API may be unavailable');
+        }
+      } else if (err instanceof ApiError) {
+        // API returned an error response
+        if (err.status === 401) {
+          // User not authenticated - this is expected, don't treat as error
+          setError(null);
+          setCount(0);
+        } else {
+          setError(err.message);
+          console.error('[useUnreadCount] API error:', err.message);
+        }
+      } else {
+        const message = 'Failed to fetch unread count';
+        setError(message);
+        console.error('[useUnreadCount] Unexpected error:', err);
+      }
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
-  // Initial fetch
+  // Track mount state for SSR safety
   useEffect(() => {
-    fetchCount();
+    setIsMounted(true);
+  }, []);
+
+  // Initial fetch with abort controller
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const abortController = new AbortController();
+    fetchCount(abortController.signal);
+
+    return () => {
+      abortController.abort();
+    };
+  }, [fetchCount, isMounted]);
+
+  // Polling with abort on unmount
+  useEffect(() => {
+    if (!isMounted || !pollInterval) return;
+
+    const abortController = new AbortController();
+    const interval = setInterval(() => {
+      fetchCount(abortController.signal);
+    }, pollInterval);
+
+    return () => {
+      clearInterval(interval);
+      abortController.abort();
+    };
+  }, [pollInterval, fetchCount, isMounted]);
+
+  // Manual refresh function
+  const refresh = useCallback(() => {
+    return fetchCount();
   }, [fetchCount]);
-
-  // Polling
-  useEffect(() => {
-    if (!pollInterval) return;
-
-    const interval = setInterval(fetchCount, pollInterval);
-    return () => clearInterval(interval);
-  }, [pollInterval, fetchCount]);
 
   return {
     count,
     isLoading,
     error,
-    refresh: fetchCount,
+    refresh,
   };
 }
 
