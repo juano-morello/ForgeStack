@@ -4,5 +4,6 @@ export const QUEUE_NAMES = {
   STRIPE_WEBHOOK: 'stripe-webhook',
   CLEANUP_ORPHANED_FILES: 'cleanup-orphaned-files',
   CLEANUP_DELETED_FILES: 'cleanup-deleted-files',
+  WEBHOOK_DELIVERY: 'webhook-delivery',
 } as const;
 

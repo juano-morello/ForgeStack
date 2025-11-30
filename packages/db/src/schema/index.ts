@@ -26,6 +26,8 @@ export { subscriptions, subscriptionsRelations } from './subscriptions';
 export { billingEvents, billingEventsRelations } from './billing-events';
 export { files, filesRelations } from './files';
 export { apiKeys, apiKeysRelations } from './api-keys';
+export { webhookEndpoints, webhookEndpointsRelations } from './webhook-endpoints';
+export { webhookDeliveries, webhookDeliveriesRelations } from './webhook-deliveries';
 
 // Types
 export type {
@@ -43,4 +45,6 @@ export type { Subscription, NewSubscription } from './subscriptions';
 export type { BillingEvent, NewBillingEvent } from './billing-events';
 export type { File, NewFile } from './files';
 export type { ApiKey, NewApiKey } from './api-keys';
+export type { WebhookEndpoint, NewWebhookEndpoint } from './webhook-endpoints';
+export type { WebhookDelivery, NewWebhookDelivery } from './webhook-deliveries';
 

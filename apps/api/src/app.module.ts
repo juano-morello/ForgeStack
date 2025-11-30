@@ -21,6 +21,7 @@ import { QueueModule } from './queue/queue.module';
 import { BillingModule } from './billing/billing.module';
 import { FilesModule } from './files/files.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ApiKeysModule } from './api-keys/api-keys.module';
     BillingModule,
     FilesModule,
     ApiKeysModule,
+    WebhooksModule,
   ],
   providers: [
     {

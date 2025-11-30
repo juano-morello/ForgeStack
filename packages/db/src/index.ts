@@ -52,6 +52,10 @@ export {
   filesRelations,
   apiKeys,
   apiKeysRelations,
+  webhookEndpoints,
+  webhookEndpointsRelations,
+  webhookDeliveries,
+  webhookDeliveriesRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -77,5 +81,9 @@ export type {
   NewFile,
   ApiKey,
   NewApiKey,
+  WebhookEndpoint,
+  NewWebhookEndpoint,
+  WebhookDelivery,
+  NewWebhookDelivery,
 } from './schema/index.js';
 
