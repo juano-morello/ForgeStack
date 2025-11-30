@@ -16,7 +16,8 @@ export const activities = pgTable(
       .references(() => organizations.id, { onDelete: 'cascade' }),
     
     // Actor information (denormalized for display)
-    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    // Note: users.id is text type (better-auth), not uuid
+    actorId: text('actor_id').references(() => users.id, { onDelete: 'set null' }),
     actorName: text('actor_name'),
     actorAvatar: text('actor_avatar'),
     

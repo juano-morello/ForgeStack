@@ -12,7 +12,8 @@ export const files = pgTable('files', {
   orgId: uuid('org_id')
     .notNull()
     .references(() => organizations.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id')
+  // Note: users.id is text type (better-auth), not uuid
+  userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'set null' }),
 

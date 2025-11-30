@@ -16,7 +16,8 @@ export const auditLogs = pgTable(
       .references(() => organizations.id, { onDelete: 'cascade' }),
     
     // Actor information (denormalized for historical accuracy)
-    actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+    // Note: users.id is text type (better-auth), not uuid
+    actorId: text('actor_id').references(() => users.id, { onDelete: 'set null' }),
     actorType: text('actor_type').notNull(), // 'user', 'api_key', 'system'
     actorName: text('actor_name'), // Denormalized
     actorEmail: text('actor_email'), // Denormalized

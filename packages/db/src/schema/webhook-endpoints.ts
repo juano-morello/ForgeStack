@@ -19,7 +19,8 @@ export const webhookEndpoints = pgTable(
     secret: text('secret').notNull(), // Webhook signing secret
     events: text('events').array().notNull().default(sql`ARRAY[]::text[]`),
     enabled: boolean('enabled').notNull().default(true),
-    createdBy: uuid('created_by')
+    // Note: users.id is text type (better-auth), not uuid
+    createdBy: text('created_by')
       .notNull()
       .references(() => users.id),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
