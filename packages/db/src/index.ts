@@ -42,6 +42,12 @@ export {
   projectsRelations,
   invitations,
   invitationsRelations,
+  customers,
+  customersRelations,
+  subscriptions,
+  subscriptionsRelations,
+  billingEvents,
+  billingEventsRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -57,5 +63,11 @@ export type {
   NewProject,
   Invitation,
   NewInvitation,
+  Customer,
+  NewCustomer,
+  Subscription,
+  NewSubscription,
+  BillingEvent,
+  NewBillingEvent,
 } from './schema/index.js';
 

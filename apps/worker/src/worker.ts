@@ -4,6 +4,7 @@ import { config } from './config';
 import { QUEUE_NAMES } from './queues';
 import { handleWelcomeEmail, WelcomeEmailJobData } from './handlers/welcome-email.handler';
 import { handleSendInvitation, SendInvitationJobData } from './handlers/send-invitation.handler';
+import { handleStripeWebhook, StripeWebhookJobData } from './handlers/stripe-webhook.handler';
 
 const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
 
@@ -36,6 +37,7 @@ function createWorker<T>(
 // Register workers for each queue
 createWorker<WelcomeEmailJobData>(QUEUE_NAMES.WELCOME_EMAIL, handleWelcomeEmail);
 createWorker<SendInvitationJobData>(QUEUE_NAMES.SEND_INVITATION, handleSendInvitation);
+createWorker<StripeWebhookJobData>(QUEUE_NAMES.STRIPE_WEBHOOK, handleStripeWebhook);
 
 // Graceful shutdown
 async function shutdown() {

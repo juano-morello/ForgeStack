@@ -8,6 +8,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
+import { json } from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 
@@ -16,6 +17,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    rawBody: true, // Enable raw body for webhook verification
   });
 
   const configService = app.get(ConfigService);
@@ -24,6 +26,18 @@ async function bootstrap() {
 
   // Cookie parser middleware (required for better-auth session tokens)
   app.use(cookieParser());
+
+  // JSON body parser with raw body for webhooks
+  app.use(
+    json({
+      verify: (req: any, res, buf) => {
+        // Store raw body for webhook signature verification
+        if (req.url === '/api/v1/billing/webhook') {
+          req.rawBody = buf;
+        }
+      },
+    }),
+  );
 
   // Global prefix
   app.setGlobalPrefix('api/v1');

@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard } from 'lucide-react';
 import { signOut, useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import {
@@ -124,6 +124,12 @@ export function Header() {
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings/billing">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive">

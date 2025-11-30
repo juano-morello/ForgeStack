@@ -18,6 +18,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { MembersModule } from './members/members.module';
 import { QueueModule } from './queue/queue.module';
+import { BillingModule } from './billing/billing.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { QueueModule } from './queue/queue.module';
     InvitationsModule,
     MembersModule,
     QueueModule,
+    BillingModule,
   ],
   providers: [
     {
