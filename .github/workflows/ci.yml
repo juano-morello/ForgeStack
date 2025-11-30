@@ -85,6 +85,10 @@ jobs:
       - name: Build packages
         run: pnpm turbo build --filter='./packages/*'
 
+      - name: Validate database schema
+        working-directory: packages/db
+        run: npx drizzle-kit generate --name=validate 2>&1 | grep -E "^\d+ tables$" || (echo "Schema validation failed - drizzle-kit cannot read schema files" && exit 1)
+
       - name: Push database schema
         working-directory: packages/db
         env:

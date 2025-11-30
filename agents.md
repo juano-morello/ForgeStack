@@ -157,6 +157,13 @@ Agents MUST implement these modules:
 
 withTenantContext({ orgId, userId, role }, (db) => ...)
 
+### Database Schema (packages/db)
+- Drizzle ORM schema files in `src/schema/`
+- **IMPORTANT**: Schema imports must NOT use `.js` extensions
+  - ✅ `import { organizations } from './organizations'`
+  - ❌ `import { organizations } from './organizations.js'`
+  - Reason: drizzle-kit reads .ts files directly and fails with .js extensions
+
 ### Backend
 - NestJS only
 - Drizzle ORM only

@@ -22,6 +22,25 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'warn',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
+  overrides: [
+    {
+      // Prevent .js extensions in schema imports - drizzle-kit reads .ts files directly
+      files: ['packages/db/src/schema/**/*.ts'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              {
+                group: ['./*.js', '../*.js', './**/*.js'],
+                message: 'Do not use .js extensions in schema imports - drizzle-kit reads .ts files directly and will fail.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
   ignorePatterns: [
     'node_modules',
     'dist',
