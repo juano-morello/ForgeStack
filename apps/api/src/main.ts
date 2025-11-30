@@ -32,7 +32,7 @@ async function bootstrap() {
     json({
       verify: (req: any, res, buf) => {
         // Store raw body for webhook signature verification
-        if (req.url === '/api/v1/billing/webhook') {
+        if (req.url === '/api/v1/billing/webhook' || req.url === '/api/v1/webhooks/stripe') {
           req.rawBody = buf;
         }
       },

@@ -22,6 +22,7 @@ import { BillingModule } from './billing/billing.module';
 import { FilesModule } from './files/files.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { IncomingWebhooksModule } from './incoming-webhooks/incoming-webhooks.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     FilesModule,
     ApiKeysModule,
     WebhooksModule,
+    IncomingWebhooksModule,
   ],
   providers: [
     {

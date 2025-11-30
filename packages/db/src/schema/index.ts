@@ -28,6 +28,7 @@ export { files, filesRelations } from './files';
 export { apiKeys, apiKeysRelations } from './api-keys';
 export { webhookEndpoints, webhookEndpointsRelations } from './webhook-endpoints';
 export { webhookDeliveries, webhookDeliveriesRelations } from './webhook-deliveries';
+export { incomingWebhookEvents, incomingWebhookEventsRelations } from './incoming-webhook-events';
 
 // Types
 export type {
@@ -47,4 +48,5 @@ export type { File, NewFile } from './files';
 export type { ApiKey, NewApiKey } from './api-keys';
 export type { WebhookEndpoint, NewWebhookEndpoint } from './webhook-endpoints';
 export type { WebhookDelivery, NewWebhookDelivery } from './webhook-deliveries';
+export type { IncomingWebhookEvent, NewIncomingWebhookEvent } from './incoming-webhook-events';
 

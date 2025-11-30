@@ -30,7 +30,9 @@ module.exports = {
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    '^@forgestack/db$': '<rootDir>/../../../packages/db/src',
+    '^@forgestack/db$': '<rootDir>/../../../packages/db/src/index.ts',
+    // Handle .js extensions in ESM imports (TypeScript compiles to .js but source is .ts)
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
 };
 

@@ -8,6 +8,7 @@ import { handleStripeWebhook, StripeWebhookJobData } from './handlers/stripe-web
 import { handleCleanupOrphanedFiles, CleanupOrphanedFilesJobData } from './handlers/cleanup-orphaned-files.handler';
 import { handleCleanupDeletedFiles, CleanupDeletedFilesJobData } from './handlers/cleanup-deleted-files.handler';
 import { handleWebhookDelivery, WebhookDeliveryJobData } from './handlers/webhook-delivery.handler';
+import { handleIncomingWebhookProcessing, IncomingWebhookJobData } from './handlers/incoming-webhook-processing.handler';
 
 const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
 
@@ -44,6 +45,7 @@ createWorker<StripeWebhookJobData>(QUEUE_NAMES.STRIPE_WEBHOOK, handleStripeWebho
 createWorker<CleanupOrphanedFilesJobData>(QUEUE_NAMES.CLEANUP_ORPHANED_FILES, handleCleanupOrphanedFiles);
 createWorker<CleanupDeletedFilesJobData>(QUEUE_NAMES.CLEANUP_DELETED_FILES, handleCleanupDeletedFiles);
 createWorker<WebhookDeliveryJobData>(QUEUE_NAMES.WEBHOOK_DELIVERY, handleWebhookDelivery);
+createWorker<IncomingWebhookJobData>(QUEUE_NAMES.INCOMING_WEBHOOK_PROCESSING, handleIncomingWebhookProcessing);
 
 // Graceful shutdown
 async function shutdown() {

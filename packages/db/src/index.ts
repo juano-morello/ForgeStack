@@ -56,6 +56,8 @@ export {
   webhookEndpointsRelations,
   webhookDeliveries,
   webhookDeliveriesRelations,
+  incomingWebhookEvents,
+  incomingWebhookEventsRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -85,5 +87,7 @@ export type {
   NewWebhookEndpoint,
   WebhookDelivery,
   NewWebhookDelivery,
+  IncomingWebhookEvent,
+  NewIncomingWebhookEvent,
 } from './schema/index.js';
 

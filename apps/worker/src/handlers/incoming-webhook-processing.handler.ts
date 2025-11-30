@@ -1,0 +1,286 @@
+/**
+ * Incoming Webhook Processing Handler
+ * Processes incoming webhook events from the queue
+ */
+
+import { Job } from 'bullmq';
+import {
+  withServiceContext,
+  incomingWebhookEvents,
+  customers,
+  subscriptions,
+  eq,
+} from '@forgestack/db';
+import type Stripe from 'stripe';
+
+export interface IncomingWebhookJobData {
+  eventRecordId: string;
+  provider: string;
+  eventType: string;
+  eventId: string;
+}
+
+/**
+ * Map Stripe price IDs to plan names
+ * TODO: Move to configuration
+ */
+const PRICE_TO_PLAN_MAP: Record<string, string> = {
+  // Add your Stripe price IDs here
+  // 'price_xxx': 'basic',
+  // 'price_yyy': 'pro',
+  // 'price_zzz': 'enterprise',
+};
+
+/**
+ * Get plan name from Stripe price ID
+ */
+function getPlanFromPriceId(priceId: string): string {
+  return PRICE_TO_PLAN_MAP[priceId] || 'unknown';
+}
+
+export async function handleIncomingWebhookProcessing(job: Job<IncomingWebhookJobData>) {
+  const { eventRecordId, provider, eventType, eventId } = job.data;
+
+  console.log(`[IncomingWebhook] Processing event ${eventRecordId} - ${eventId} (${provider}/${eventType})`);
+
+  // Fetch event from database
+  const event = await withServiceContext('IncomingWebhook.fetchEvent', async (tx) => {
+    const [result] = await tx
+      .select()
+      .from(incomingWebhookEvents)
+      .where(eq(incomingWebhookEvents.id, eventRecordId));
+    return result;
+  });
+
+  if (!event) {
+    throw new Error(`Event record not found: ${eventRecordId}`);
+  }
+
+  if (event.processedAt) {
+    console.log(`[IncomingWebhook] Event already processed: ${eventRecordId}`);
+    return { skipped: true, reason: 'already_processed' };
+  }
+
+  if (!event.verified) {
+    console.warn(`[IncomingWebhook] Skipping unverified event: ${eventRecordId}`);
+    return { skipped: true, reason: 'not_verified' };
+  }
+
+  try {
+    // Route to provider handler
+    switch (provider) {
+      case 'stripe':
+        await handleStripeEvent(event.payload as Stripe.Event);
+        break;
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+
+    // Mark as processed
+    await withServiceContext('IncomingWebhook.markProcessed', async (tx) => {
+      await tx
+        .update(incomingWebhookEvents)
+        .set({
+          processedAt: new Date(),
+          error: null,
+        })
+        .where(eq(incomingWebhookEvents.id, eventRecordId));
+    });
+
+    console.log(`[IncomingWebhook] Successfully processed event ${eventRecordId}`);
+    return { success: true };
+  } catch (error) {
+    console.error(`[IncomingWebhook] Error processing event ${eventRecordId}:`, error);
+
+    // Update retry count and error
+    await withServiceContext('IncomingWebhook.updateError', async (tx) => {
+      await tx
+        .update(incomingWebhookEvents)
+        .set({
+          error: error instanceof Error ? error.message : 'Unknown error',
+          retryCount: event.retryCount + 1,
+        })
+        .where(eq(incomingWebhookEvents.id, eventRecordId));
+    });
+
+    throw error; // Re-throw for BullMQ retry
+  }
+}
+
+/**
+ * Handle Stripe webhook events
+ */
+async function handleStripeEvent(event: Stripe.Event) {
+  console.log(`[IncomingWebhook] Handling Stripe event: ${event.type}`);
+
+  switch (event.type) {
+    case 'checkout.session.completed':
+      await handleCheckoutCompleted(event as Stripe.CheckoutSessionCompletedEvent);
+      break;
+
+    case 'customer.subscription.created':
+    case 'customer.subscription.updated':
+      await handleSubscriptionChange(event as Stripe.CustomerSubscriptionUpdatedEvent);
+      break;
+
+    case 'customer.subscription.deleted':
+      await handleSubscriptionDeleted(event as Stripe.CustomerSubscriptionDeletedEvent);
+      break;
+
+    case 'invoice.paid':
+      await handleInvoicePaid(event as Stripe.InvoicePaidEvent);
+      break;
+
+    case 'invoice.payment_failed':
+      await handleInvoicePaymentFailed(event as Stripe.InvoicePaymentFailedEvent);
+      break;
+
+    case 'customer.updated':
+      await handleCustomerUpdated(event as Stripe.CustomerUpdatedEvent);
+      break;
+
+    default:
+      console.log(`[IncomingWebhook] Unhandled Stripe event type: ${event.type}`);
+  }
+}
+
+async function handleCheckoutCompleted(event: Stripe.CheckoutSessionCompletedEvent) {
+  const session = event.data.object;
+  console.log(`[IncomingWebhook] Checkout completed for customer ${session.customer}`);
+  // Subscription will be handled by subscription.created event
+}
+
+async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdatedEvent) {
+  const subscription = event.data.object;
+  const stripeCustomerId = subscription.customer as string;
+
+  console.log(`[IncomingWebhook] Subscription ${subscription.id} changed to ${subscription.status}`);
+
+  // Find customer in our database
+  const customer = await withServiceContext('IncomingWebhook.findCustomer', async (tx) => {
+    const [result] = await tx
+      .select()
+      .from(customers)
+      .where(eq(customers.stripeCustomerId, stripeCustomerId));
+    return result;
+  });
+
+  if (!customer) {
+    console.error(`[IncomingWebhook] Customer not found for Stripe ID ${stripeCustomerId}`);
+    return;
+  }
+
+  const priceId = subscription.items.data[0]?.price.id || '';
+  const plan = getPlanFromPriceId(priceId);
+
+  // Upsert subscription
+  await withServiceContext('IncomingWebhook.upsertSubscription', async (tx) => {
+    await tx
+      .insert(subscriptions)
+      .values({
+        orgId: customer.orgId,
+        customerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+        stripePriceId: priceId,
+        plan,
+        status: subscription.status,
+        currentPeriodStart: (subscription as unknown as { current_period_start: number }).current_period_start
+          ? new Date((subscription as unknown as { current_period_start: number }).current_period_start * 1000)
+          : null,
+        currentPeriodEnd: (subscription as unknown as { current_period_end: number }).current_period_end
+          ? new Date((subscription as unknown as { current_period_end: number }).current_period_end * 1000)
+          : null,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+        canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+      })
+      .onConflictDoUpdate({
+        target: subscriptions.stripeSubscriptionId,
+        set: {
+          status: subscription.status,
+          stripePriceId: priceId,
+          plan,
+          currentPeriodStart: (subscription as unknown as { current_period_start: number }).current_period_start
+            ? new Date((subscription as unknown as { current_period_start: number }).current_period_start * 1000)
+            : null,
+          currentPeriodEnd: (subscription as unknown as { current_period_end: number }).current_period_end
+            ? new Date((subscription as unknown as { current_period_end: number }).current_period_end * 1000)
+            : null,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+          updatedAt: new Date(),
+        },
+      });
+  });
+
+  console.log(`[IncomingWebhook] Updated subscription for org ${customer.orgId}`);
+}
+
+async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDeletedEvent) {
+  const subscription = event.data.object;
+
+  console.log(`[IncomingWebhook] Subscription ${subscription.id} deleted`);
+
+  // Update subscription status to canceled
+  await withServiceContext('IncomingWebhook.deleteSubscription', async (tx) => {
+    await tx
+      .update(subscriptions)
+      .set({
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
+  });
+}
+
+async function handleInvoicePaid(event: Stripe.InvoicePaidEvent) {
+  const invoice = event.data.object;
+  console.log(`[IncomingWebhook] Invoice ${invoice.id} paid`);
+  // Additional logic for successful payments can be added here
+}
+
+async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEvent) {
+  const invoice = event.data.object;
+  const subscriptionData = (invoice as unknown as { subscription?: string | { id: string } | null }).subscription;
+  const stripeSubscriptionId = typeof subscriptionData === 'string'
+    ? subscriptionData
+    : subscriptionData?.id ?? null;
+
+  console.log(`[IncomingWebhook] Invoice ${invoice.id} payment failed`);
+
+  if (!stripeSubscriptionId) {
+    console.log(`[IncomingWebhook] No subscription associated with invoice ${invoice.id}`);
+    return;
+  }
+
+  // Update subscription status to past_due
+  await withServiceContext('IncomingWebhook.updateSubscriptionPastDue', async (tx) => {
+    await tx
+      .update(subscriptions)
+      .set({
+        status: 'past_due',
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
+  });
+
+  console.log(`[IncomingWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
+}
+
+async function handleCustomerUpdated(event: Stripe.CustomerUpdatedEvent) {
+  const customer = event.data.object;
+  console.log(`[IncomingWebhook] Customer ${customer.id} updated`);
+
+  // Update customer record
+  await withServiceContext('IncomingWebhook.updateCustomer', async (tx) => {
+    await tx
+      .update(customers)
+      .set({
+        email: customer.email || null,
+        name: customer.name || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(customers.stripeCustomerId, customer.id));
+  });
+}
+
