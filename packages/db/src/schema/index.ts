@@ -24,6 +24,7 @@ export { invitations, invitationsRelations } from './invitations';
 export { customers, customersRelations } from './customers';
 export { subscriptions, subscriptionsRelations } from './subscriptions';
 export { billingEvents, billingEventsRelations } from './billing-events';
+export { files, filesRelations } from './files';
 
 // Types
 export type {
@@ -39,4 +40,5 @@ export type { Invitation, NewInvitation } from './invitations';
 export type { Customer, NewCustomer } from './customers';
 export type { Subscription, NewSubscription } from './subscriptions';
 export type { BillingEvent, NewBillingEvent } from './billing-events';
+export type { File, NewFile } from './files';
 

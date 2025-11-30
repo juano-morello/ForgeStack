@@ -15,7 +15,7 @@ export const DB_VERSION = '0.0.1';
 export { db, pool, schema, closePool } from './client.js';
 
 // Re-export drizzle-orm operators to avoid version conflicts in consumers
-export { eq, and, or, sql, desc, asc, ilike, like, count, inArray, gt, lt } from 'drizzle-orm';
+export { eq, and, or, sql, desc, asc, ilike, like, count, inArray, gt, lt, isNull, isNotNull } from 'drizzle-orm';
 
 // Tenant context utilities
 export { withTenantContext, withServiceContext } from './context.js';
@@ -48,6 +48,8 @@ export {
   subscriptionsRelations,
   billingEvents,
   billingEventsRelations,
+  files,
+  filesRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -69,5 +71,7 @@ export type {
   NewSubscription,
   BillingEvent,
   NewBillingEvent,
+  File,
+  NewFile,
 } from './schema/index.js';
 
