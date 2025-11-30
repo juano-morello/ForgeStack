@@ -6,6 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InvitationsService } from './invitations.service';
+import { ActivitiesService } from '../activities/activities.service';
 import {
   createMockInvitation,
   createMockOrganization,
@@ -79,6 +80,10 @@ describe('InvitationsService', () => {
       addJob: jest.fn(),
     };
 
+    const mockActivitiesService = {
+      create: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         InvitationsService,
@@ -93,6 +98,10 @@ describe('InvitationsService', () => {
         {
           provide: QueueService,
           useValue: mockQueueService,
+        },
+        {
+          provide: ActivitiesService,
+          useValue: mockActivitiesService,
         },
       ],
     }).compile();

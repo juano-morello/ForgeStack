@@ -60,6 +60,8 @@ export {
   incomingWebhookEventsRelations,
   auditLogs,
   auditLogsRelations,
+  activities,
+  activitiesRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -93,5 +95,7 @@ export type {
   NewIncomingWebhookEvent,
   AuditLog,
   NewAuditLog,
+  Activity,
+  NewActivity,
 } from './schema/index.js';
 

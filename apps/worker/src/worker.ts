@@ -10,6 +10,7 @@ import { handleCleanupDeletedFiles, CleanupDeletedFilesJobData } from './handler
 import { handleWebhookDelivery, WebhookDeliveryJobData } from './handlers/webhook-delivery.handler';
 import { handleIncomingWebhookProcessing, IncomingWebhookJobData } from './handlers/incoming-webhook-processing.handler';
 import { handleAuditLog, AuditLogJobData } from './handlers/audit-log.handler';
+import { handleActivity, ActivityJobData } from './handlers/activity.handler';
 
 const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
 
@@ -48,6 +49,7 @@ createWorker<CleanupDeletedFilesJobData>(QUEUE_NAMES.CLEANUP_DELETED_FILES, hand
 createWorker<WebhookDeliveryJobData>(QUEUE_NAMES.WEBHOOK_DELIVERY, handleWebhookDelivery);
 createWorker<IncomingWebhookJobData>(QUEUE_NAMES.INCOMING_WEBHOOK_PROCESSING, handleIncomingWebhookProcessing);
 createWorker<AuditLogJobData>(QUEUE_NAMES.AUDIT_LOGS, handleAuditLog);
+createWorker<ActivityJobData>(QUEUE_NAMES.ACTIVITIES, handleActivity);
 
 // Graceful shutdown
 async function shutdown() {

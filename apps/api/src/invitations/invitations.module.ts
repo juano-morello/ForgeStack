@@ -8,9 +8,10 @@ import { InvitationsController, PublicInvitationsController } from './invitation
 import { InvitationsService } from './invitations.service';
 import { InvitationsRepository } from './invitations.repository';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { ActivitiesModule } from '../activities/activities.module';
 
 @Module({
-  imports: [OrganizationsModule],
+  imports: [OrganizationsModule, ActivitiesModule],
   controllers: [InvitationsController, PublicInvitationsController],
   providers: [InvitationsRepository, InvitationsService],
   exports: [InvitationsService, InvitationsRepository],

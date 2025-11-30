@@ -18,6 +18,7 @@ jest.mock('@forgestack/db', () => ({
 import { FilesService } from './files.service';
 import { FilesRepository } from './files.repository';
 import { StorageService } from './storage.service';
+import { ActivitiesService } from '../activities/activities.service';
 
 interface TenantContext {
   orgId: string;
@@ -50,6 +51,10 @@ describe('FilesService', () => {
       getBucket: jest.fn().mockReturnValue('test-bucket'),
     };
 
+    const mockActivitiesService = {
+      create: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FilesService,
@@ -60,6 +65,10 @@ describe('FilesService', () => {
         {
           provide: StorageService,
           useValue: mockStorageService,
+        },
+        {
+          provide: ActivitiesService,
+          useValue: mockActivitiesService,
         },
       ],
     }).compile();

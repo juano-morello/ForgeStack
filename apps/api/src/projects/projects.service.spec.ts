@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
+import { ActivitiesService } from '../activities/activities.service';
 import {
   createMockProject,
   createMockTenantContext,
@@ -49,6 +50,11 @@ describe('ProjectsService', () => {
       log: jest.fn().mockResolvedValue(undefined),
     };
 
+    // Create mock activities service
+    const mockActivitiesService = {
+      create: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProjectsService,
@@ -59,6 +65,10 @@ describe('ProjectsService', () => {
         {
           provide: AuditLogsService,
           useValue: mockAuditLogsService,
+        },
+        {
+          provide: ActivitiesService,
+          useValue: mockActivitiesService,
         },
       ],
     }).compile();

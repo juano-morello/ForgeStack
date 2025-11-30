@@ -26,6 +26,7 @@ import { INVITATION_VALIDATION } from '@forgestack/shared';
 import { InvitationsRepository } from './invitations.repository';
 import { OrganizationsRepository } from '../organizations/organizations.repository';
 import { QueueService } from '../queue/queue.service';
+import { ActivitiesService } from '../activities/activities.service';
 import { CreateInvitationDto, QueryInvitationsDto } from './dto';
 
 @Injectable()
@@ -36,6 +37,7 @@ export class InvitationsService {
     private readonly invitationsRepository: InvitationsRepository,
     private readonly organizationsRepository: OrganizationsRepository,
     private readonly queueService: QueueService,
+    private readonly activitiesService: ActivitiesService,
   ) {}
 
   /**
@@ -227,6 +229,14 @@ export class InvitationsService {
     if (!org) {
       throw new NotFoundException('Organization not found');
     }
+
+    // Create activity (async, non-blocking)
+    await this.activitiesService.create({
+      orgId: org.id,
+      actorId: userId,
+      type: 'member.joined',
+      title: 'joined the organization',
+    });
 
     this.logger.log(`User ${userId} joined org ${org.id}`);
     return { organization: org, role: invitation.role };

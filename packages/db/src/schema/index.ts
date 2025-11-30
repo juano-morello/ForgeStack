@@ -30,6 +30,7 @@ export { webhookEndpoints, webhookEndpointsRelations } from './webhook-endpoints
 export { webhookDeliveries, webhookDeliveriesRelations } from './webhook-deliveries';
 export { incomingWebhookEvents, incomingWebhookEventsRelations } from './incoming-webhook-events';
 export { auditLogs, auditLogsRelations } from './audit-logs';
+export { activities, activitiesRelations } from './activities';
 
 // Types
 export type {
@@ -51,4 +52,5 @@ export type { WebhookEndpoint, NewWebhookEndpoint } from './webhook-endpoints';
 export type { WebhookDelivery, NewWebhookDelivery } from './webhook-deliveries';
 export type { IncomingWebhookEvent, NewIncomingWebhookEvent } from './incoming-webhook-events';
 export type { AuditLog, NewAuditLog } from './audit-logs';
+export type { Activity, NewActivity } from './activities';
 

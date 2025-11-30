@@ -24,6 +24,7 @@ import { ApiKeysModule } from './api-keys/api-keys.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { IncomingWebhooksModule } from './incoming-webhooks/incoming-webhooks.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { ActivitiesModule } from './activities/activities.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
     WebhooksModule,
     IncomingWebhooksModule,
     AuditLogsModule,
+    ActivitiesModule,
   ],
   providers: [
     {

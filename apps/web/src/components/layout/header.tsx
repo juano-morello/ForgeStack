@@ -28,6 +28,7 @@ import { OrgSelector } from '@/components/organizations/org-selector';
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/projects', label: 'Projects' },
+  { href: '/activities', label: 'Activity' },
   { href: '/organizations', label: 'Organizations' },
 ];
 

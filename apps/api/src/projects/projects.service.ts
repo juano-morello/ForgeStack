@@ -13,6 +13,7 @@ import { type TenantContext } from '@forgestack/db';
 import { CreateProjectDto, UpdateProjectDto, QueryProjectsDto } from './dto';
 import { ProjectsRepository } from './projects.repository';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { ActivitiesService } from '../activities/activities.service';
 
 @Injectable()
 export class ProjectsService {
@@ -21,6 +22,7 @@ export class ProjectsService {
   constructor(
     private readonly projectsRepository: ProjectsRepository,
     private readonly auditLogsService: AuditLogsService,
+    private readonly activitiesService: ActivitiesService,
   ) {}
 
   /**
@@ -51,6 +53,17 @@ export class ProjectsService {
         },
       },
     );
+
+    // Create activity (async, non-blocking)
+    await this.activitiesService.create({
+      orgId: ctx.orgId,
+      actorId: ctx.userId,
+      type: 'project.created',
+      title: `created project "${result.name}"`,
+      resourceType: 'project',
+      resourceId: result.id,
+      resourceName: result.name,
+    });
 
     this.logger.log(`Project created: ${result.id}`);
     return result;
@@ -129,6 +142,17 @@ export class ProjectsService {
       },
     );
 
+    // Create activity (async, non-blocking)
+    await this.activitiesService.create({
+      orgId: ctx.orgId,
+      actorId: ctx.userId,
+      type: 'project.updated',
+      title: `updated project "${result.name}"`,
+      resourceType: 'project',
+      resourceId: result.id,
+      resourceName: result.name,
+    });
+
     this.logger.log(`Project ${id} updated`);
     return result;
   }
@@ -169,6 +193,17 @@ export class ProjectsService {
         resourceName: project.name,
       },
     );
+
+    // Create activity (async, non-blocking)
+    await this.activitiesService.create({
+      orgId: ctx.orgId,
+      actorId: ctx.userId,
+      type: 'project.deleted',
+      title: `deleted project "${project.name}"`,
+      resourceType: 'project',
+      resourceId: id,
+      resourceName: project.name,
+    });
 
     this.logger.log(`Project ${id} deleted`);
     return { deleted: true };

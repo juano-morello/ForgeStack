@@ -12,6 +12,7 @@ import {
 import { type TenantContext } from '@forgestack/db';
 import { FilesRepository } from './files.repository';
 import { StorageService } from './storage.service';
+import { ActivitiesService } from '../activities/activities.service';
 import {
   PresignedUrlRequestDto,
   PresignedUrlResponseDto,
@@ -44,6 +45,7 @@ export class FilesService {
   constructor(
     private readonly filesRepository: FilesRepository,
     private readonly storageService: StorageService,
+    private readonly activitiesService: ActivitiesService,
   ) {}
 
   /**
@@ -125,6 +127,19 @@ export class FilesService {
     // Generate download URL
     const url = await this.storageService.getPresignedDownloadUrl(file.key);
 
+    // Create activity (async, non-blocking) - only for attachments
+    if (file.purpose === 'attachment') {
+      await this.activitiesService.create({
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        type: 'file.uploaded',
+        title: `uploaded file "${file.filename}"`,
+        resourceType: 'file',
+        resourceId: file.id,
+        resourceName: file.filename,
+      });
+    }
+
     this.logger.log(`Upload completed for file ${fileId}`);
 
     return {
@@ -166,9 +181,27 @@ export class FilesService {
   async deleteFile(ctx: TenantContext, fileId: string): Promise<{ success: boolean; message: string }> {
     this.logger.log(`Deleting file ${fileId}`);
 
-    const file = await this.filesRepository.softDelete(ctx, fileId);
+    const file = await this.filesRepository.findById(ctx, fileId);
     if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const deletedFile = await this.filesRepository.softDelete(ctx, fileId);
+    if (!deletedFile) {
       throw new NotFoundException('File not found or already deleted');
+    }
+
+    // Create activity (async, non-blocking) - only for attachments
+    if (file.purpose === 'attachment') {
+      await this.activitiesService.create({
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        type: 'file.deleted',
+        title: `deleted file "${file.filename}"`,
+        resourceType: 'file',
+        resourceId: file.id,
+        resourceName: file.filename,
+      });
     }
 
     this.logger.log(`File ${fileId} soft-deleted`);
