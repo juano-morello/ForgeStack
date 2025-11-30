@@ -87,7 +87,19 @@ jobs:
 
       - name: Validate database schema
         working-directory: packages/db
-        run: npx drizzle-kit generate --name=validate 2>&1 | grep -E "^\d+ tables$" || (echo "Schema validation failed - drizzle-kit cannot read schema files" && exit 1)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forgestack_test
+        run: |
+          OUTPUT=$(npx drizzle-kit generate --name=ci_validate 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -qE "^[0-9]+ tables"; then
+            echo "✓ Schema validation passed"
+            # Clean up generated migration file
+            rm -f drizzle/*ci_validate*.sql
+          else
+            echo "✗ Schema validation failed - drizzle-kit cannot read schema files"
+            exit 1
+          fi
 
       - name: Push database schema
         working-directory: packages/db

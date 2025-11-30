@@ -22,6 +22,13 @@
       "when": 1764470894373,
       "tag": "0002_high_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764472633804,
+      "tag": "0003_incoming_webhooks",
+      "breakpoints": true
     }
   ]
 }
