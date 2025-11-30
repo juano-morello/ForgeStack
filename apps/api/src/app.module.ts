@@ -20,6 +20,7 @@ import { MembersModule } from './members/members.module';
 import { QueueModule } from './queue/queue.module';
 import { BillingModule } from './billing/billing.module';
 import { FilesModule } from './files/files.module';
+import { ApiKeysModule } from './api-keys/api-keys.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { FilesModule } from './files/files.module';
     QueueModule,
     BillingModule,
     FilesModule,
+    ApiKeysModule,
   ],
   providers: [
     {

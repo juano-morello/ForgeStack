@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, LayoutDashboard, FolderKanban, Building2, CreditCard } from 'lucide-react';
+import { Menu, LayoutDashboard, FolderKanban, Building2, CreditCard, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -24,6 +24,7 @@ const navLinks = [
   { href: '/projects', label: 'Projects', icon: FolderKanban },
   { href: '/organizations', label: 'Organizations', icon: Building2 },
   { href: '/settings/billing', label: 'Billing', icon: CreditCard },
+  { href: '/settings/api-keys', label: 'API Keys', icon: Key },
 ];
 
 interface MobileNavProps {

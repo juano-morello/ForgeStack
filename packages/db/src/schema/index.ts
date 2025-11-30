@@ -25,6 +25,7 @@ export { customers, customersRelations } from './customers';
 export { subscriptions, subscriptionsRelations } from './subscriptions';
 export { billingEvents, billingEventsRelations } from './billing-events';
 export { files, filesRelations } from './files';
+export { apiKeys, apiKeysRelations } from './api-keys';
 
 // Types
 export type {
@@ -41,4 +42,5 @@ export type { Customer, NewCustomer } from './customers';
 export type { Subscription, NewSubscription } from './subscriptions';
 export type { BillingEvent, NewBillingEvent } from './billing-events';
 export type { File, NewFile } from './files';
+export type { ApiKey, NewApiKey } from './api-keys';
 

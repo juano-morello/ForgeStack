@@ -50,6 +50,8 @@ export {
   billingEventsRelations,
   files,
   filesRelations,
+  apiKeys,
+  apiKeysRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -73,5 +75,7 @@ export type {
   NewBillingEvent,
   File,
   NewFile,
+  ApiKey,
+  NewApiKey,
 } from './schema/index.js';
 
