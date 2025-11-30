@@ -15,7 +15,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { type TenantContext, type OrgRole } from '@forgestack/db';
+import { type TenantContext, type OrgRole, eq, subscriptions, withServiceContext } from '@forgestack/db';
 import { UUID_REGEX } from '@forgestack/shared';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { NO_ORG_REQUIRED_KEY } from '../decorators/no-org-required.decorator';
@@ -85,14 +85,40 @@ export class TenantContextGuard implements CanActivate {
     }
 
     // Attach context to request
-    const tenantContext: TenantContext = {
+    const tenantContext: TenantContext & { plan?: string } = {
       orgId,
       userId,
       role: membership.role,
     };
     request.tenantContext = tenantContext;
 
+    // Fetch and attach plan for rate limiting (non-blocking, defaults to 'free' on error)
+    this.getOrgPlan(orgId)
+      .then((plan) => {
+        request.tenantContext.plan = plan;
+      })
+      .catch((err) => {
+        this.logger.debug(`Could not fetch plan for org ${orgId}: ${err.message}`);
+        request.tenantContext.plan = 'free';
+      });
+
     return true;
+  }
+
+  /**
+   * Get organization's subscription plan
+   */
+  private async getOrgPlan(orgId: string): Promise<string> {
+    const subscription = await withServiceContext('TenantContextGuard.getOrgPlan', async (tx) => {
+      const [sub] = await tx
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.orgId, orgId))
+        .limit(1);
+      return sub;
+    });
+
+    return subscription?.plan || 'free';
   }
 
   /**

@@ -27,6 +27,7 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
+import { RateLimitingModule } from './rate-limiting/rate-limiting.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
     }),
     AuthModule, // Must be imported before CoreModule for guard injection
     CoreModule,
+    RateLimitingModule, // Must be imported early for guard registration
     HealthModule,
     OrganizationsModule,
     ProjectsModule,
