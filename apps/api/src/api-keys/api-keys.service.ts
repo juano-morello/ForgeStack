@@ -13,12 +13,16 @@ import {
   extractKeyPrefix,
   validateScopes,
 } from './key-utils';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class ApiKeysService {
   private readonly logger = new Logger(ApiKeysService.name);
 
-  constructor(private readonly apiKeysRepository: ApiKeysRepository) {}
+  constructor(
+    private readonly apiKeysRepository: ApiKeysRepository,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   /**
    * Create a new API key
@@ -46,6 +50,25 @@ export class ApiKeysService {
       expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
       createdBy: ctx.userId,
     });
+
+    // Log audit event (don't log the actual key value)
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'api_key.created',
+        resourceType: 'api_key',
+        resourceId: apiKey.id,
+        resourceName: apiKey.name,
+        metadata: {
+          keyPrefix: apiKey.keyPrefix,
+          scopes: apiKey.scopes,
+        },
+      },
+    );
 
     // Return with full key (only time it's shown)
     return {
@@ -149,6 +172,24 @@ export class ApiKeysService {
       throw new NotFoundException('API key not found');
     }
 
+    // Log audit event
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'api_key.revoked',
+        resourceType: 'api_key',
+        resourceId: key.id,
+        resourceName: key.name,
+        metadata: {
+          keyPrefix: key.keyPrefix,
+        },
+      },
+    );
+
     return {
       message: 'API key has been revoked',
       revokedAt: key.revokedAt!.toISOString(),
@@ -177,6 +218,26 @@ export class ApiKeysService {
 
     // Revoke old key
     await this.apiKeysRepository.revoke(ctx, id);
+
+    // Log audit event for rotation
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'api_key.rotated',
+        resourceType: 'api_key',
+        resourceId: newKey.id,
+        resourceName: newKey.name,
+        metadata: {
+          previousKeyId: id,
+          previousKeyPrefix: oldKey.keyPrefix,
+          newKeyPrefix: newKey.keyPrefix,
+        },
+      },
+    );
 
     return {
       ...newKey,

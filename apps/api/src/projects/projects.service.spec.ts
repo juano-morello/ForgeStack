@@ -19,6 +19,7 @@ jest.mock('./projects.repository', () => ({
 }));
 
 import { ProjectsRepository } from './projects.repository';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 // Define TenantContext type locally for tests
 interface TenantContext {
@@ -43,12 +44,21 @@ describe('ProjectsService', () => {
       delete: jest.fn(),
     };
 
+    // Create mock audit logs service
+    const mockAuditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProjectsService,
         {
           provide: ProjectsRepository,
           useValue: mockRepository,
+        },
+        {
+          provide: AuditLogsService,
+          useValue: mockAuditLogsService,
         },
       ],
     }).compile();
@@ -149,13 +159,17 @@ describe('ProjectsService', () => {
     it('should update and return the project', async () => {
       const projectId = mockUUID();
       const dto = { name: 'Updated Project', description: 'Updated description' };
-      const mockProject = createMockProject({ id: projectId, name: dto.name });
+      const beforeProject = createMockProject({ id: projectId, name: 'Original', description: 'Original desc' });
+      const mockProject = createMockProject({ id: projectId, name: dto.name, description: dto.description });
 
+      // Mock findById for getting the "before" state
+      repository.findById.mockResolvedValueOnce(beforeProject);
       repository.update.mockResolvedValueOnce(mockProject);
 
       const result = await service.update(ownerCtx, projectId, dto);
 
       expect(result).toEqual(mockProject);
+      expect(repository.findById).toHaveBeenCalledWith(ownerCtx, projectId);
       expect(repository.update).toHaveBeenCalledWith(ownerCtx, projectId, {
         name: dto.name,
         description: dto.description,
@@ -166,7 +180,8 @@ describe('ProjectsService', () => {
       const projectId = mockUUID();
       const dto = { name: 'Updated Project' };
 
-      repository.update.mockResolvedValueOnce(null);
+      // Project not found in findById
+      repository.findById.mockResolvedValueOnce(null);
 
       await expect(service.update(ownerCtx, projectId, dto)).rejects.toThrow(
         NotFoundException,
@@ -190,18 +205,22 @@ describe('ProjectsService', () => {
       const projectId = mockUUID();
       const mockProject = createMockProject({ id: projectId });
 
+      // Mock findById for getting project details before deletion
+      repository.findById.mockResolvedValueOnce(mockProject);
       repository.delete.mockResolvedValueOnce(mockProject);
 
       const result = await service.remove(ownerCtx, projectId);
 
       expect(result).toEqual({ deleted: true });
+      expect(repository.findById).toHaveBeenCalledWith(ownerCtx, projectId);
       expect(repository.delete).toHaveBeenCalledWith(ownerCtx, projectId);
     });
 
     it('should throw NotFoundException when project not found', async () => {
       const projectId = mockUUID();
 
-      repository.delete.mockResolvedValueOnce(null);
+      // Project not found in findById
+      repository.findById.mockResolvedValueOnce(null);
 
       await expect(service.remove(ownerCtx, projectId)).rejects.toThrow(
         NotFoundException,

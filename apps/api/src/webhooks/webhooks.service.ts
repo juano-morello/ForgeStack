@@ -17,6 +17,7 @@ import { CreateEndpointDto, UpdateEndpointDto, DeliveryQueryDto } from './dto';
 import { generateWebhookSecret } from './webhook-signing';
 import type { WebhookEventType, WebhookPayload } from './webhook-events';
 import { randomBytes } from 'crypto';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 const MAX_ENDPOINTS_PER_ORG = 10;
 const WEBHOOK_DELIVERY_QUEUE = 'webhook-delivery';
@@ -27,7 +28,8 @@ export class WebhooksService {
 
   constructor(
     private readonly webhooksRepository: WebhooksRepository,
-    private readonly queueService: QueueService
+    private readonly queueService: QueueService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   /**

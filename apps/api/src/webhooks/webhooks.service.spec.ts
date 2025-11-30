@@ -3,6 +3,7 @@ import { ForbiddenException, BadRequestException } from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
 import { WebhooksRepository } from './webhooks.repository';
 import { QueueService } from '../queue/queue.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 // Mock the @forgestack/db module
 jest.mock('@forgestack/db', () => ({
@@ -64,6 +65,10 @@ describe('WebhooksService', () => {
       addJob: jest.fn(),
     };
 
+    const mockAuditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WebhooksService,
@@ -74,6 +79,10 @@ describe('WebhooksService', () => {
         {
           provide: QueueService,
           useValue: mockQueueService,
+        },
+        {
+          provide: AuditLogsService,
+          useValue: mockAuditLogsService,
         },
       ],
     }).compile();

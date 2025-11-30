@@ -12,12 +12,16 @@ import {
 import { type TenantContext } from '@forgestack/db';
 import { CreateProjectDto, UpdateProjectDto, QueryProjectsDto } from './dto';
 import { ProjectsRepository } from './projects.repository';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
 
-  constructor(private readonly projectsRepository: ProjectsRepository) {}
+  constructor(
+    private readonly projectsRepository: ProjectsRepository,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   /**
    * Create a new project
@@ -29,6 +33,24 @@ export class ProjectsService {
       name: dto.name,
       description: dto.description,
     });
+
+    // Log audit event
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'project.created',
+        resourceType: 'project',
+        resourceId: result.id,
+        resourceName: result.name,
+        metadata: {
+          description: result.description,
+        },
+      },
+    );
 
     this.logger.log(`Project created: ${result.id}`);
     return result;
@@ -67,6 +89,12 @@ export class ProjectsService {
   async update(ctx: TenantContext, id: string, dto: UpdateProjectDto) {
     this.logger.log(`Updating project ${id} in org ${ctx.orgId}`);
 
+    // Get existing project for changes tracking
+    const before = await this.projectsRepository.findById(ctx, id);
+    if (!before) {
+      throw new NotFoundException('Project not found');
+    }
+
     const result = await this.projectsRepository.update(ctx, id, {
       name: dto.name,
       description: dto.description,
@@ -75,6 +103,31 @@ export class ProjectsService {
     if (!result) {
       throw new NotFoundException('Project not found');
     }
+
+    // Log audit event with changes
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'project.updated',
+        resourceType: 'project',
+        resourceId: result.id,
+        resourceName: result.name,
+        changes: {
+          before: {
+            name: before.name,
+            description: before.description,
+          },
+          after: {
+            name: result.name,
+            description: result.description,
+          },
+        },
+      },
+    );
 
     this.logger.log(`Project ${id} updated`);
     return result;
@@ -91,10 +144,31 @@ export class ProjectsService {
       throw new ForbiddenException('Only owners can delete projects');
     }
 
+    // Get project details before deletion
+    const project = await this.projectsRepository.findById(ctx, id);
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
     const result = await this.projectsRepository.delete(ctx, id);
     if (!result) {
       throw new NotFoundException('Project not found');
     }
+
+    // Log audit event
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'project.deleted',
+        resourceType: 'project',
+        resourceId: id,
+        resourceName: project.name,
+      },
+    );
 
     this.logger.log(`Project ${id} deleted`);
     return { deleted: true };

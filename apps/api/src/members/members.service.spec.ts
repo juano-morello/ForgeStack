@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { MembersService } from './members.service';
 import { MembersRepository } from './members.repository';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { createMockTenantContext, mockUUID } from '../../test/test-utils';
 
 // Mock the @forgestack/db module
@@ -42,12 +43,20 @@ describe('MembersService', () => {
       countOwners: jest.fn(),
     };
 
+    const mockAuditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MembersService,
         {
           provide: MembersRepository,
           useValue: mockRepository,
+        },
+        {
+          provide: AuditLogsService,
+          useValue: mockAuditLogsService,
         },
       ],
     }).compile();

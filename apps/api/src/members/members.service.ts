@@ -19,12 +19,16 @@ import {
 } from '@forgestack/db';
 import { MembersRepository } from './members.repository';
 import { UpdateMemberRoleDto, QueryMembersDto } from './dto';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class MembersService {
   private readonly logger = new Logger(MembersService.name);
 
-  constructor(private readonly membersRepository: MembersRepository) {}
+  constructor(
+    private readonly membersRepository: MembersRepository,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   /**
    * List all members of an organization (any member can view)
@@ -86,6 +90,25 @@ export class MembersService {
 
     await this.membersRepository.updateRole(ctx.orgId, targetUserId, dto.role);
 
+    // Log audit event
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'member.role_changed',
+        resourceType: 'member',
+        resourceId: targetUserId,
+        resourceName: targetMember.name || targetMember.email,
+        changes: {
+          before: { role: targetMember.role },
+          after: { role: dto.role },
+        },
+      },
+    );
+
     this.logger.log(
       `Role updated for member ${targetUserId} in org ${ctx.orgId}`,
     );
@@ -137,6 +160,24 @@ export class MembersService {
     }
 
     await this.membersRepository.delete(ctx.orgId, targetUserId);
+
+    // Log audit event
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'member.removed',
+        resourceType: 'member',
+        resourceId: targetUserId,
+        resourceName: targetMember.name || targetMember.email,
+        metadata: {
+          role: targetMember.role,
+        },
+      },
+    );
 
     this.logger.log(`Member ${targetUserId} removed from org ${ctx.orgId}`);
   }

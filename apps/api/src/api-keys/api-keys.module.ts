@@ -8,8 +8,10 @@ import { ApiKeysController } from './api-keys.controller';
 import { ApiKeysService } from './api-keys.service';
 import { ApiKeysRepository } from './api-keys.repository';
 import { ApiKeyGuard } from './api-key.guard';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
+  imports: [AuditLogsModule],
   controllers: [ApiKeysController],
   providers: [ApiKeysService, ApiKeysRepository, ApiKeyGuard],
   exports: [ApiKeysService, ApiKeyGuard],

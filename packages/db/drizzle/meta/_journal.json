@@ -29,6 +29,13 @@
       "when": 1764472633804,
       "tag": "0003_incoming_webhooks",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764511759659,
+      "tag": "0004_audit_logs",
+      "breakpoints": true
     }
   ]
 }

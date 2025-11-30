@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, LayoutDashboard, FolderKanban, Building2, CreditCard, Key, Webhook } from 'lucide-react';
+import { Menu, LayoutDashboard, FolderKanban, Building2, CreditCard, Key, Webhook, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -26,6 +26,7 @@ const navLinks = [
   { href: '/settings/billing', label: 'Billing', icon: CreditCard },
   { href: '/settings/api-keys', label: 'API Keys', icon: Key },
   { href: '/settings/webhooks', label: 'Webhooks', icon: Webhook },
+  { href: '/settings/audit-logs', label: 'Audit Logs', icon: ScrollText },
 ];
 
 interface MobileNavProps {

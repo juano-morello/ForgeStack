@@ -6,5 +6,6 @@ export const QUEUE_NAMES = {
   CLEANUP_DELETED_FILES: 'cleanup-deleted-files',
   WEBHOOK_DELIVERY: 'webhook-delivery',
   INCOMING_WEBHOOK_PROCESSING: 'incoming-webhook-processing',
+  AUDIT_LOGS: 'audit-logs',
 } as const;
 

@@ -6,6 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ApiKeysService } from './api-keys.service';
 import { ApiKeysRepository } from './api-keys.repository';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import * as keyUtils from './key-utils';
 
 // Mock @forgestack/db
@@ -63,12 +64,20 @@ describe('ApiKeysService', () => {
       updateLastUsed: jest.fn(),
     };
 
+    const mockAuditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ApiKeysService,
         {
           provide: ApiKeysRepository,
           useValue: mockRepository,
+        },
+        {
+          provide: AuditLogsService,
+          useValue: mockAuditLogsService,
         },
       ],
     }).compile();

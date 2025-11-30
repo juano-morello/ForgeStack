@@ -7,8 +7,10 @@ import { Module } from '@nestjs/common';
 import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { MembersRepository } from './members.repository';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
+  imports: [AuditLogsModule],
   controllers: [MembersController],
   providers: [MembersService, MembersRepository],
   exports: [MembersService],

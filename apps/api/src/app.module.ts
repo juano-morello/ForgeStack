@@ -23,6 +23,7 @@ import { FilesModule } from './files/files.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { IncomingWebhooksModule } from './incoming-webhooks/incoming-webhooks.module';
+import { AuditLogsModule } from './audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { IncomingWebhooksModule } from './incoming-webhooks/incoming-webhooks.mo
     ApiKeysModule,
     WebhooksModule,
     IncomingWebhooksModule,
+    AuditLogsModule,
   ],
   providers: [
     {
