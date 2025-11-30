@@ -38,6 +38,15 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 | 🛡️ **Row-Level Security** | PostgreSQL RLS policies for data protection |
 | 👥 **Team Management** | Invite members, manage roles (OWNER/MEMBER) |
 | 📧 **Email Integration** | Transactional emails with [Resend](https://resend.com) |
+| 💳 **Billing & Subscriptions** | Stripe integration with checkout and customer portal |
+| 📁 **File Uploads** | S3-compatible storage (Cloudflare R2) with signed URLs |
+| 🔑 **API Keys** | Generate, manage, and authenticate with API keys |
+| 🪝 **Webhooks** | Outgoing events + incoming Stripe webhook handling |
+| 📋 **Audit Logs** | Immutable compliance logs with export |
+| 📊 **Activity Feed** | Real-time timeline with aggregation |
+| 🔔 **Notifications** | In-app and email notifications |
+| 🚩 **Feature Flags** | Plan-based gating, rollouts, overrides |
+| ⚡ **Rate Limiting** | Plan-based API rate limits with Redis |
 | 🎨 **Modern UI** | Next.js 16 + React 19 + Tailwind CSS + shadcn/ui |
 | 📦 **Monorepo** | pnpm workspaces + Turborepo |
 | ✅ **Tested** | 95%+ coverage with Jest, Vitest, and Playwright |
@@ -54,19 +63,25 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 │                     Next.js 16 (App Router)                             │
 │            React 19.2 • Tailwind CSS • shadcn/ui                        │
 └───────────────────────────────┬─────────────────────────────────────────┘
-                                │ HTTP/REST + Cookies
+                                │ HTTP/REST + Cookies + API Keys
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                               API                                        │
 │                         NestJS 11                                        │
-│           Guards • Services • Repositories • DTOs                        │
-└──────────────────┬────────────────────────────────┬─────────────────────┘
-                   │                                │
-                   ▼                                ▼
-┌──────────────────────────────┐    ┌────────────────────────────────────┐
-│        PostgreSQL 16         │    │            Redis 7                  │
-│   Drizzle ORM • RLS Policies │    │   BullMQ • Session Cache           │
-└──────────────────────────────┘    └────────────────────────────────────┘
+│    Auth • Rate Limiting • Guards • Services • Repositories • DTOs       │
+└──────┬─────────────────┬──────────────────┬────────────────┬────────────┘
+       │                 │                  │                │
+       ▼                 ▼                  ▼                ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+│ PostgreSQL   │  │    Redis     │  │   Stripe     │  │  Cloudflare R2   │
+│ Drizzle+RLS  │  │ BullMQ+Cache │  │   Billing    │  │  File Storage    │
+└──────────────┘  └──────────────┘  └──────────────┘  └──────────────────┘
+                          │
+                          ▼
+                  ┌──────────────┐
+                  │   Worker     │
+                  │ Emails/Jobs  │
+                  └──────────────┘
 ```
 
 ### Monorepo Structure
@@ -172,14 +187,23 @@ ForgeStack/
 ├── apps/
 │   ├── api/
 │   │   ├── src/
+│   │   │   ├── activities/        # Activity feed module
+│   │   │   ├── api-keys/          # API key management
+│   │   │   ├── audit-logs/        # Compliance audit logs
 │   │   │   ├── auth/              # Authentication module
+│   │   │   ├── billing/           # Stripe billing integration
 │   │   │   ├── core/              # Guards, filters, interceptors
+│   │   │   ├── feature-flags/     # Feature flag management
+│   │   │   ├── files/             # File upload (R2/S3)
 │   │   │   ├── health/            # Health check endpoint
 │   │   │   ├── invitations/       # Member invitation system
 │   │   │   ├── members/           # Organization members
+│   │   │   ├── notifications/     # In-app & email notifications
 │   │   │   ├── organizations/     # Organization CRUD
 │   │   │   ├── projects/          # Projects CRUD
-│   │   │   └── queue/             # BullMQ queue service
+│   │   │   ├── queue/             # BullMQ queue service
+│   │   │   ├── rate-limiting/     # API rate limiting
+│   │   │   └── webhooks/          # Webhook endpoints & delivery
 │   │   └── test/                  # Test utilities & integration tests
 │   │
 │   ├── web/
@@ -193,7 +217,7 @@ ForgeStack/
 │   │
 │   └── worker/
 │       └── src/
-│           ├── handlers/          # Job handlers
+│           ├── handlers/          # Job handlers (email, webhooks)
 │           └── worker.ts          # BullMQ worker setup
 │
 ├── packages/
@@ -265,7 +289,7 @@ Run from the **root directory** unless otherwise noted.
 # Database
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/forgestack_dev"
 
-# Redis
+# Redis (required for BullMQ, rate limiting, caching)
 REDIS_URL="redis://localhost:6379"
 
 # Authentication
@@ -278,6 +302,26 @@ EMAIL_FROM="noreply@yourdomain.com"
 
 # Frontend URL (for CORS)
 FRONTEND_URL="http://localhost:3000"
+
+# --- V2 Features ---
+
+# Stripe Billing
+STRIPE_SECRET_KEY="sk_test_xxxxxxxxxxxx"
+STRIPE_WEBHOOK_SECRET="whsec_xxxxxxxxxxxx"
+STRIPE_PRICE_ID_STARTER="price_xxxxxxxxxxxx"
+STRIPE_PRICE_ID_PRO="price_xxxxxxxxxxxx"
+STRIPE_PRICE_ID_ENTERPRISE="price_xxxxxxxxxxxx"
+
+# Cloudflare R2 (S3-compatible storage)
+R2_ACCOUNT_ID="your-account-id"
+R2_ACCESS_KEY_ID="your-access-key"
+R2_SECRET_ACCESS_KEY="your-secret-key"
+R2_BUCKET_NAME="forgestack-files"
+R2_PUBLIC_URL="https://files.yourdomain.com"
+
+# Rate Limiting
+RATE_LIMIT_ENABLED="true"
+RATE_LIMIT_FAIL_OPEN="true"
 ```
 
 ### Web (`apps/web/.env`)
@@ -418,6 +462,189 @@ All protected endpoints require:
 | `POST` | `/invitations/decline` | Decline invite | Yes* |
 
 > *Endpoints marked with `*` do not require `X-Org-Id` header
+
+---
+
+## 🆕 V2 Features
+
+ForgeStack V2 introduces enterprise-grade features for production SaaS applications.
+
+### 💳 Billing & Subscriptions (Stripe)
+
+Full Stripe integration for subscription management:
+
+| Feature | Description |
+|---------|-------------|
+| **Subscription Plans** | Free, Starter, Pro, Enterprise tiers |
+| **Checkout** | Stripe Checkout for seamless payments |
+| **Customer Portal** | Self-service subscription management |
+| **Webhook Handling** | Automatic subscription sync |
+| **Usage Metering** | Track and bill by usage (optional) |
+
+```typescript
+// Create checkout session
+const session = await billingService.createCheckoutSession(orgId, 'pro');
+
+// Check subscription status
+const subscription = await billingService.getSubscription(orgId);
+```
+
+### 📁 File Uploads (Cloudflare R2)
+
+S3-compatible file storage with security features:
+
+| Feature | Description |
+|---------|-------------|
+| **Signed URLs** | Secure upload/download URLs |
+| **File Limits** | Plan-based storage limits |
+| **MIME Validation** | Whitelist allowed file types |
+| **Org Isolation** | Files scoped to organizations |
+
+```typescript
+// Get signed upload URL
+const { uploadUrl, fileId } = await filesService.getUploadUrl(ctx, 'avatar.jpg');
+
+// Get signed download URL
+const downloadUrl = await filesService.getDownloadUrl(ctx, fileId);
+```
+
+### 🔑 API Keys
+
+Secure API key management for external integrations:
+
+| Feature | Description |
+|---------|-------------|
+| **Key Generation** | Secure random key generation |
+| **Scoped Permissions** | Read, write, admin scopes |
+| **Key Rotation** | Rotate without downtime |
+| **Usage Tracking** | Track last used timestamp |
+
+```typescript
+// Authenticate with API key
+// Header: X-API-Key: fsk_xxxxxxxxxxxx
+const { org, permissions } = await apiKeyService.validate(key);
+```
+
+### 🪝 Webhooks
+
+**Outgoing Webhooks** — Send events to external endpoints:
+
+| Feature | Description |
+|---------|-------------|
+| **Event Types** | project.created, member.invited, etc. |
+| **Retry Logic** | Exponential backoff (3 attempts) |
+| **Signatures** | HMAC-SHA256 for verification |
+| **Delivery Logs** | Track delivery status |
+
+```typescript
+// Register webhook endpoint
+await webhookService.createEndpoint(ctx, {
+  url: 'https://example.com/webhook',
+  events: ['project.created', 'member.invited'],
+});
+```
+
+**Incoming Webhooks** — Receive webhooks from Stripe:
+
+| Feature | Description |
+|---------|-------------|
+| **Signature Verification** | Verify Stripe signatures |
+| **Idempotency** | Prevent duplicate processing |
+| **Event Storage** | Store for debugging |
+
+### 📋 Audit Logs
+
+Immutable compliance logging for security and auditing:
+
+| Feature | Description |
+|---------|-------------|
+| **Immutable** | Append-only, no updates/deletes |
+| **Comprehensive** | Who, what, when, where |
+| **Searchable** | Filter by actor, action, resource |
+| **Export** | CSV/JSON export for compliance |
+
+```typescript
+// Automatic logging via AuditLogsService
+await auditLogsService.log(ctx, {
+  action: 'member.role_changed',
+  resourceType: 'member',
+  resourceId: userId,
+  metadata: { oldRole: 'MEMBER', newRole: 'OWNER' },
+});
+```
+
+### 📊 Activity Feed
+
+Real-time activity timeline for users:
+
+| Feature | Description |
+|---------|-------------|
+| **Timeline** | Chronological activity stream |
+| **Aggregation** | Group related activities |
+| **Filtering** | By type, date, resource |
+| **Pagination** | Cursor-based pagination |
+
+### 🔔 Notifications
+
+In-app and email notifications with user preferences:
+
+| Feature | Description |
+|---------|-------------|
+| **In-App** | Real-time notification bell |
+| **Email** | Configurable email delivery |
+| **Preferences** | Per-type enable/disable |
+| **Priority** | High, medium, low priority |
+
+**Notification Types:**
+- `member.invited`, `member.role_changed` (High)
+- `project.shared`, `webhook.failed` (Medium)
+- `member.joined`, `project.created` (Low)
+
+### 🚩 Feature Flags
+
+Dynamic feature gating without deployments:
+
+| Feature | Description |
+|---------|-------------|
+| **Plan-Based** | Enable features by subscription |
+| **Percentage** | Gradual rollout (0-100%) |
+| **Overrides** | Per-org enable/disable |
+| **Caching** | Fast flag evaluation |
+
+```typescript
+// Check if feature is enabled
+if (await featureFlags.isEnabled(ctx, 'advanced-analytics')) {
+  // Show advanced analytics
+}
+```
+
+**Predefined Flags:**
+| Flag | Type | Plans |
+|------|------|-------|
+| `advanced-analytics` | plan | pro, enterprise |
+| `api-access` | plan | pro, enterprise |
+| `audit-logs` | plan | enterprise |
+| `sso` | plan | enterprise |
+| `beta-features` | boolean | (manual) |
+
+### ⚡ Rate Limiting
+
+Plan-based API rate limiting with Redis:
+
+| Plan | Per Minute | Per Hour | Per Day |
+|------|------------|----------|---------|
+| Free | 100 | 1,000 | 10,000 |
+| Starter | 500 | 10,000 | 100,000 |
+| Pro | 2,000 | 50,000 | 500,000 |
+| Enterprise | 10,000 | Unlimited | Unlimited |
+
+**Response Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1700000000
+Retry-After: 45  (only on 429)
+```
 
 ---
 
