@@ -37,6 +37,12 @@ export {
   notificationPreferences,
   notificationPreferencesRelations,
 } from './notifications';
+export {
+  featureFlags,
+  featureFlagsRelations,
+  organizationFeatureOverrides,
+  organizationFeatureOverridesRelations,
+} from './feature-flags';
 
 // Types
 export type {
@@ -65,4 +71,10 @@ export type {
   NotificationPreference,
   NewNotificationPreference,
 } from './notifications';
+export type {
+  FeatureFlag,
+  NewFeatureFlag,
+  OrganizationFeatureOverride,
+  NewOrganizationFeatureOverride,
+} from './feature-flags';
 

@@ -8,7 +8,7 @@ import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID } from 'crypto';
-import { users, organizations, organizationMembers, projects } from './schema';
+import { users, organizations, organizationMembers, projects, featureFlags } from './schema';
 
 async function seed() {
   const pool = new Pool({
@@ -82,6 +82,73 @@ async function seed() {
     }
   } else {
     console.log('User already exists, skipping seed...');
+  }
+
+  // Seed feature flags
+  console.log('Seeding feature flags...');
+  const defaultFlags = [
+    {
+      key: 'advanced-analytics',
+      name: 'Advanced Analytics',
+      description: 'Access to advanced analytics dashboards and reports',
+      type: 'plan',
+      plans: ['pro', 'enterprise'],
+      defaultValue: false,
+      enabled: true,
+    },
+    {
+      key: 'api-access',
+      name: 'API Access',
+      description: 'Access to REST API with API keys',
+      type: 'plan',
+      plans: ['pro', 'enterprise'],
+      defaultValue: false,
+      enabled: true,
+    },
+    {
+      key: 'custom-webhooks',
+      name: 'Custom Webhooks',
+      description: 'Create custom outgoing webhook endpoints',
+      type: 'plan',
+      plans: ['pro', 'enterprise'],
+      defaultValue: false,
+      enabled: true,
+    },
+    {
+      key: 'audit-logs',
+      name: 'Audit Logs',
+      description: 'Access to audit log history and exports',
+      type: 'plan',
+      plans: ['enterprise'],
+      defaultValue: false,
+      enabled: true,
+    },
+    {
+      key: 'sso',
+      name: 'Single Sign-On',
+      description: 'SAML/OIDC single sign-on integration',
+      type: 'plan',
+      plans: ['enterprise'],
+      defaultValue: false,
+      enabled: true,
+    },
+    {
+      key: 'beta-features',
+      name: 'Beta Features',
+      description: 'Access to experimental features (manual enablement)',
+      type: 'boolean',
+      plans: null,
+      defaultValue: false,
+      enabled: true,
+    },
+  ];
+
+  for (const flag of defaultFlags) {
+    await db
+      .insert(featureFlags)
+      .values(flag)
+      .onConflictDoNothing();
+    console.log('Created feature flag:', flag.key);
   }
 
   console.log('Seeding complete!');

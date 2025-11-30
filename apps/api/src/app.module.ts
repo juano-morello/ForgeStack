@@ -26,6 +26,7 @@ import { IncomingWebhooksModule } from './incoming-webhooks/incoming-webhooks.mo
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AuditLogsModule,
     ActivitiesModule,
     NotificationsModule,
+    FeatureFlagsModule,
   ],
   providers: [
     {

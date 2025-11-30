@@ -66,6 +66,10 @@ export {
   notificationsRelations,
   notificationPreferences,
   notificationPreferencesRelations,
+  featureFlags,
+  featureFlagsRelations,
+  organizationFeatureOverrides,
+  organizationFeatureOverridesRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -105,5 +109,9 @@ export type {
   NewNotification,
   NotificationPreference,
   NewNotificationPreference,
+  FeatureFlag,
+  NewFeatureFlag,
+  OrganizationFeatureOverride,
+  NewOrganizationFeatureOverride,
 } from './schema/index.js';
 
