@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, bigint, timestamp, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from './organizations.js';
-import { users } from './users.js';
+import { organizations } from './organizations';
+import { users } from './users';
 
 /**
  * Files table - stores metadata for uploaded files in R2/S3

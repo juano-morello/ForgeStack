@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
-import { organizations } from './organizations.js';
-import { users } from './users.js';
+import { organizations } from './organizations';
+import { users } from './users';
 
 /**
  * Webhook endpoints table - stores webhook endpoint configurations

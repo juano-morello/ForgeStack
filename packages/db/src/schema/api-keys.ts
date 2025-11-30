@@ -5,8 +5,8 @@
 
 import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { organizations } from './organizations.js';
-import { users } from './users.js';
+import { organizations } from './organizations';
+import { users } from './users';
 
 /**
  * API Keys table - org-scoped API keys for programmatic access
