@@ -8,11 +8,12 @@ export const NOTIFICATION_TYPES = {
   'member.invited': { priority: 'high', defaultEmail: true, defaultInApp: true },
   'member.role_changed': { priority: 'high', defaultEmail: true, defaultInApp: true },
   'billing.payment_failed': { priority: 'high', defaultEmail: true, defaultInApp: true },
-  
+  'billing.subscription_cancelled': { priority: 'high', defaultEmail: true, defaultInApp: true },
+
   // Medium Priority (in-app, email optional)
   'project.shared': { priority: 'medium', defaultEmail: false, defaultInApp: true },
   'webhook.failed': { priority: 'medium', defaultEmail: false, defaultInApp: true },
-  
+
   // Low Priority (in-app only)
   'member.joined': { priority: 'low', defaultEmail: false, defaultInApp: true },
   'project.created': { priority: 'low', defaultEmail: false, defaultInApp: true },

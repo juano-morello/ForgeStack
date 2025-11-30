@@ -4,14 +4,23 @@
  */
 
 import { Module, Global, forwardRef } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TenantContextGuard } from './guards/tenant-context.guard';
+import { RequireRoleGuard } from './guards/require-role.guard';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { OrganizationsModule } from '../organizations/organizations.module';
 
 @Global()
 @Module({
   imports: [forwardRef(() => OrganizationsModule)],
-  providers: [TenantContextGuard, LoggingInterceptor],
+  providers: [
+    TenantContextGuard,
+    LoggingInterceptor,
+    {
+      provide: APP_GUARD,
+      useClass: RequireRoleGuard,
+    },
+  ],
   exports: [TenantContextGuard, LoggingInterceptor],
 })
 export class CoreModule {}

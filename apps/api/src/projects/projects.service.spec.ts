@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { ActivitiesService } from '../activities/activities.service';
 import {
@@ -33,7 +33,6 @@ describe('ProjectsService', () => {
   let service: ProjectsService;
   let repository: jest.Mocked<ProjectsRepository>;
   let ownerCtx: TenantContext;
-  let memberCtx: TenantContext;
 
   beforeEach(async () => {
     // Create mock repository
@@ -76,7 +75,6 @@ describe('ProjectsService', () => {
     service = module.get<ProjectsService>(ProjectsService);
     repository = module.get(ProjectsRepository);
     ownerCtx = createMockTenantContext({ role: 'OWNER' }) as TenantContext;
-    memberCtx = createMockTenantContext({ role: 'MEMBER' }) as TenantContext;
   });
 
   describe('create', () => {
@@ -200,16 +198,7 @@ describe('ProjectsService', () => {
   });
 
   describe('remove', () => {
-    it('should throw ForbiddenException for non-OWNER', async () => {
-      const projectId = mockUUID();
-
-      await expect(service.remove(memberCtx, projectId)).rejects.toThrow(
-        ForbiddenException,
-      );
-
-      // Repository should not be called
-      expect(repository.delete).not.toHaveBeenCalled();
-    });
+    // Note: Role check is now handled by @RequireRole('OWNER') decorator at controller level
 
     it('should delete project for OWNER', async () => {
       const projectId = mockUUID();

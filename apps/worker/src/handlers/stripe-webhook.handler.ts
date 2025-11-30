@@ -10,7 +10,9 @@ import {
   subscriptions,
   billingEvents,
   organizations,
+  organizationMembers,
   eq,
+  and,
 } from '@forgestack/db';
 import type Stripe from 'stripe';
 import { NotificationEmailJobData } from './notification-email.handler';
@@ -25,21 +27,71 @@ export interface StripeWebhookJobData {
 }
 
 /**
- * Map Stripe price IDs to plan names
- * TODO: Move to configuration
- */
-const PRICE_TO_PLAN_MAP: Record<string, string> = {
-  // Add your Stripe price IDs here
-  // 'price_xxx': 'basic',
-  // 'price_yyy': 'pro',
-  // 'price_zzz': 'enterprise',
-};
-
-/**
  * Get plan name from Stripe price ID
  */
 function getPlanFromPriceId(priceId: string): string {
-  return PRICE_TO_PLAN_MAP[priceId] || 'unknown';
+  return config.stripe.priceToPlanMap[priceId] || 'unknown';
+}
+
+/**
+ * Get all owner user IDs for an organization
+ */
+async function getOrgOwnerUserIds(orgId: string): Promise<string[]> {
+  return withServiceContext('StripeWebhook.getOrgOwnerUserIds', async (tx) => {
+    const owners = await tx
+      .select({ userId: organizationMembers.userId })
+      .from(organizationMembers)
+      .where(
+        and(
+          eq(organizationMembers.orgId, orgId),
+          eq(organizationMembers.role, 'OWNER')
+        )
+      );
+    return owners.map((o) => o.userId);
+  });
+}
+
+/**
+ * Send notifications to all owners of an organization
+ */
+async function notifyOrgOwners(
+  orgId: string,
+  orgName: string,
+  notification: {
+    type: string;
+    title: string;
+    body: string;
+    link: string;
+  }
+): Promise<void> {
+  try {
+    const ownerUserIds = await getOrgOwnerUserIds(orgId);
+    if (ownerUserIds.length === 0) {
+      console.log(`[StripeWebhook] No owners found for org ${orgId}`);
+      return;
+    }
+
+    const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
+    const notificationQueue = new Queue('notification-email', { connection });
+
+    // Queue notification for each owner
+    for (const userId of ownerUserIds) {
+      await notificationQueue.add('notification-email', {
+        userId,
+        orgId,
+        type: notification.type,
+        title: notification.title,
+        body: notification.body,
+        link: notification.link,
+      } as NotificationEmailJobData);
+    }
+
+    await connection.quit();
+    console.log(`[StripeWebhook] Queued ${notification.type} notification for ${ownerUserIds.length} owners of org ${orgId}`);
+  } catch (error) {
+    console.error(`[StripeWebhook] Failed to queue ${notification.type} notification:`, error);
+    // Don't throw - notification should not break the main operation
+  }
 }
 
 export async function handleStripeWebhook(job: Job<StripeWebhookJobData>) {
@@ -184,8 +236,18 @@ async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDelet
 
   console.log(`[StripeWebhook] Subscription ${subscription.id} deleted`);
 
-  // Update subscription status to canceled
-  await withServiceContext('StripeWebhook.deleteSubscription', async (tx) => {
+  // Update subscription status to canceled and get org info for notification
+  const orgInfo = await withServiceContext('StripeWebhook.deleteSubscription', async (tx) => {
+    // Get subscription info before updating
+    const [sub] = await tx
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
+      .limit(1);
+
+    if (!sub) return null;
+
+    // Update status
     await tx
       .update(subscriptions)
       .set({
@@ -194,7 +256,26 @@ async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDelet
         updatedAt: new Date(),
       })
       .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
+
+    // Get org info for notification
+    const [org] = await tx
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, sub.orgId))
+      .limit(1);
+
+    return org ? { orgId: org.id, orgName: org.name } : null;
   });
+
+  // Notify all org owners about subscription cancellation
+  if (orgInfo) {
+    await notifyOrgOwners(orgInfo.orgId, orgInfo.orgName, {
+      type: 'billing.subscription_cancelled',
+      title: 'Subscription Cancelled',
+      body: `Your subscription for ${orgInfo.orgName} has been cancelled. You will retain access until the end of your billing period.`,
+      link: `/organizations/${orgInfo.orgId}/settings/billing`,
+    });
+  }
 }
 
 async function handleInvoicePaid(event: Stripe.InvoicePaidEvent) {
@@ -243,32 +324,19 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
       .where(eq(organizations.id, sub.orgId))
       .limit(1);
 
-    return org ? { orgId: org.id, orgName: org.name, ownerUserId: org.ownerUserId } : null;
+    return org ? { orgId: org.id, orgName: org.name } : null;
   });
 
   console.log(`[StripeWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
 
-  // Send notification to org owner about failed payment
+  // Notify all org owners about failed payment
   if (orgInfo) {
-    try {
-      const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
-      const notificationQueue = new Queue('notification-email', { connection });
-
-      await notificationQueue.add('notification-email', {
-        userId: orgInfo.ownerUserId,
-        orgId: orgInfo.orgId,
-        type: 'billing.payment_failed',
-        title: 'Payment Failed',
-        body: `Payment failed for ${orgInfo.orgName}. Please update your payment method.`,
-        link: `/organizations/${orgInfo.orgId}/settings/billing`,
-      } as NotificationEmailJobData);
-
-      await connection.quit();
-      console.log(`[StripeWebhook] Queued payment failed notification for org ${orgInfo.orgId}`);
-    } catch (error) {
-      console.error('[StripeWebhook] Failed to queue payment failed notification:', error);
-      // Don't throw - payment failure handling is more important than notification
-    }
+    await notifyOrgOwners(orgInfo.orgId, orgInfo.orgName, {
+      type: 'billing.payment_failed',
+      title: 'Payment Failed',
+      body: `Payment failed for ${orgInfo.orgName}. Please update your payment method to avoid service interruption.`,
+      link: `/organizations/${orgInfo.orgId}/settings/billing`,
+    });
   }
 }
 

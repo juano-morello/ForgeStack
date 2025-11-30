@@ -3,10 +3,11 @@
  * Handles business logic for billing operations
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { type TenantContext } from '@forgestack/db';
 import { StripeService } from './stripe.service';
 import { BillingRepository } from './billing.repository';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { SubscriptionDto } from './dto/subscription.dto';
 import type Stripe from 'stripe';
 
@@ -17,6 +18,7 @@ export class BillingService {
   constructor(
     private readonly stripeService: StripeService,
     private readonly billingRepository: BillingRepository,
+    private readonly featureFlagsService: FeatureFlagsService,
   ) {}
 
   /**
@@ -159,6 +161,28 @@ export class BillingService {
       payload: event as any,
       orgId: (event.data.object as any).metadata?.orgId || null,
     });
+  }
+
+  /**
+   * Check if a feature is enabled for the organization's plan
+   * @throws ForbiddenException if feature is not available for the plan
+   */
+  async requireFeature(ctx: TenantContext, featureKey: string): Promise<void> {
+    const isEnabled = await this.featureFlagsService.isEnabled(ctx, featureKey);
+    if (!isEnabled) {
+      const subscription = await this.getSubscription(ctx);
+      throw new ForbiddenException(
+        `Feature "${featureKey}" is not available on the ${subscription.plan} plan. Please upgrade to access this feature.`
+      );
+    }
+  }
+
+  /**
+   * Check if a feature is enabled for the organization's plan
+   * Returns boolean, does not throw
+   */
+  async hasFeature(ctx: TenantContext, featureKey: string): Promise<boolean> {
+    return this.featureFlagsService.isEnabled(ctx, featureKey);
   }
 }
 

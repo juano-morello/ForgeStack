@@ -7,7 +7,6 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { type TenantContext } from '@forgestack/db';
 import { CreateProjectDto, UpdateProjectDto, QueryProjectsDto } from './dto';
@@ -162,11 +161,6 @@ export class ProjectsService {
    */
   async remove(ctx: TenantContext, id: string) {
     this.logger.log(`Deleting project ${id} in org ${ctx.orgId}`);
-
-    // Check if user is OWNER
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only owners can delete projects');
-    }
 
     // Get project details before deletion
     const project = await this.projectsRepository.findById(ctx, id);

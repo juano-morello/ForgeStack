@@ -12,6 +12,7 @@ import {
   eq,
 } from '@forgestack/db';
 import type Stripe from 'stripe';
+import { config } from '../config';
 
 export interface IncomingWebhookJobData {
   eventRecordId: string;
@@ -21,21 +22,10 @@ export interface IncomingWebhookJobData {
 }
 
 /**
- * Map Stripe price IDs to plan names
- * TODO: Move to configuration
- */
-const PRICE_TO_PLAN_MAP: Record<string, string> = {
-  // Add your Stripe price IDs here
-  // 'price_xxx': 'basic',
-  // 'price_yyy': 'pro',
-  // 'price_zzz': 'enterprise',
-};
-
-/**
  * Get plan name from Stripe price ID
  */
 function getPlanFromPriceId(priceId: string): string {
-  return PRICE_TO_PLAN_MAP[priceId] || 'unknown';
+  return config.stripe.priceToPlanMap[priceId] || 'unknown';
 }
 
 export async function handleIncomingWebhookProcessing(job: Job<IncomingWebhookJobData>) {

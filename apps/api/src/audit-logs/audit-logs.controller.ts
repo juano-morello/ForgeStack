@@ -1,7 +1,7 @@
 /**
  * Audit Logs Controller
  * Handles HTTP requests for audit log operations
- * All endpoints require OWNER role
+ * All endpoints require OWNER role and audit-logs feature flag
  */
 
 import {
@@ -10,23 +10,29 @@ import {
   Param,
   Query,
   Logger,
-  ForbiddenException,
   Header,
 } from '@nestjs/common';
 import { type TenantContext } from '@forgestack/db';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
+import { RequireRole } from '../core/decorators/require-role.decorator';
 import { AuditLogsService } from './audit-logs.service';
+import { BillingService } from '../billing/billing.service';
 import { AuditLogQueryDto } from './dto';
 
 @Controller('audit-logs')
+@RequireRole('OWNER')
 export class AuditLogsController {
   private readonly logger = new Logger(AuditLogsController.name);
 
-  constructor(private readonly auditLogsService: AuditLogsService) {}
+  constructor(
+    private readonly auditLogsService: AuditLogsService,
+    private readonly billingService: BillingService,
+  ) {}
 
   /**
    * GET /audit-logs
    * List audit logs with pagination and filters (OWNER only)
+   * Requires audit-logs feature flag for plan gating
    */
   @Get()
   async findAll(
@@ -34,12 +40,8 @@ export class AuditLogsController {
     @Query() query: AuditLogQueryDto,
   ) {
     this.logger.debug(`GET /audit-logs for org ${ctx.orgId}`);
-
-    // Only OWNER can view audit logs
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can view audit logs');
-    }
-
+    // Check if audit-logs feature is enabled for this plan
+    await this.billingService.requireFeature(ctx, 'audit-logs');
     return this.auditLogsService.findAll(ctx, query);
   }
 
@@ -53,12 +55,6 @@ export class AuditLogsController {
     @Query() query: Pick<AuditLogQueryDto, 'startDate' | 'endDate'>,
   ) {
     this.logger.debug(`GET /audit-logs/stats for org ${ctx.orgId}`);
-
-    // Only OWNER can view audit logs
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can view audit logs');
-    }
-
     return this.auditLogsService.getStats(ctx, query);
   }
 
@@ -75,12 +71,6 @@ export class AuditLogsController {
     @Query('format') format: 'csv' | 'json' = 'csv',
   ) {
     this.logger.debug(`GET /audit-logs/export for org ${ctx.orgId} as ${format}`);
-
-    // Only OWNER can export audit logs
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can export audit logs');
-    }
-
     return this.auditLogsService.export(ctx, query, format);
   }
 
@@ -94,12 +84,6 @@ export class AuditLogsController {
     @Param('id') id: string,
   ) {
     this.logger.debug(`GET /audit-logs/${id} for org ${ctx.orgId}`);
-
-    // Only OWNER can view audit logs
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can view audit logs');
-    }
-
     return this.auditLogsService.findById(ctx, id);
   }
 }

@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { StripeService } from './stripe.service';
 import { BillingRepository } from './billing.repository';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 // Mock the @forgestack/db module to prevent import errors
 jest.mock('@forgestack/db', () => ({
@@ -19,6 +20,7 @@ describe('BillingService', () => {
   let service: BillingService;
   let stripeService: jest.Mocked<StripeService>;
   let billingRepository: jest.Mocked<BillingRepository>;
+  let featureFlagsService: jest.Mocked<FeatureFlagsService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -41,12 +43,19 @@ describe('BillingService', () => {
             logBillingEvent: jest.fn(),
           },
         },
+        {
+          provide: FeatureFlagsService,
+          useValue: {
+            isEnabled: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<BillingService>(BillingService);
     stripeService = module.get(StripeService);
     billingRepository = module.get(BillingRepository);
+    featureFlagsService = module.get(FeatureFlagsService);
   });
 
   it('should be defined', () => {
@@ -206,6 +215,45 @@ describe('BillingService', () => {
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
       });
+    });
+  });
+
+  describe('requireFeature', () => {
+    it('should not throw if feature is enabled', async () => {
+      const ctx = { orgId: 'org-123', userId: 'user-123', role: 'OWNER' as const };
+      featureFlagsService.isEnabled.mockResolvedValue(true);
+
+      await expect(service.requireFeature(ctx, 'audit-logs')).resolves.not.toThrow();
+      expect(featureFlagsService.isEnabled).toHaveBeenCalledWith(ctx, 'audit-logs');
+    });
+
+    it('should throw ForbiddenException if feature is not enabled', async () => {
+      const ctx = { orgId: 'org-123', userId: 'user-123', role: 'OWNER' as const };
+      featureFlagsService.isEnabled.mockResolvedValue(false);
+      billingRepository.findSubscriptionByOrgId.mockResolvedValue(null);
+
+      await expect(service.requireFeature(ctx, 'audit-logs')).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('hasFeature', () => {
+    it('should return true if feature is enabled', async () => {
+      const ctx = { orgId: 'org-123', userId: 'user-123', role: 'OWNER' as const };
+      featureFlagsService.isEnabled.mockResolvedValue(true);
+
+      const result = await service.hasFeature(ctx, 'audit-logs');
+
+      expect(result).toBe(true);
+      expect(featureFlagsService.isEnabled).toHaveBeenCalledWith(ctx, 'audit-logs');
+    });
+
+    it('should return false if feature is not enabled', async () => {
+      const ctx = { orgId: 'org-123', userId: 'user-123', role: 'OWNER' as const };
+      featureFlagsService.isEnabled.mockResolvedValue(false);
+
+      const result = await service.hasFeature(ctx, 'audit-logs');
+
+      expect(result).toBe(false);
     });
   });
 });

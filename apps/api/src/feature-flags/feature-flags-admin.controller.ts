@@ -12,15 +12,16 @@ import {
   Body,
   Param,
   Logger,
-  ForbiddenException,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { type TenantContext } from '@forgestack/db';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
+import { RequireRole } from '../core/decorators/require-role.decorator';
 import { FeatureFlagsService } from './feature-flags.service';
 import { CreateFeatureFlagDto, UpdateFeatureFlagDto, CreateOverrideDto } from './dto';
 
 @Controller('admin/feature-flags')
+@RequireRole('OWNER')
 export class FeatureFlagsAdminController {
   private readonly logger = new Logger(FeatureFlagsAdminController.name);
 
@@ -31,14 +32,8 @@ export class FeatureFlagsAdminController {
    * List all feature flags
    */
   @Get()
-  async listFlags(@CurrentTenant() ctx: TenantContext) {
+  async listFlags() {
     this.logger.debug('GET /admin/feature-flags');
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     return this.featureFlagsService.findAll();
   }
 
@@ -49,12 +44,6 @@ export class FeatureFlagsAdminController {
   @Post()
   async createFlag(@CurrentTenant() ctx: TenantContext, @Body() dto: CreateFeatureFlagDto) {
     this.logger.log('POST /admin/feature-flags');
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     return this.featureFlagsService.create(dto);
   }
 
@@ -69,12 +58,6 @@ export class FeatureFlagsAdminController {
     @Body() dto: UpdateFeatureFlagDto,
   ) {
     this.logger.log(`PATCH /admin/feature-flags/${id}`);
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     return this.featureFlagsService.update(id, dto);
   }
 
@@ -85,12 +68,6 @@ export class FeatureFlagsAdminController {
   @Delete(':id')
   async deleteFlag(@CurrentTenant() ctx: TenantContext, @Param('id', ParseUUIDPipe) id: string) {
     this.logger.log(`DELETE /admin/feature-flags/${id}`);
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     await this.featureFlagsService.delete(id);
     return { message: 'Feature flag deleted successfully' };
   }
@@ -102,12 +79,6 @@ export class FeatureFlagsAdminController {
   @Get(':id/overrides')
   async listOverrides(@CurrentTenant() ctx: TenantContext, @Param('id', ParseUUIDPipe) id: string) {
     this.logger.debug(`GET /admin/feature-flags/${id}/overrides`);
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     return this.featureFlagsService.getOverridesForFlag(id);
   }
 
@@ -122,12 +93,6 @@ export class FeatureFlagsAdminController {
     @Body() dto: CreateOverrideDto,
   ) {
     this.logger.log(`POST /admin/feature-flags/${id}/overrides`);
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     return this.featureFlagsService.createOverride(id, dto);
   }
 
@@ -142,12 +107,6 @@ export class FeatureFlagsAdminController {
     @Param('orgId', ParseUUIDPipe) orgId: string,
   ) {
     this.logger.log(`DELETE /admin/feature-flags/${id}/overrides/${orgId}`);
-
-    // Only OWNER can manage feature flags
-    if (ctx.role !== 'OWNER') {
-      throw new ForbiddenException('Only organization owners can manage feature flags');
-    }
-
     await this.featureFlagsService.deleteOverride(id, orgId);
     return { message: 'Override deleted successfully' };
   }
