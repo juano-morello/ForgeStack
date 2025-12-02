@@ -1,4 +1,13 @@
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load environment variables from monorepo root
+// Works whether run from root (pnpm dev) or from apps/worker directly
+const rootEnvPath = process.cwd().endsWith('worker')
+  ? path.resolve(process.cwd(), '../../.env')
+  : path.resolve(process.cwd(), '.env');
+
+dotenv.config({ path: rootEnvPath });
 
 export const config = {
   redis: {

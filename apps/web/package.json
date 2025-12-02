@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3000",
-    "build": "next build",
+    "dev": "dotenv -e ../../.env -e ../../.env.local -e .env.local -- next dev --port 3000",
+    "build": "dotenv -e ../../.env -e ../../.env.local -- next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
     "clean": "rm -rf .next dist",
@@ -63,6 +63,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^4.0.14",
     "autoprefixer": "^10.4.22",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8.57.1",
     "jsdom": "^27.2.0",
     "postcss": "^8.5.6",

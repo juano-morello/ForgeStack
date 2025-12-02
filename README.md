@@ -150,11 +150,11 @@ This starts:
 ### 4. Configure Environment
 
 ```bash
-# Copy environment templates
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
+# Copy the environment template to create your local config
+cp .env.example .env
 
 # Edit with your values (see Environment Variables section)
+# All apps (api, web, worker) load from this single root .env file
 ```
 
 ### 5. Run Database Migrations
@@ -283,7 +283,13 @@ Run from the **root directory** unless otherwise noted.
 
 ## 🔑 Environment Variables
 
-### API (`apps/api/.env`)
+ForgeStack uses a **single `.env` file at the project root** for all apps. Copy `.env.example` and configure your values:
+
+```bash
+cp .env.example .env
+```
+
+### Core Variables
 
 ```bash
 # Database
@@ -293,50 +299,45 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/forgestack_dev"
 REDIS_URL="redis://localhost:6379"
 
 # Authentication
-BETTER_AUTH_SECRET="your-secret-key-min-32-chars"
-BETTER_AUTH_URL="http://localhost:4000"
+BETTER_AUTH_SECRET="your-secret-key-min-32-chars"  # Generate: openssl rand -base64 32
+BETTER_AUTH_URL="http://localhost:3000"
 
 # Email (Resend)
 RESEND_API_KEY="re_xxxxxxxxxxxx"
 EMAIL_FROM="noreply@yourdomain.com"
 
-# Frontend URL (for CORS)
-FRONTEND_URL="http://localhost:3000"
+# URLs
+APP_URL="http://localhost:3000"
+NEXT_PUBLIC_API_URL="http://localhost:4000/api/v1"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+CORS_ORIGIN="http://localhost:3000"
+```
 
-# --- V2 Features ---
+### Stripe Billing (V2)
 
-# Stripe Billing
+```bash
 STRIPE_SECRET_KEY="sk_test_xxxxxxxxxxxx"
 STRIPE_WEBHOOK_SECRET="whsec_xxxxxxxxxxxx"
 STRIPE_PRICE_ID_STARTER="price_xxxxxxxxxxxx"
 STRIPE_PRICE_ID_PRO="price_xxxxxxxxxxxx"
 STRIPE_PRICE_ID_ENTERPRISE="price_xxxxxxxxxxxx"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_xxxxxxxxxxxx"
+NEXT_PUBLIC_STRIPE_PRICE_ID_BASIC="price_xxxxxxxxxxxx"
+NEXT_PUBLIC_STRIPE_PRICE_ID_PRO="price_xxxxxxxxxxxx"
+NEXT_PUBLIC_STRIPE_PRICE_ID_ENTERPRISE="price_xxxxxxxxxxxx"
+```
 
-# Cloudflare R2 (S3-compatible storage)
+### Cloudflare R2 (V2)
+
+```bash
 R2_ACCOUNT_ID="your-account-id"
 R2_ACCESS_KEY_ID="your-access-key"
 R2_SECRET_ACCESS_KEY="your-secret-key"
 R2_BUCKET_NAME="forgestack-files"
 R2_PUBLIC_URL="https://files.yourdomain.com"
-
-# Rate Limiting
-RATE_LIMIT_ENABLED="true"
-RATE_LIMIT_FAIL_OPEN="true"
 ```
 
-### Web (`apps/web/.env`)
-
-```bash
-# API URL
-NEXT_PUBLIC_API_URL="http://localhost:4000"
-
-# Authentication
-BETTER_AUTH_SECRET="your-secret-key-min-32-chars"
-BETTER_AUTH_URL="http://localhost:3000"
-
-# Database (for better-auth)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/forgestack_dev"
-```
+See `.env.example` for the complete list with documentation.
 
 ---
 
