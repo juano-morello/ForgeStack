@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, Trash2, Shield, Users, Key } from 'lucide-react';
+import { Plus, Trash2, Shield, Users, Key } from 'lucide-react';
 import type { Role, CreateRoleDto } from '@/types/rbac';
 
 export default function RolesPage() {

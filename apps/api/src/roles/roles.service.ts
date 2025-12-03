@@ -13,7 +13,6 @@ import {
 import { RolesRepository } from './roles.repository';
 import { PermissionsRepository } from '../permissions/permissions.repository';
 import { CreateRoleDto, UpdateRoleDto } from './dto';
-import type { Role } from '@forgestack/db';
 
 @Injectable()
 export class RolesService {

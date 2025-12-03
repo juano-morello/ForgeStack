@@ -149,7 +149,7 @@ export function RoleForm({ role, onSubmit, onCancel, isSubmitting = false }: Rol
                     <Checkbox
                       id={`resource-${resource}`}
                       checked={allSelected}
-                      // @ts-ignore - indeterminate is valid
+                      // @ts-expect-error - indeterminate is valid but not in types
                       indeterminate={someSelected && !allSelected}
                       onCheckedChange={(checked) =>
                         handleSelectAllInResource(resource, checked as boolean)

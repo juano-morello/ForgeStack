@@ -19,7 +19,6 @@ import {
   type Role,
   type Permission,
   type NewRole,
-  type NewRolePermission,
 } from '@forgestack/db';
 
 export interface RoleWithPermissions extends Role {

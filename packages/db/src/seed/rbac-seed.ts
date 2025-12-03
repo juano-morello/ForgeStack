@@ -4,7 +4,7 @@
  * Seeds all permissions and system roles (Owner, Admin, Member, Viewer)
  */
 
-import { eq, inArray } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { permissions, roles, rolePermissions } from '../schema';
 
