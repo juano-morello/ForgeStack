@@ -19,6 +19,7 @@ import {
   ScrollText,
   Bell,
   Zap,
+  Shield,
 } from 'lucide-react';
 import { signOut, useSession } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
@@ -135,6 +136,17 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {session?.user?.isSuperAdmin && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/super-admin">
+                      <Shield className="mr-2 h-4 w-4" />
+                      <span>Super Admin</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem asChild>
                 <Link href="/settings/profile">
                   <User className="mr-2 h-4 w-4" />
