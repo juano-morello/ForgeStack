@@ -28,7 +28,9 @@ describe('LoggingInterceptor', () => {
   let interceptor: LoggingInterceptor;
   let mockExecutionContext: ExecutionContext;
   let mockCallHandler: CallHandler;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockRequest: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockResponse: any;
 
   beforeEach(async () => {
@@ -69,6 +71,7 @@ describe('LoggingInterceptor', () => {
       switchToRpc: jest.fn(),
       switchToWs: jest.fn(),
       getType: jest.fn(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
     // Mock CallHandler

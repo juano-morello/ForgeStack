@@ -64,8 +64,7 @@ export const WithActions: Story = {
       createdAt: new Date('2024-02-01').toISOString(),
       updatedAt: new Date('2024-02-15').toISOString(),
     },
-    onEdit: () => console.log('Edit clicked'),
-    onDelete: () => console.log('Delete clicked'),
+    // Actions are defined in argTypes above
   },
 };
 

@@ -11,7 +11,9 @@ import { ArgumentsHost } from '@nestjs/common';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockResponse: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockRequest: any;
   let mockArgumentsHost: ArgumentsHost;
 

@@ -19,6 +19,7 @@ describe('TenantContextGuard', () => {
   let authService: jest.Mocked<AuthService>;
   let organizationsRepository: jest.Mocked<OrganizationsRepository>;
   let mockExecutionContext: jest.Mocked<ExecutionContext>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockRequest: any;
 
   beforeEach(async () => {
@@ -75,6 +76,7 @@ describe('TenantContextGuard', () => {
       }),
       getHandler: jest.fn(),
       getClass: jest.fn(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   });
 

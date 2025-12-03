@@ -169,6 +169,7 @@ describe('FilesService', () => {
         entityId: null,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       repository.markUploaded.mockResolvedValue(mockFile as any);
       repository.findPreviousFile.mockResolvedValue(null);
       storageService.getPresignedDownloadUrl.mockResolvedValue('https://download-url.com');

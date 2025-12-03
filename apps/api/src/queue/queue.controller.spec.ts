@@ -58,6 +58,7 @@ describe('QueueController', () => {
         data: testBody,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queueService.addJob.mockResolvedValue(mockJob as any);
 
       const result = await controller.testWelcomeEmail(testBody);
@@ -80,6 +81,7 @@ describe('QueueController', () => {
         data: testBody,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queueService.addJob.mockResolvedValue(mockJob as any);
 
       const result = await controller.testWelcomeEmail(testBody);
@@ -121,6 +123,7 @@ describe('QueueController', () => {
         data: customBody,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queueService.addJob.mockResolvedValue(mockJob as any);
 
       await controller.testWelcomeEmail(customBody);
@@ -139,6 +142,7 @@ describe('QueueController', () => {
         data: testBody,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queueService.addJob.mockResolvedValue(mockJob as any);
 
       const result = await controller.testWelcomeEmail(testBody);
@@ -159,6 +163,7 @@ describe('QueueController', () => {
         data: testBody,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queueService.addJob.mockResolvedValue(mockJob as any);
 
       const result = await controller.testWelcomeEmail(testBody);

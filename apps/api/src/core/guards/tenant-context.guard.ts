@@ -125,7 +125,12 @@ export class TenantContextGuard implements CanActivate {
    * Extract and verify user ID from better-auth session
    * Checks cookies first, then Authorization header
    */
-  private async extractAndVerifyUserId(request: any): Promise<string | undefined> {
+  private async extractAndVerifyUserId(request: {
+    cookies?: Record<string, string>;
+    headers?: Record<string, string | string[] | undefined>;
+    user?: unknown;
+    session?: unknown;
+  }): Promise<string | undefined> {
     // Extract session token from cookies or Authorization header
     const sessionToken = this.authService.extractSessionToken(request);
 

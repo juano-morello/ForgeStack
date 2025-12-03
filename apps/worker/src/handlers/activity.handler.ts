@@ -100,10 +100,10 @@ async function processWithAggregation(event: ActivityJobData): Promise<void> {
       // Update existing activity
       const currentCount = existing.aggregationCount || 1;
       const newCount = currentCount + 1;
-      
+
       // Get current items from metadata
-      const currentMetadata = (existing.metadata as any) || {};
-      const currentItems = currentMetadata.items || [];
+      const currentMetadata = (existing.metadata as Record<string, unknown>) || {};
+      const currentItems = (currentMetadata.items as unknown[]) || [];
       
       // Add new item to the list (keep last 10)
       const newItems = [

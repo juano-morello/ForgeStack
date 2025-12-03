@@ -42,7 +42,7 @@ export class RateLimitGuard implements CanActivate {
     // Determine rate limit type
     if (request.tenantContext?.orgId) {
       // Authenticated request - use org-based limiting
-      const plan = (request.tenantContext as any).plan || 'free';
+      const plan = (request.tenantContext as { plan?: string }).plan || 'free';
       result = await this.rateLimitingService.checkOrgLimit(request.tenantContext.orgId, plan);
     } else {
       // Unauthenticated - use IP-based limiting
@@ -69,19 +69,25 @@ export class RateLimitGuard implements CanActivate {
     return true;
   }
 
-  private getClientIp(request: any): string {
+  private getClientIp(request: {
+    headers: Record<string, string | string[] | undefined>;
+    connection?: { remoteAddress?: string };
+    ip?: string;
+  }): string {
+    const forwardedFor = request.headers['x-forwarded-for'];
+    const forwardedForStr = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
     return (
-      request.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-      request.headers['x-real-ip'] ||
+      forwardedForStr?.split(',')[0]?.trim() ||
+      (request.headers['x-real-ip'] as string) ||
       request.connection?.remoteAddress ||
       request.ip ||
       '0.0.0.0'
     );
   }
 
-  private isAuthEndpoint(request: any): boolean {
+  private isAuthEndpoint(request: { path?: string; url?: string }): boolean {
     const path = request.path || request.url;
-    return path.includes('/auth/') || path.includes('/login');
+    return path?.includes('/auth/') || path?.includes('/login') || false;
   }
 }
 

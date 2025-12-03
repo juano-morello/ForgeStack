@@ -61,7 +61,7 @@ export class IncomingWebhooksService {
       provider: 'stripe',
       eventType: event.type,
       eventId: event.id,
-      payload: event as any,
+      payload: event as unknown as Record<string, unknown>,
       signature,
       verified: true,
       orgId: null, // Will be associated later based on event data

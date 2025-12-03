@@ -38,6 +38,7 @@ describe('StripeService', () => {
     expect(() => {
       new StripeService({
         get: jest.fn(() => null),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }).toThrow('STRIPE_SECRET_KEY is not configured');
   });

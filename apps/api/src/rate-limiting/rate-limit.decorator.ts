@@ -10,7 +10,7 @@ export interface RateLimitOptions {
   points?: number; // Custom limit
   duration?: number; // In seconds
   keyType?: 'org' | 'ip' | 'api_key';
-  skipIf?: (req: any) => boolean;
+  skipIf?: (req: unknown) => boolean;
   skip?: boolean;
 }
 

@@ -71,6 +71,7 @@ export function useOrganizations() {
         // Network error - API unavailable
         setError('Unable to connect to server');
         if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
           console.debug('[useOrganizations] Network error - API may be unavailable');
         }
       } else if (err instanceof ApiError) {

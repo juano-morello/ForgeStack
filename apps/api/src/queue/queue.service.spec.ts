@@ -122,6 +122,7 @@ describe('QueueService', () => {
       const jobData = { userId: 'user-123', email: 'test@example.com' };
       const mockJob = { id: 'job-123', name: queueName, data: jobData };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockQueue.add.mockResolvedValue(mockJob as any);
 
       // Mock getQueue to return our mock queue
@@ -139,6 +140,7 @@ describe('QueueService', () => {
       const jobData = { test: 'data' };
       const mockJob = { id: 'job-456', name: queueName, data: jobData };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockQueue.add.mockResolvedValue(mockJob as any);
       jest.spyOn(service, 'getQueue').mockReturnValue(mockQueue);
 
@@ -153,6 +155,7 @@ describe('QueueService', () => {
       const queueName = 'test-queue';
       const jobData = { test: 'data' };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockQueue.add.mockResolvedValue({ id: 'job-789' } as any);
       jest.spyOn(service, 'getQueue').mockReturnValue(mockQueue);
 
@@ -166,6 +169,7 @@ describe('QueueService', () => {
       const jobData = { test: 'data' };
       const options = { delay: 5000 };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockQueue.add.mockResolvedValue({ id: 'job-999' } as any);
       jest.spyOn(service, 'getQueue').mockReturnValue(mockQueue);
 
@@ -182,10 +186,12 @@ describe('QueueService', () => {
       const mockConnection = { quit: jest.fn().mockResolvedValue(undefined) };
 
       // Access private properties for testing
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (service as any).queues = new Map([
         ['queue1', mockQueue1],
         ['queue2', mockQueue2],
       ]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (service as any).connection = mockConnection;
 
       await service.onModuleDestroy();

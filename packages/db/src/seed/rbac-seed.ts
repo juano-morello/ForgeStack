@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * RBAC Seed - System roles and permissions
  *
@@ -6,6 +7,7 @@
 
 import { inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../schema/index.js';
 import { permissions, roles, rolePermissions } from '../schema';
 
 /**
@@ -109,7 +111,7 @@ const SYSTEM_ROLES = [
 /**
  * Seed RBAC permissions and system roles
  */
-export async function seedRbac(db: NodePgDatabase<any>) {
+export async function seedRbac(db: NodePgDatabase<typeof schema>) {
   console.log('Seeding RBAC permissions and roles...');
 
   // Insert all permissions

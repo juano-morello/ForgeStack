@@ -18,6 +18,7 @@ import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-node';
 const otelEnabled = process.env.OTEL_ENABLED === 'true';
 
 if (!otelEnabled) {
+  // eslint-disable-next-line no-console
   console.log('OpenTelemetry is disabled. Set OTEL_ENABLED=true to enable.');
 }
 
@@ -70,13 +71,16 @@ if (otelEnabled) {
   });
 
   sdk.start();
+  // eslint-disable-next-line no-console
   console.log('OpenTelemetry SDK initialized');
 
   // Graceful shutdown
   process.on('SIGTERM', () => {
     sdk
       ?.shutdown()
+      // eslint-disable-next-line no-console
       .then(() => console.log('OTEL SDK shut down'))
+      // eslint-disable-next-line no-console
       .catch((err) => console.error('OTEL SDK shutdown error', err))
       .finally(() => process.exit(0));
   });

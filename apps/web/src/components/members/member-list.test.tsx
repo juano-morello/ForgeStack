@@ -58,6 +58,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-1', email: 'owner@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,
@@ -363,6 +364,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-2', email: 'member@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,
@@ -417,6 +419,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-2', email: 'member@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,
@@ -462,6 +465,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-2', email: 'member@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,

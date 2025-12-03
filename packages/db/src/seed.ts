@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Seed script for development data
  *

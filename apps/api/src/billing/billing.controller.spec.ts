@@ -62,6 +62,7 @@ describe('BillingController', () => {
 
   describe('createCheckout', () => {
     const ctx = { orgId: 'org-123', userId: 'user-123', role: 'OWNER' as const };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const request = { user: { id: 'user-123', email: 'test@example.com', name: 'Test User' } } as any;
     const dto = {
       priceId: 'price_123',
@@ -148,11 +149,14 @@ describe('BillingController', () => {
       id: 'evt_123',
       type: 'customer.subscription.created',
       data: { object: {} },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
     it('should handle webhook event', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const request = { rawBody: Buffer.from('test') } as any;
       stripeService.constructWebhookEvent.mockReturnValue(mockEvent);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queueService.addJob.mockResolvedValue({ id: 'job-123' } as any);
 
       const result = await controller.handleWebhook(request, 'test-signature');
@@ -168,12 +172,14 @@ describe('BillingController', () => {
     });
 
     it('should throw ForbiddenException if signature missing', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const request = { rawBody: Buffer.from('test') } as any;
 
       await expect(controller.handleWebhook(request, '')).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw ForbiddenException if raw body missing', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const request = {} as any;
 
       await expect(controller.handleWebhook(request, 'test-signature')).rejects.toThrow(ForbiddenException);

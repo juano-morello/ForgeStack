@@ -73,6 +73,7 @@ describe('ApiKeysController', () => {
       const dto = { name: 'Test Key', scopes: ['projects:read'] };
       const mockCreatedKey = { ...mockApiKeyDto, key: 'fsk_live_full_key' };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       service.createKey.mockResolvedValue(mockCreatedKey as any);
 
       const result = await controller.create(ownerContext, dto);

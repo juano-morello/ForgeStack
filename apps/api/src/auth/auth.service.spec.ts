@@ -38,6 +38,7 @@ describe('AuthService', () => {
 
   afterEach(() => {
     // Clear the session cache after each test
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (service as any).sessionCache.clear();
   });
 
@@ -240,6 +241,7 @@ describe('AuthService', () => {
       expect(fetch).toHaveBeenCalledTimes(1);
 
       // Manually expire the cache entry
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cache = (service as any).sessionCache;
       const entry = cache.get(validToken);
       if (entry) {
@@ -435,6 +437,7 @@ describe('AuthService', () => {
         await service.verifySession(`token-${i}`);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cache = (service as any).sessionCache;
 
       // Cache should have been cleaned up
@@ -442,6 +445,7 @@ describe('AuthService', () => {
     });
 
     it('should remove expired entries during cleanup', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cache = (service as any).sessionCache;
 
       // Manually add some expired entries
@@ -459,6 +463,7 @@ describe('AuthService', () => {
       });
 
       // Trigger cleanup
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (service as any).cleanupCache();
 
       expect(cache.has('expired-1')).toBe(false);

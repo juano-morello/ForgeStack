@@ -84,6 +84,7 @@ describe('IncomingWebhooksService', () => {
         orgId: null,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(stripeWebhookService, 'verifySignature').mockReturnValue(mockStripeEvent as any);
       jest.spyOn(repository, 'findByProviderAndEventId').mockResolvedValue(existingEvent);
 
@@ -110,6 +111,7 @@ describe('IncomingWebhooksService', () => {
         orgId: null,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(stripeWebhookService, 'verifySignature').mockReturnValue(mockStripeEvent as any);
       jest.spyOn(repository, 'findByProviderAndEventId').mockResolvedValue(null);
       jest.spyOn(repository, 'create').mockResolvedValue(newEvent);

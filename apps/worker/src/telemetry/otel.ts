@@ -43,6 +43,7 @@ function initializeTelemetry() {
   const otelEnabled = process.env.OTEL_ENABLED === 'true';
 
   if (!otelEnabled) {
+    // eslint-disable-next-line no-console
     console.log('[OTEL] OpenTelemetry is disabled (OTEL_ENABLED=false)');
     return null;
   }
@@ -74,13 +75,16 @@ function initializeTelemetry() {
   });
 
   sdk.start();
+  // eslint-disable-next-line no-console
   console.log('[OTEL] OpenTelemetry SDK initialized');
 
   // Graceful shutdown
   const shutdown = () => {
     sdk
       .shutdown()
+      // eslint-disable-next-line no-console
       .then(() => console.log('[OTEL] SDK shut down successfully'))
+      // eslint-disable-next-line no-console
       .catch((err) => console.error('[OTEL] SDK shutdown error:', err))
       .finally(() => process.exit(0));
   };

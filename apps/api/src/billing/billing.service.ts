@@ -158,8 +158,8 @@ export class BillingService {
     await this.billingRepository.logBillingEvent({
       stripeEventId: event.id,
       eventType: event.type,
-      payload: event as any,
-      orgId: (event.data.object as any).metadata?.orgId || null,
+      payload: event as unknown as Record<string, unknown>,
+      orgId: (event.data.object as { metadata?: { orgId?: string } }).metadata?.orgId || null,
     });
   }
 
