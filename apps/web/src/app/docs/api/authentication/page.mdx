@@ -1,0 +1,158 @@
+# API Authentication
+
+Learn how to authenticate API requests with ForgeStack.
+
+## API Keys
+
+API keys are the primary method for authenticating API requests.
+
+### Creating an API Key
+
+#### Via UI
+
+1. Navigate to Settings > API Keys
+2. Click "Create API Key"
+3. Enter a name and select scopes
+4. Copy the key (it will only be shown once)
+
+#### Via API
+
+```bash
+curl -X POST https://api.forgestack.com/api/v1/api-keys \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-session-token" \
+  -H "X-Org-Id: your-org-id" \
+  -d '{
+    "name": "Production API Key",
+    "scopes": ["projects:read", "projects:write"]
+  }'
+```
+
+Response:
+
+```json
+{
+  "id": "key_1234567890",
+  "name": "Production API Key",
+  "key": "fsk_live_1234567890abcdef",
+  "scopes": ["projects:read", "projects:write"],
+  "createdAt": "2024-01-01T00:00:00Z"
+}
+```
+
+<Callout type="warning" title="Store Securely">
+  API keys are only shown once. Store them securely in environment variables.
+</Callout>
+
+### Using API Keys
+
+Include the API key in the `X-API-Key` header:
+
+```bash
+curl -X GET https://api.forgestack.com/api/v1/projects \
+  -H "X-API-Key: fsk_live_1234567890abcdef" \
+  -H "X-Org-Id: your-org-id"
+```
+
+### API Key Scopes
+
+Limit API key permissions with scopes:
+
+| Scope | Description |
+|-------|-------------|
+| `projects:read` | Read projects |
+| `projects:write` | Create and update projects |
+| `projects:delete` | Delete projects |
+| `members:read` | Read organization members |
+| `members:write` | Invite and update members |
+| `billing:read` | Read billing information |
+| `billing:write` | Manage subscriptions |
+| `webhooks:read` | Read webhook endpoints |
+| `webhooks:write` | Create and update webhooks |
+| `*` | Full access (use with caution) |
+
+### Revoking API Keys
+
+#### Via UI
+
+1. Navigate to Settings > API Keys
+2. Click the delete icon next to the key
+3. Confirm deletion
+
+#### Via API
+
+```bash
+curl -X DELETE https://api.forgestack.com/api/v1/api-keys/key_1234567890 \
+  -H "X-API-Key: your-api-key" \
+  -H "X-Org-Id: your-org-id"
+```
+
+## Session Tokens
+
+For user-facing applications, use session tokens obtained through authentication:
+
+```typescript
+const response = await fetch('/api/auth/session');
+const session = await response.json();
+
+// Use session token
+const apiResponse = await fetch('https://api.forgestack.com/api/v1/projects', {
+  headers: {
+    Authorization: `Bearer ${session.token}`,
+    'X-Org-Id': session.organizationId,
+  },
+});
+```
+
+## Best Practices
+
+### Environment Variables
+
+Store API keys in environment variables:
+
+```bash
+# .env
+FORGESTACK_API_KEY=fsk_live_1234567890abcdef
+FORGESTACK_ORG_ID=org_1234567890
+```
+
+### Separate Keys for Environments
+
+Use different API keys for development, staging, and production:
+
+```bash
+# Development
+FORGESTACK_API_KEY=fsk_test_1234567890abcdef
+
+# Production
+FORGESTACK_API_KEY=fsk_live_1234567890abcdef
+```
+
+### Rotate Keys Regularly
+
+Rotate API keys periodically for security:
+
+1. Create a new API key
+2. Update your application to use the new key
+3. Revoke the old key
+
+<Callout type="info" title="Key Rotation">
+  Set up a reminder to rotate API keys every 90 days.
+</Callout>
+
+### Use Minimal Scopes
+
+Only grant the scopes your application needs:
+
+```json
+{
+  "name": "Read-only Analytics Key",
+  "scopes": ["projects:read", "usage:read"]
+}
+```
+
+## Next Steps
+
+- [Endpoints](/docs/api/endpoints) - Complete API reference
+- [SDK](/docs/sdk/usage) - Use the TypeScript SDK
+

@@ -1,0 +1,137 @@
+# Organizations
+
+Learn how to manage multi-tenant organizations in ForgeStack.
+
+## Overview
+
+Organizations are the core of ForgeStack's multi-tenancy model. Each organization:
+
+- Has its own members and roles
+- Manages its own projects and resources
+- Has separate billing and subscriptions
+- Can invite team members
+- Has fine-grained access control
+
+## Creating an Organization
+
+### Via UI
+
+Users can create organizations through the onboarding flow or from the organization selector.
+
+### Via API
+
+```typescript
+const response = await fetch('/api/v1/organizations', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key',
+  },
+  body: JSON.stringify({
+    name: 'Acme Corp',
+    slug: 'acme-corp',
+  }),
+});
+
+const organization = await response.json();
+```
+
+## Managing Members
+
+### Invite Members
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/invitations`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key',
+  },
+  body: JSON.stringify({
+    email: 'member@example.com',
+    role: 'member',
+  }),
+});
+```
+
+### List Members
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/members`, {
+  headers: {
+    'X-API-Key': 'your-api-key',
+  },
+});
+
+const members = await response.json();
+```
+
+<Callout type="info" title="Roles">
+  ForgeStack supports custom roles with fine-grained permissions. See the RBAC guide for details.
+</Callout>
+
+## Switching Organizations
+
+Users can switch between organizations using the organization selector:
+
+```typescript
+import { useOrganization } from '@/hooks/use-organization';
+
+function OrganizationSwitcher() {
+  const { currentOrg, setCurrentOrg, organizations } = useOrganization();
+
+  return (
+    <select
+      value={currentOrg?.id}
+      onChange={(e) => setCurrentOrg(e.target.value)}
+    >
+      {organizations.map((org) => (
+        <option key={org.id} value={org.id}>
+          {org.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+## Organization Settings
+
+### Update Organization
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}`, {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key',
+  },
+  body: JSON.stringify({
+    name: 'New Name',
+    settings: {
+      allowPublicProjects: true,
+    },
+  }),
+});
+```
+
+### Delete Organization
+
+<Callout type="warning" title="Destructive Action">
+  Deleting an organization is permanent and will delete all associated data.
+</Callout>
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}`, {
+  method: 'DELETE',
+  headers: {
+    'X-API-Key': 'your-api-key',
+  },
+});
+```
+
+## Next Steps
+
+- [Billing](/docs/guides/billing) - Set up organization billing
+- [API Reference](/docs/api/endpoints) - Full API documentation
+

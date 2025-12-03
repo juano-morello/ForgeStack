@@ -1,0 +1,150 @@
+# API Overview
+
+Complete reference for the ForgeStack REST API.
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://api.forgestack.com/api/v1
+```
+
+For local development:
+
+```
+http://localhost:3001/api/v1
+```
+
+## Authentication
+
+The ForgeStack API uses API keys for authentication. Include your API key in the request headers:
+
+```bash
+curl -X GET https://api.forgestack.com/api/v1/projects \
+  -H "X-API-Key: your-api-key" \
+  -H "X-Org-Id: your-org-id"
+```
+
+<Callout type="warning" title="Keep Your API Keys Secret">
+  Never expose API keys in client-side code or public repositories.
+</Callout>
+
+## Organization Context
+
+Most API endpoints require an organization context. Include the organization ID in the `X-Org-Id` header:
+
+```bash
+-H "X-Org-Id: org_1234567890"
+```
+
+## Request Format
+
+All POST and PATCH requests should use JSON:
+
+```bash
+curl -X POST https://api.forgestack.com/api/v1/projects \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
+  -H "X-Org-Id: your-org-id" \
+  -d '{"name": "My Project"}'
+```
+
+## Response Format
+
+All responses are returned as JSON:
+
+```json
+{
+  "id": "proj_1234567890",
+  "name": "My Project",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "updatedAt": "2024-01-01T00:00:00Z"
+}
+```
+
+## Pagination
+
+List endpoints support pagination using `page` and `limit` query parameters:
+
+```bash
+curl -X GET "https://api.forgestack.com/api/v1/projects?page=1&limit=20" \
+  -H "X-API-Key: your-api-key" \
+  -H "X-Org-Id: your-org-id"
+```
+
+Response includes pagination metadata:
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+```
+
+## Error Handling
+
+The API uses standard HTTP status codes:
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 429 | Too Many Requests |
+| 500 | Internal Server Error |
+
+Error responses include details:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request parameters",
+    "details": [
+      {
+        "field": "name",
+        "message": "Name is required"
+      }
+    ]
+  }
+}
+```
+
+## Rate Limiting
+
+API requests are rate-limited:
+
+- **Free tier**: 100 requests per minute
+- **Pro tier**: 1,000 requests per minute
+- **Enterprise tier**: Custom limits
+
+Rate limit headers are included in responses:
+
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+
+<Callout type="info">
+  Contact support for higher rate limits.
+</Callout>
+
+## Versioning
+
+The API is versioned via the URL path (`/api/v1`). Breaking changes will result in a new version.
+
+## Next Steps
+
+- [Authentication](/docs/api/authentication) - API key management
+- [Endpoints](/docs/api/endpoints) - Complete endpoint reference
+

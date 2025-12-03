@@ -1,0 +1,261 @@
+# SDK Usage
+
+Learn how to use the ForgeStack TypeScript SDK.
+
+## Client Initialization
+
+Create a client instance:
+
+```typescript
+import { ForgeStackClient } from '@forgestack/sdk';
+
+const client = new ForgeStackClient({
+  apiKey: process.env.FORGESTACK_API_KEY,
+  organizationId: process.env.FORGESTACK_ORG_ID,
+  baseUrl: 'https://api.forgestack.com', // Optional, defaults to production
+});
+```
+
+## Projects
+
+### List Projects
+
+```typescript
+const response = await client.projects.list({
+  page: 1,
+  limit: 20,
+});
+
+console.log(response.data); // Array of projects
+console.log(response.pagination); // Pagination metadata
+```
+
+### Get Project
+
+```typescript
+const project = await client.projects.get('proj_1234567890');
+console.log(project.name);
+```
+
+### Create Project
+
+```typescript
+const project = await client.projects.create({
+  name: 'My Project',
+  description: 'A new project',
+});
+```
+
+### Update Project
+
+```typescript
+const project = await client.projects.update('proj_1234567890', {
+  name: 'Updated Name',
+});
+```
+
+### Delete Project
+
+```typescript
+await client.projects.delete('proj_1234567890');
+```
+
+## Organizations
+
+### List Organizations
+
+```typescript
+const organizations = await client.organizations.list();
+```
+
+### Get Organization
+
+```typescript
+const org = await client.organizations.get('org_1234567890');
+```
+
+### Create Organization
+
+```typescript
+const org = await client.organizations.create({
+  name: 'Acme Corp',
+  slug: 'acme-corp',
+});
+```
+
+### Update Organization
+
+```typescript
+const org = await client.organizations.update('org_1234567890', {
+  name: 'New Name',
+});
+```
+
+## Members
+
+### List Members
+
+```typescript
+const members = await client.members.list('org_1234567890');
+```
+
+### Invite Member
+
+```typescript
+const invitation = await client.members.invite('org_1234567890', {
+  email: 'member@example.com',
+  role: 'member',
+});
+```
+
+### Update Member Role
+
+```typescript
+const member = await client.members.updateRole(
+  'org_1234567890',
+  'member_1234567890',
+  {
+    role: 'admin',
+  }
+);
+```
+
+### Remove Member
+
+```typescript
+await client.members.remove('org_1234567890', 'member_1234567890');
+```
+
+## Billing
+
+### Get Subscription
+
+```typescript
+const subscription = await client.billing.getSubscription('org_1234567890');
+console.log(subscription.status);
+```
+
+### Create Subscription
+
+```typescript
+const subscription = await client.billing.createSubscription('org_1234567890', {
+  priceId: 'price_1234567890',
+});
+```
+
+### Cancel Subscription
+
+```typescript
+await client.billing.cancelSubscription('org_1234567890');
+```
+
+### List Invoices
+
+```typescript
+const invoices = await client.billing.listInvoices('org_1234567890');
+```
+
+### Get Usage
+
+```typescript
+const usage = await client.billing.getUsage('org_1234567890');
+console.log(usage.apiCalls);
+```
+
+## Webhooks
+
+### List Webhook Endpoints
+
+```typescript
+const webhooks = await client.webhooks.list('org_1234567890');
+```
+
+### Create Webhook Endpoint
+
+```typescript
+const webhook = await client.webhooks.create('org_1234567890', {
+  url: 'https://your-app.com/webhooks',
+  events: ['project.created', 'project.updated'],
+  secret: 'your-webhook-secret',
+});
+```
+
+### Update Webhook Endpoint
+
+```typescript
+const webhook = await client.webhooks.update(
+  'org_1234567890',
+  'webhook_1234567890',
+  {
+    events: ['project.created'],
+  }
+);
+```
+
+### Delete Webhook Endpoint
+
+```typescript
+await client.webhooks.delete('org_1234567890', 'webhook_1234567890');
+```
+
+## Error Handling
+
+Handle errors with try-catch:
+
+```typescript
+import { ForgeStackError } from '@forgestack/sdk';
+
+try {
+  const project = await client.projects.get('proj_invalid');
+} catch (error) {
+  if (error instanceof ForgeStackError) {
+    switch (error.status) {
+      case 404:
+        console.error('Project not found');
+        break;
+      case 401:
+        console.error('Unauthorized - check your API key');
+        break;
+      case 429:
+        console.error('Rate limit exceeded');
+        break;
+      default:
+        console.error('API error:', error.message);
+    }
+  } else {
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+## Pagination
+
+Handle paginated responses:
+
+```typescript
+let page = 1;
+let hasMore = true;
+
+while (hasMore) {
+  const response = await client.projects.list({ page, limit: 20 });
+
+  // Process projects
+  response.data.forEach((project) => {
+    console.log(project.name);
+  });
+
+  // Check if there are more pages
+  hasMore = page < response.pagination.totalPages;
+  page++;
+}
+```
+
+<Callout type="info">
+  The SDK automatically handles rate limiting and retries failed requests.
+</Callout>
+
+## Next Steps
+
+- [API Reference](/docs/api/endpoints) - Complete API documentation
+- [Guides](/docs/guides/authentication) - In-depth guides
+

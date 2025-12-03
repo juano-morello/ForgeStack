@@ -1,0 +1,250 @@
+# API Endpoints
+
+Complete reference for all ForgeStack API endpoints.
+
+## Organizations
+
+### List Organizations
+
+```bash
+GET /api/v1/organizations
+```
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": "org_1234567890",
+      "name": "Acme Corp",
+      "slug": "acme-corp",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### Get Organization
+
+```bash
+GET /api/v1/organizations/:id
+```
+
+### Create Organization
+
+```bash
+POST /api/v1/organizations
+Content-Type: application/json
+
+{
+  "name": "Acme Corp",
+  "slug": "acme-corp"
+}
+```
+
+### Update Organization
+
+```bash
+PATCH /api/v1/organizations/:id
+Content-Type: application/json
+
+{
+  "name": "New Name"
+}
+```
+
+### Delete Organization
+
+```bash
+DELETE /api/v1/organizations/:id
+```
+
+## Projects
+
+### List Projects
+
+```bash
+GET /api/v1/projects
+X-Org-Id: org_1234567890
+```
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": "proj_1234567890",
+      "name": "My Project",
+      "description": "Project description",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 50
+  }
+}
+```
+
+### Get Project
+
+```bash
+GET /api/v1/projects/:id
+X-Org-Id: org_1234567890
+```
+
+### Create Project
+
+```bash
+POST /api/v1/projects
+X-Org-Id: org_1234567890
+Content-Type: application/json
+
+{
+  "name": "My Project",
+  "description": "Project description"
+}
+```
+
+### Update Project
+
+```bash
+PATCH /api/v1/projects/:id
+X-Org-Id: org_1234567890
+Content-Type: application/json
+
+{
+  "name": "Updated Name"
+}
+```
+
+### Delete Project
+
+```bash
+DELETE /api/v1/projects/:id
+X-Org-Id: org_1234567890
+```
+
+## Members
+
+### List Members
+
+```bash
+GET /api/v1/organizations/:orgId/members
+```
+
+### Invite Member
+
+```bash
+POST /api/v1/organizations/:orgId/invitations
+Content-Type: application/json
+
+{
+  "email": "member@example.com",
+  "role": "member"
+}
+```
+
+### Update Member Role
+
+```bash
+PATCH /api/v1/organizations/:orgId/members/:memberId
+Content-Type: application/json
+
+{
+  "role": "admin"
+}
+```
+
+### Remove Member
+
+```bash
+DELETE /api/v1/organizations/:orgId/members/:memberId
+```
+
+## Billing
+
+### Get Subscription
+
+```bash
+GET /api/v1/organizations/:orgId/subscription
+```
+
+### Create Subscription
+
+```bash
+POST /api/v1/organizations/:orgId/subscription
+Content-Type: application/json
+
+{
+  "priceId": "price_1234567890"
+}
+```
+
+### Cancel Subscription
+
+```bash
+DELETE /api/v1/organizations/:orgId/subscription
+```
+
+### List Invoices
+
+```bash
+GET /api/v1/organizations/:orgId/invoices
+```
+
+### Get Usage
+
+```bash
+GET /api/v1/organizations/:orgId/usage
+```
+
+## Webhooks
+
+### List Webhook Endpoints
+
+```bash
+GET /api/v1/organizations/:orgId/webhooks
+```
+
+### Create Webhook Endpoint
+
+```bash
+POST /api/v1/organizations/:orgId/webhooks
+Content-Type: application/json
+
+{
+  "url": "https://your-app.com/webhooks",
+  "events": ["project.created", "project.updated"],
+  "secret": "your-webhook-secret"
+}
+```
+
+### Update Webhook Endpoint
+
+```bash
+PATCH /api/v1/organizations/:orgId/webhooks/:webhookId
+Content-Type: application/json
+
+{
+  "events": ["project.created"]
+}
+```
+
+### Delete Webhook Endpoint
+
+```bash
+DELETE /api/v1/organizations/:orgId/webhooks/:webhookId
+```
+
+<Callout type="info">
+  All endpoints require authentication. See [Authentication](/docs/api/authentication) for details.
+</Callout>
+
+## Next Steps
+
+- [SDK](/docs/sdk/usage) - Use the TypeScript SDK for type-safe API calls
+

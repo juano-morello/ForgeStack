@@ -1,0 +1,160 @@
+# Billing
+
+Learn how to manage subscriptions and billing in ForgeStack.
+
+## Overview
+
+ForgeStack integrates with Stripe to provide:
+
+- Subscription management
+- Usage-based billing
+- Invoice generation
+- Payment method management
+- Webhook handling for payment events
+
+## Setting Up Stripe
+
+### Configure Stripe Keys
+
+Add your Stripe keys to `.env`:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+### Create Products and Prices
+
+Create your subscription plans in the Stripe Dashboard or via API.
+
+## Subscription Management
+
+### Create a Subscription
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/subscription`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key',
+  },
+  body: JSON.stringify({
+    priceId: 'price_1234567890',
+  }),
+});
+
+const subscription = await response.json();
+```
+
+### Get Current Subscription
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/subscription`, {
+  headers: {
+    'X-API-Key': 'your-api-key',
+  },
+});
+
+const subscription = await response.json();
+```
+
+### Cancel Subscription
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/subscription`, {
+  method: 'DELETE',
+  headers: {
+    'X-API-Key': 'your-api-key',
+  },
+});
+```
+
+<Callout type="info" title="Cancellation">
+  Subscriptions are canceled at the end of the billing period by default.
+</Callout>
+
+## Usage-Based Billing
+
+### Track Usage
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/usage`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key',
+  },
+  body: JSON.stringify({
+    metric: 'api_calls',
+    quantity: 100,
+  }),
+});
+```
+
+### Get Usage Summary
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/usage`, {
+  headers: {
+    'X-API-Key': 'your-api-key',
+  },
+});
+
+const usage = await response.json();
+```
+
+## Invoices
+
+### List Invoices
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/invoices`, {
+  headers: {
+    'X-API-Key': 'your-api-key',
+  },
+});
+
+const invoices = await response.json();
+```
+
+### Download Invoice
+
+```typescript
+const response = await fetch(
+  `/api/v1/organizations/${orgId}/invoices/${invoiceId}/pdf`,
+  {
+    headers: {
+      'X-API-Key': 'your-api-key',
+    },
+  }
+);
+
+const blob = await response.blob();
+```
+
+## Payment Methods
+
+### Add Payment Method
+
+```typescript
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+
+const { error } = await stripe.confirmCardSetup(clientSecret, {
+  payment_method: {
+    card: cardElement,
+  },
+});
+```
+
+<Callout type="warning" title="PCI Compliance">
+  Never send raw card details to your server. Always use Stripe Elements or Checkout.
+</Callout>
+
+## Next Steps
+
+- [Webhooks](/docs/guides/webhooks) - Handle payment events
+- [API Reference](/docs/api/endpoints) - Full billing API documentation
+

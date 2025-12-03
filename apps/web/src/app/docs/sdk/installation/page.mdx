@@ -1,0 +1,132 @@
+# SDK Installation
+
+Install the ForgeStack TypeScript SDK for type-safe API interactions.
+
+## Installation
+
+Install the SDK using your preferred package manager:
+
+### npm
+
+```bash
+npm install @forgestack/sdk
+```
+
+### yarn
+
+```bash
+yarn add @forgestack/sdk
+```
+
+### pnpm
+
+```bash
+pnpm add @forgestack/sdk
+```
+
+## Requirements
+
+- Node.js 18 or higher
+- TypeScript 5.0 or higher (for TypeScript projects)
+
+## Configuration
+
+Create a client instance with your API key:
+
+```typescript
+import { ForgeStackClient } from '@forgestack/sdk';
+
+const client = new ForgeStackClient({
+  apiKey: process.env.FORGESTACK_API_KEY,
+  organizationId: process.env.FORGESTACK_ORG_ID,
+});
+```
+
+### Environment Variables
+
+Store your credentials in environment variables:
+
+```bash
+# .env
+FORGESTACK_API_KEY=fsk_live_1234567890abcdef
+FORGESTACK_ORG_ID=org_1234567890
+```
+
+<Callout type="warning" title="Keep Credentials Secret">
+  Never commit API keys to version control. Use environment variables.
+</Callout>
+
+## TypeScript Support
+
+The SDK is written in TypeScript and provides full type definitions:
+
+```typescript
+import { ForgeStackClient, Project } from '@forgestack/sdk';
+
+const client = new ForgeStackClient({
+  apiKey: process.env.FORGESTACK_API_KEY!,
+  organizationId: process.env.FORGESTACK_ORG_ID!,
+});
+
+// TypeScript knows the shape of the response
+const project: Project = await client.projects.create({
+  name: 'My Project',
+  description: 'A new project',
+});
+```
+
+## Next.js Integration
+
+For Next.js applications, create a singleton client:
+
+```typescript
+// lib/forgestack.ts
+import { ForgeStackClient } from '@forgestack/sdk';
+
+export const forgestack = new ForgeStackClient({
+  apiKey: process.env.FORGESTACK_API_KEY!,
+  organizationId: process.env.FORGESTACK_ORG_ID!,
+});
+```
+
+Use in Server Components:
+
+```typescript
+import { forgestack } from '@/lib/forgestack';
+
+export default async function ProjectsPage() {
+  const projects = await forgestack.projects.list();
+
+  return (
+    <div>
+      {projects.data.map((project) => (
+        <div key={project.id}>{project.name}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Error Handling
+
+The SDK throws typed errors:
+
+```typescript
+import { ForgeStackError } from '@forgestack/sdk';
+
+try {
+  const project = await client.projects.get('proj_invalid');
+} catch (error) {
+  if (error instanceof ForgeStackError) {
+    console.error('API Error:', error.message);
+    console.error('Status:', error.status);
+    console.error('Code:', error.code);
+  }
+}
+```
+
+## Next Steps
+
+- [Usage](/docs/sdk/usage) - Learn how to use the SDK
+- [API Reference](/docs/api/endpoints) - Complete API documentation
+
