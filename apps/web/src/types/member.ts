@@ -8,6 +8,11 @@ export interface Member {
   name: string | null;
   role: 'OWNER' | 'MEMBER';
   joinedAt: string;
+  roles?: Array<{
+    id: string;
+    name: string;
+    isSystem: boolean;
+  }>;
 }
 
 export interface MembersResponse {

@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useToast } from '@/hooks/use-toast';
 import { MemberRoleBadge } from './member-role-badge';
+import { MemberRolesBadges } from './member-roles-badges';
 import {
   Table,
   TableBody,
@@ -149,7 +150,8 @@ export function MemberList({
           <TableHeader>
             <TableRow>
               <TableHead>Member</TableHead>
-              <TableHead>Role</TableHead>
+              <TableHead>Legacy Role</TableHead>
+              <TableHead>RBAC Roles</TableHead>
               <TableHead>Joined</TableHead>
               {isOwner && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
@@ -204,6 +206,14 @@ export function MemberList({
                     ) : (
                       <MemberRoleBadge role={member.role} />
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <MemberRolesBadges
+                      userId={member.userId}
+                      userName={member.name || member.email}
+                      roles={member.roles}
+                      isCurrentUser={isCurrentUser}
+                    />
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">

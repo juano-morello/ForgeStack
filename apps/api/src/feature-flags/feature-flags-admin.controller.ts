@@ -16,12 +16,12 @@ import {
 } from '@nestjs/common';
 import { type TenantContext } from '@forgestack/db';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
-import { RequireRole } from '../core/decorators/require-role.decorator';
+import { RequirePermission } from '../core/decorators/require-permission.decorator';
 import { FeatureFlagsService } from './feature-flags.service';
 import { CreateFeatureFlagDto, UpdateFeatureFlagDto, CreateOverrideDto } from './dto';
 
 @Controller('admin/feature-flags')
-@RequireRole('OWNER')
+@RequirePermission('feature_flags:manage')
 export class FeatureFlagsAdminController {
   private readonly logger = new Logger(FeatureFlagsAdminController.name);
 

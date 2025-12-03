@@ -7,18 +7,24 @@ import { Module, Global, forwardRef } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TenantContextGuard } from './guards/tenant-context.guard';
 import { RequireRoleGuard } from './guards/require-role.guard';
+import { PermissionGuard } from './guards/permission.guard';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { PermissionsModule } from '../permissions/permissions.module';
 
 @Global()
 @Module({
-  imports: [forwardRef(() => OrganizationsModule)],
+  imports: [forwardRef(() => OrganizationsModule), PermissionsModule],
   providers: [
     TenantContextGuard,
     LoggingInterceptor,
     {
       provide: APP_GUARD,
       useClass: RequireRoleGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
   ],
   exports: [TenantContextGuard, LoggingInterceptor],

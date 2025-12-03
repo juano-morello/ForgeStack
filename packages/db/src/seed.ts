@@ -9,6 +9,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID } from 'crypto';
 import { users, organizations, organizationMembers, projects, featureFlags } from './schema';
+import { seedRbac } from './seed/rbac-seed';
 
 async function seed() {
   const pool = new Pool({
@@ -19,6 +20,9 @@ async function seed() {
   const db = drizzle(pool);
 
   console.log('Seeding database...');
+
+  // Seed RBAC permissions and system roles first
+  await seedRbac(db);
 
   // Create test user (better-auth compatible with id, name, email)
   const [user] = await db

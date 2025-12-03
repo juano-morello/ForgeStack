@@ -43,6 +43,10 @@ export {
   organizationFeatureOverrides,
   organizationFeatureOverridesRelations,
 } from './feature-flags';
+export { roles, rolesRelations } from './roles';
+export { permissions, permissionsRelations } from './permissions';
+export { rolePermissions, rolePermissionsRelations } from './role-permissions';
+export { memberRoles, memberRolesRelations } from './member-roles';
 
 // Types
 export type {
@@ -77,4 +81,8 @@ export type {
   OrganizationFeatureOverride,
   NewOrganizationFeatureOverride,
 } from './feature-flags';
+export type { Role, NewRole } from './roles';
+export type { Permission, NewPermission } from './permissions';
+export type { RolePermission, NewRolePermission } from './role-permissions';
+export type { MemberRole, NewMemberRole } from './member-roles';
 

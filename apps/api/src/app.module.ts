@@ -29,6 +29,8 @@ import { ActivitiesModule } from './activities/activities.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { RateLimitingModule } from './rate-limiting/rate-limiting.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -60,6 +62,8 @@ import { RateLimitingModule } from './rate-limiting/rate-limiting.module';
     ActivitiesModule,
     NotificationsModule,
     FeatureFlagsModule,
+    PermissionsModule,
+    RolesModule,
   ],
   providers: [
     {
