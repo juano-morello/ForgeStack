@@ -4,11 +4,14 @@
  */
 
 import { Controller, Get, Query, Logger } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { type TenantContext } from '@forgestack/db';
 import { UsageService } from './usage.service';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { UsageSummaryDto, UsageHistoryDto, UsageLimitsDto } from './dto';
 
+@ApiTags('Usage')
+@ApiBearerAuth()
 @Controller('billing/usage')
 export class UsageController {
   private readonly logger = new Logger(UsageController.name);
@@ -20,6 +23,9 @@ export class UsageController {
    * Get current period usage summary
    */
   @Get()
+  @ApiOperation({ summary: 'Get usage summary', description: 'Get current billing period usage summary' })
+  @ApiResponse({ status: 200, description: 'Usage summary' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getUsageSummary(@CurrentTenant() ctx: TenantContext): Promise<UsageSummaryDto> {
     this.logger.debug(`Getting usage summary for org ${ctx.orgId}`);
 

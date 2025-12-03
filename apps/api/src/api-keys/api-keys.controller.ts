@@ -16,11 +16,14 @@ import {
   Logger,
   ForbiddenException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiSecurity } from '@nestjs/swagger';
 import { ApiKeysService } from './api-keys.service';
 import { CreateApiKeyDto, UpdateApiKeyDto } from './dto';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { type TenantContext } from '@forgestack/db';
 
+@ApiTags('API Keys')
+@ApiBearerAuth()
 @Controller('api-keys')
 export class ApiKeysController {
   private readonly logger = new Logger(ApiKeysController.name);
@@ -32,6 +35,9 @@ export class ApiKeysController {
    * Create a new API key (OWNER only)
    */
   @Post()
+  @ApiOperation({ summary: 'Create API key', description: 'Create a new API key (OWNER only)' })
+  @ApiResponse({ status: 201, description: 'API key created successfully. Key is only shown once.' })
+  @ApiResponse({ status: 403, description: 'Forbidden - OWNER role required' })
   async create(@CurrentTenant() ctx: TenantContext, @Body() dto: CreateApiKeyDto) {
     this.logger.debug(`POST /api-keys for org ${ctx.orgId}`);
 
@@ -48,6 +54,9 @@ export class ApiKeysController {
    * List all API keys (OWNER only)
    */
   @Get()
+  @ApiOperation({ summary: 'List API keys', description: 'List all API keys for the organization (OWNER only)' })
+  @ApiResponse({ status: 200, description: 'List of API keys' })
+  @ApiResponse({ status: 403, description: 'Forbidden - OWNER role required' })
   async findAll(@CurrentTenant() ctx: TenantContext) {
     this.logger.debug(`GET /api-keys for org ${ctx.orgId}`);
 
@@ -64,6 +73,11 @@ export class ApiKeysController {
    * Get a single API key (OWNER only)
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Get API key', description: 'Get a single API key by ID (OWNER only)' })
+  @ApiParam({ name: 'id', description: 'API Key UUID' })
+  @ApiResponse({ status: 200, description: 'API key found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - OWNER role required' })
+  @ApiResponse({ status: 404, description: 'API key not found' })
   async findOne(@CurrentTenant() ctx: TenantContext, @Param('id') id: string) {
     this.logger.debug(`GET /api-keys/${id} for org ${ctx.orgId}`);
 

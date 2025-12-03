@@ -15,6 +15,7 @@ import {
   RawBodyRequest,
   ForbiddenException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { type TenantContext } from '@forgestack/db';
 import { BillingService } from './billing.service';
 import { StripeService } from './stripe.service';
@@ -24,6 +25,8 @@ import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { Public } from '../core/decorators/public.decorator';
 import type { RequestWithUser } from '../core/types';
 
+@ApiTags('Billing')
+@ApiBearerAuth()
 @Controller('billing')
 export class BillingController {
   private readonly logger = new Logger(BillingController.name);
@@ -92,6 +95,9 @@ export class BillingController {
    * Get current subscription status
    */
   @Get('subscription')
+  @ApiOperation({ summary: 'Get subscription', description: 'Get current subscription status' })
+  @ApiResponse({ status: 200, description: 'Subscription details' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getSubscription(
     @CurrentTenant() ctx: TenantContext,
   ): Promise<SubscriptionDto> {

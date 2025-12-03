@@ -15,12 +15,15 @@ import {
   ParseUUIDPipe,
   Logger,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import type { TenantContext } from '@forgestack/db';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto, UpdateProjectDto, QueryProjectsDto } from './dto';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { RequirePermission } from '../core/decorators/require-permission.decorator';
 
+@ApiTags('Projects')
+@ApiBearerAuth()
 @Controller('projects')
 export class ProjectsController {
   private readonly logger = new Logger(ProjectsController.name);
@@ -32,6 +35,10 @@ export class ProjectsController {
    * POST /projects
    */
   @Post()
+  @ApiOperation({ summary: 'Create project', description: 'Create a new project in the organization' })
+  @ApiResponse({ status: 201, description: 'Project created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async create(
     @Body() createProjectDto: CreateProjectDto,
     @CurrentTenant() ctx: TenantContext,
@@ -45,6 +52,11 @@ export class ProjectsController {
    * GET /projects
    */
   @Get()
+  @ApiOperation({ summary: 'List projects', description: 'Get all projects for the organization' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiResponse({ status: 200, description: 'List of projects' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAll(
     @Query() query: QueryProjectsDto,
     @CurrentTenant() ctx: TenantContext,
@@ -58,6 +70,11 @@ export class ProjectsController {
    * GET /projects/:id
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Get project', description: 'Get a specific project by ID' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiResponse({ status: 200, description: 'Project found' })
+  @ApiResponse({ status: 404, description: 'Project not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentTenant() ctx: TenantContext,
@@ -70,6 +87,11 @@ export class ProjectsController {
    * PATCH /projects/:id
    */
   @Patch(':id')
+  @ApiOperation({ summary: 'Update project', description: 'Update a project' })
+  @ApiParam({ name: 'id', description: 'Project UUID' })
+  @ApiResponse({ status: 200, description: 'Project updated successfully' })
+  @ApiResponse({ status: 404, description: 'Project not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProjectDto: UpdateProjectDto,

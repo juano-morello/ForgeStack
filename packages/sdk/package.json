@@ -1,0 +1,31 @@
+{
+  "name": "@forgestack/sdk",
+  "version": "0.0.1",
+  "description": "TypeScript SDK for ForgeStack API",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {},
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  }
+}
+

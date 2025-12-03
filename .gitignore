@@ -97,6 +97,9 @@ out/
 dist/
 .webpack/
 
+# Generated OpenAPI spec
+openapi.json
+
 # ============================================
 # Database & Migrations
 # ============================================

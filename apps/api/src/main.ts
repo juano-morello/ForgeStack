@@ -10,6 +10,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { json } from 'express';
 import { AppModule } from './app.module';
@@ -68,8 +69,33 @@ async function bootstrap() {
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
 
+  // Swagger/OpenAPI configuration
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('ForgeStack API')
+    .setDescription('Multi-tenant SaaS API for ForgeStack')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'X-Org-Id', in: 'header' }, 'X-Org-Id')
+    .addServer('/api/v1')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+
+  // Swagger UI at /api/docs
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
+  // OpenAPI JSON endpoint at /api/openapi.json
+  app.getHttpAdapter().get('/api/openapi.json', (req, res) => {
+    res.json(document);
+  });
+
   await app.listen(port);
   logger.log(`🚀 ForgeStack API running on http://localhost:${port}/api/v1`);
+  logger.log(`📚 API Documentation available at http://localhost:${port}/api/docs`);
 }
 
 bootstrap().catch((err) => {
