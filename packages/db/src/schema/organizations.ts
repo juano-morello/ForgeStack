@@ -16,6 +16,12 @@ export const organizations = pgTable('organizations', {
   ownerUserId: text('owner_user_id')
     .notNull()
     .references(() => users.id),
+
+  // Organization suspension fields
+  suspendedAt: timestamp('suspended_at', { withTimezone: true }),
+  suspendedReason: text('suspended_reason'),
+  suspendedBy: text('suspended_by').references(() => users.id),
+
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

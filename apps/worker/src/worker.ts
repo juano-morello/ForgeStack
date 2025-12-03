@@ -12,6 +12,9 @@ import { handleIncomingWebhookProcessing, IncomingWebhookJobData } from './handl
 import { handleAuditLog, AuditLogJobData } from './handlers/audit-log.handler';
 import { handleActivity, ActivityJobData } from './handlers/activity.handler';
 import { handleNotificationEmail, NotificationEmailJobData } from './handlers/notification-email.handler';
+import { handleUsageAggregation, UsageAggregationJobData } from './handlers/usage-aggregation.handler';
+import { handleStripeUsageReport, StripeUsageReportJobData } from './handlers/stripe-usage-report.handler';
+import { handleActiveSeats, ActiveSeatsJobData } from './handlers/active-seats.handler';
 import { createLogger } from './telemetry/logger';
 import { withTracing } from './telemetry/tracing';
 
@@ -61,6 +64,9 @@ createWorker<IncomingWebhookJobData>(QUEUE_NAMES.INCOMING_WEBHOOK_PROCESSING, ha
 createWorker<AuditLogJobData>(QUEUE_NAMES.AUDIT_LOGS, handleAuditLog);
 createWorker<ActivityJobData>(QUEUE_NAMES.ACTIVITIES, handleActivity);
 createWorker<NotificationEmailJobData>(QUEUE_NAMES.NOTIFICATION_EMAIL, handleNotificationEmail);
+createWorker<UsageAggregationJobData>(QUEUE_NAMES.USAGE_AGGREGATION, handleUsageAggregation);
+createWorker<StripeUsageReportJobData>(QUEUE_NAMES.STRIPE_USAGE_REPORT, handleStripeUsageReport);
+createWorker<ActiveSeatsJobData>(QUEUE_NAMES.ACTIVE_SEATS, handleActiveSeats);
 
 // Graceful shutdown
 async function shutdown() {

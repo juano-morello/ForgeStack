@@ -9,6 +9,7 @@ import {
   Post,
   Body,
   Req,
+  Param,
   Headers,
   Logger,
   RawBodyRequest,
@@ -97,6 +98,123 @@ export class BillingController {
     this.logger.debug(`Getting subscription for org ${ctx.orgId}`);
 
     return this.billingService.getSubscription(ctx);
+  }
+
+  /**
+   * GET /billing/invoices
+   * List organization invoices
+   */
+  @Get('invoices')
+  async getInvoices(@CurrentTenant() ctx: TenantContext) {
+    this.logger.log(`Getting invoices for org ${ctx.orgId}`);
+
+    // Only OWNER can view invoices
+    if (ctx.role !== 'OWNER') {
+      throw new ForbiddenException('Only organization owners can view invoices');
+    }
+
+    const invoices = await this.billingService.getInvoices(ctx.orgId);
+
+    return {
+      invoices: invoices.map((invoice) => ({
+        id: invoice.id,
+        number: invoice.number,
+        status: invoice.status,
+        amountDue: invoice.amount_due,
+        amountPaid: invoice.amount_paid,
+        currency: invoice.currency,
+        created: new Date(invoice.created * 1000).toISOString(),
+        dueDate: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
+        paidAt: invoice.status_transitions?.paid_at
+          ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+          : null,
+        hostedInvoiceUrl: invoice.hosted_invoice_url,
+        invoicePdf: invoice.invoice_pdf,
+      })),
+    };
+  }
+
+  /**
+   * GET /billing/invoices/:id
+   * Get invoice details
+   */
+  @Get('invoices/:id')
+  async getInvoice(@CurrentTenant() ctx: TenantContext, @Param('id') invoiceId: string) {
+    this.logger.log(`Getting invoice ${invoiceId} for org ${ctx.orgId}`);
+
+    // Only OWNER can view invoices
+    if (ctx.role !== 'OWNER') {
+      throw new ForbiddenException('Only organization owners can view invoices');
+    }
+
+    const invoice = await this.billingService.getInvoice(ctx.orgId, invoiceId);
+
+    return {
+      id: invoice.id,
+      number: invoice.number,
+      status: invoice.status,
+      amountDue: invoice.amount_due,
+      amountPaid: invoice.amount_paid,
+      currency: invoice.currency,
+      created: new Date(invoice.created * 1000).toISOString(),
+      dueDate: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
+      paidAt: invoice.status_transitions?.paid_at
+        ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+        : null,
+      hostedInvoiceUrl: invoice.hosted_invoice_url,
+      invoicePdf: invoice.invoice_pdf,
+      lines: invoice.lines.data.map((line) => ({
+        id: line.id,
+        description: line.description,
+        amount: line.amount,
+        quantity: line.quantity,
+        unitAmount: (line as unknown as { unit_amount?: number }).unit_amount ?? null,
+      })),
+    };
+  }
+
+  /**
+   * GET /billing/projected-invoice
+   * Get projected invoice for current period
+   */
+  @Get('projected-invoice')
+  async getProjectedInvoice(@CurrentTenant() ctx: TenantContext) {
+    this.logger.log(`Getting projected invoice for org ${ctx.orgId}`);
+
+    // Only OWNER can view projected invoice
+    if (ctx.role !== 'OWNER') {
+      throw new ForbiddenException('Only organization owners can view projected invoices');
+    }
+
+    try {
+      const invoice = await this.billingService.getProjectedInvoice(ctx.orgId);
+
+      return {
+        amountDue: invoice.amount_due,
+        currency: invoice.currency,
+        periodStart: invoice.period_start
+          ? new Date(invoice.period_start * 1000).toISOString()
+          : null,
+        periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000).toISOString() : null,
+        lines: invoice.lines.data.map((line) => ({
+          description: line.description,
+          amount: line.amount,
+          quantity: line.quantity,
+          unitAmount: (line as unknown as { unit_amount?: number }).unit_amount ?? null,
+        })),
+      };
+    } catch (error) {
+      // If no upcoming invoice, return empty
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.warn(`No upcoming invoice for org ${ctx.orgId}: ${message}`);
+      return {
+        amountDue: 0,
+        currency: 'usd',
+        periodStart: null,
+        periodEnd: null,
+        lines: [],
+      };
+    }
   }
 
   /**

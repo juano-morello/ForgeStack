@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { TenantContextGuard } from './guards/tenant-context.guard';
 import { RequireRoleGuard } from './guards/require-role.guard';
 import { PermissionGuard } from './guards/permission.guard';
+import { SuperAdminGuard } from './guards/super-admin.guard';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { OrganizationsModule } from '../organizations/organizations.module';
 import { PermissionsModule } from '../permissions/permissions.module';
@@ -18,6 +19,10 @@ import { PermissionsModule } from '../permissions/permissions.module';
   providers: [
     TenantContextGuard,
     LoggingInterceptor,
+    {
+      provide: APP_GUARD,
+      useClass: SuperAdminGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: RequireRoleGuard,

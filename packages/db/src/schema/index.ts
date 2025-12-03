@@ -47,6 +47,10 @@ export { roles, rolesRelations } from './roles';
 export { permissions, permissionsRelations } from './permissions';
 export { rolePermissions, rolePermissionsRelations } from './role-permissions';
 export { memberRoles, memberRolesRelations } from './member-roles';
+export { platformAuditLogs, platformAuditLogsRelations } from './platform-audit-logs';
+export { usageRecords, usageRecordsRelations } from './usage-records';
+export { usageLimits, usageLimitsRelations } from './usage-limits';
+export { plans } from './plans';
 
 // Types
 export type {
@@ -85,4 +89,8 @@ export type { Role, NewRole } from './roles';
 export type { Permission, NewPermission } from './permissions';
 export type { RolePermission, NewRolePermission } from './role-permissions';
 export type { MemberRole, NewMemberRole } from './member-roles';
+export type { PlatformAuditLog, NewPlatformAuditLog } from './platform-audit-logs';
+export type { UsageRecord, NewUsageRecord } from './usage-records';
+export type { UsageLimit, NewUsageLimit } from './usage-limits';
+export type { Plan, NewPlan } from './plans';
 

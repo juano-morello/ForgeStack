@@ -78,6 +78,13 @@ export {
   rolePermissionsRelations,
   memberRoles,
   memberRolesRelations,
+  platformAuditLogs,
+  platformAuditLogsRelations,
+  usageRecords,
+  usageRecordsRelations,
+  usageLimits,
+  usageLimitsRelations,
+  plans,
 } from './schema/index.js';
 
 // Schema type exports
@@ -129,5 +136,13 @@ export type {
   NewRolePermission,
   MemberRole,
   NewMemberRole,
+  PlatformAuditLog,
+  NewPlatformAuditLog,
+  UsageRecord,
+  NewUsageRecord,
+  UsageLimit,
+  NewUsageLimit,
+  Plan,
+  NewPlan,
 } from './schema/index.js';
 
