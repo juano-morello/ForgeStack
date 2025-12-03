@@ -24,6 +24,9 @@ export const users = pgTable('users', {
   // Last login tracking
   lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
 
+  // Onboarding tracking
+  onboardingCompletedAt: timestamp('onboarding_completed_at', { withTimezone: true }),
+
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

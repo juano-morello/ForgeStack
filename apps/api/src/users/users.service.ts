@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UsersRepository } from './users.repository';
-import { UpdateProfileDto, ChangePasswordDto, ChangeEmailDto } from './dto';
+import { UpdateProfileDto, ChangePasswordDto, ChangeEmailDto, OnboardingStatusDto } from './dto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { QueueService } from '../queue/queue.service';
 import * as bcrypt from 'bcrypt';
@@ -220,6 +220,65 @@ export class UsersService {
       message: 'Verification email sent to new address',
       newEmail: dto.newEmail,
     };
+  }
+
+  /**
+   * Get onboarding status for a user
+   * Returns whether the user needs to complete onboarding
+   */
+  async getOnboardingStatus(userId: string): Promise<OnboardingStatusDto> {
+    this.logger.log(`Getting onboarding status for user ${userId}`);
+
+    const user = await this.usersRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      needsOnboarding: !user.onboardingCompletedAt,
+      completedAt: user.onboardingCompletedAt || null,
+    };
+  }
+
+  /**
+   * Mark onboarding as complete for a user
+   * Idempotent - calling again returns existing timestamp
+   */
+  async completeOnboarding(userId: string): Promise<{ completedAt: Date }> {
+    this.logger.log(`Completing onboarding for user ${userId}`);
+
+    const user = await this.usersRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // If already completed, return existing timestamp (idempotent)
+    if (user.onboardingCompletedAt) {
+      this.logger.log(`Onboarding already completed for user ${userId}`);
+      return { completedAt: user.onboardingCompletedAt };
+    }
+
+    // Mark as complete
+    const completedAt = new Date();
+    await this.usersRepository.updateOnboardingStatus(userId, completedAt);
+
+    // Log audit event (user-scoped, no orgId)
+    await this.auditLogsService.log(
+      {
+        orgId: null as any,
+        actorId: userId,
+        actorType: 'user',
+      },
+      {
+        action: 'user.onboarding_completed',
+        resourceType: 'user',
+        resourceId: userId,
+        resourceName: user.name,
+      },
+    );
+
+    this.logger.log(`Onboarding completed for user ${userId}`);
+    return { completedAt };
   }
 }
 

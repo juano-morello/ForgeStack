@@ -60,5 +60,19 @@ export class UsersRepository {
       return user || null;
     });
   }
+
+  /**
+   * Update onboarding status for a user
+   */
+  async updateOnboardingStatus(userId: string, completedAt: Date): Promise<void> {
+    this.logger.debug(`Updating onboarding status for user: ${userId}`);
+
+    await withServiceContext('UsersRepository.updateOnboardingStatus', async (tx) => {
+      await tx
+        .update(users)
+        .set({ onboardingCompletedAt: completedAt })
+        .where(eq(users.id, userId));
+    });
+  }
 }
 

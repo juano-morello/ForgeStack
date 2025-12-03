@@ -54,8 +54,8 @@ export function SignupForm() {
         return;
       }
 
-      // Redirect to dashboard on success
-      router.push('/dashboard');
+      // Redirect to onboarding on success
+      router.push('/onboarding');
       router.refresh();
     } catch (err) {
       setError('An unexpected error occurred');

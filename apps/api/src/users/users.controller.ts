@@ -65,5 +65,27 @@ export class UsersController {
     this.logger.log(`Requesting email change for user ${userId}`);
     return this.usersService.changeEmail(userId, changeEmailDto);
   }
+
+  /**
+   * GET /users/me/onboarding-status
+   * Get onboarding status for current user
+   */
+  @Get('me/onboarding-status')
+  async getOnboardingStatus(@Req() request: RequestWithUser) {
+    const userId = request.user.id;
+    this.logger.log(`Getting onboarding status for user ${userId}`);
+    return this.usersService.getOnboardingStatus(userId);
+  }
+
+  /**
+   * POST /users/me/complete-onboarding
+   * Mark onboarding as complete for current user
+   */
+  @Post('me/complete-onboarding')
+  async completeOnboarding(@Req() request: RequestWithUser) {
+    const userId = request.user.id;
+    this.logger.log(`Completing onboarding for user ${userId}`);
+    return this.usersService.completeOnboarding(userId);
+  }
 }
 
