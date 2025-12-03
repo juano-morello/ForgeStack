@@ -14,7 +14,7 @@ export class StripeWebhookService {
   private readonly webhookSecret: string;
 
   constructor(private readonly configService: ConfigService) {
-    const stripeSecretKey = this.configService.get<string>('stripe.secretKey');
+    const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
     if (!stripeSecretKey) {
       throw new Error('STRIPE_SECRET_KEY is not configured');
     }
@@ -23,7 +23,7 @@ export class StripeWebhookService {
       apiVersion: '2025-11-17.clover',
     });
 
-    this.webhookSecret = this.configService.get<string>('stripe.webhookSecret') || '';
+    this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') || '';
     if (!this.webhookSecret) {
       this.logger.warn('STRIPE_WEBHOOK_SECRET is not configured - webhook verification will fail');
     }

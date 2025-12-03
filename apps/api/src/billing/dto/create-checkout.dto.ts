@@ -5,11 +5,11 @@ export class CreateCheckoutDto {
   @IsNotEmpty()
   priceId!: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   successUrl!: string;
 
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   @IsNotEmpty()
   cancelUrl!: string;
 }

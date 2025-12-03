@@ -14,8 +14,8 @@ describe('StripeWebhookService', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'stripe.secretKey') return 'sk_test_123';
-              if (key === 'stripe.webhookSecret') return 'whsec_test_123';
+              if (key === 'STRIPE_SECRET_KEY') return 'sk_test_123';
+              if (key === 'STRIPE_WEBHOOK_SECRET') return 'whsec_test_123';
               return null;
             }),
           },
@@ -34,8 +34,8 @@ describe('StripeWebhookService', () => {
     expect(() => {
       new StripeWebhookService({
         get: jest.fn((key: string) => {
-          if (key === 'stripe.secretKey') return null;
-          if (key === 'stripe.webhookSecret') return 'whsec_test_123';
+          if (key === 'STRIPE_SECRET_KEY') return null;
+          if (key === 'STRIPE_WEBHOOK_SECRET') return 'whsec_test_123';
           return null;
         }),
       } as any);
@@ -46,8 +46,8 @@ describe('StripeWebhookService', () => {
     // Service should still be created even without webhook secret (just logs a warning)
     const serviceWithoutWebhookSecret = new StripeWebhookService({
       get: jest.fn((key: string) => {
-        if (key === 'stripe.secretKey') return 'sk_test_123';
-        if (key === 'stripe.webhookSecret') return '';
+        if (key === 'STRIPE_SECRET_KEY') return 'sk_test_123';
+        if (key === 'STRIPE_WEBHOOK_SECRET') return '';
         return null;
       }),
     } as any);
