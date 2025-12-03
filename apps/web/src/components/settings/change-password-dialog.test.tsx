@@ -25,6 +25,13 @@ describe('ChangePasswordDialog', () => {
     vi.clearAllMocks();
   });
 
+  // Helper to get inputs by their IDs
+  const getInputs = () => ({
+    currentPassword: document.getElementById('current-password') as HTMLInputElement,
+    newPassword: document.getElementById('new-password') as HTMLInputElement,
+    confirmPassword: document.getElementById('confirm-password') as HTMLInputElement,
+  });
+
   it('renders when open', () => {
     render(
       <ChangePasswordDialog
@@ -33,10 +40,11 @@ describe('ChangePasswordDialog', () => {
       />
     );
 
-    expect(screen.getByText('Change Password')).toBeInTheDocument();
-    expect(screen.getByLabelText(/Current Password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/New Password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Confirm New Password/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Change Password' })).toBeInTheDocument();
+    const inputs = getInputs();
+    expect(inputs.currentPassword).toBeInTheDocument();
+    expect(inputs.newPassword).toBeInTheDocument();
+    expect(inputs.confirmPassword).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {
@@ -76,17 +84,17 @@ describe('ChangePasswordDialog', () => {
       />
     );
 
-    const currentPasswordInput = screen.getByLabelText(/Current Password/i);
-    await user.type(currentPasswordInput, 'oldpass');
-
-    const newPasswordInput = screen.getByLabelText(/New Password/i);
-    await user.type(newPasswordInput, 'short');
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpass');
+    await user.type(inputs.newPassword, 'short');
 
     const submitButton = screen.getByRole('button', { name: /Change Password/i });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/New password must be at least 8 characters long/i)).toBeInTheDocument();
+      // The error message appears in an Alert with role="alert"
+      const alert = screen.getByRole('alert');
+      expect(alert).toHaveTextContent(/New password must be at least 8 characters long/i);
     });
   });
 
@@ -99,14 +107,10 @@ describe('ChangePasswordDialog', () => {
       />
     );
 
-    const currentPasswordInput = screen.getByLabelText(/Current Password/i);
-    await user.type(currentPasswordInput, 'oldpassword');
-
-    const newPasswordInput = screen.getByLabelText(/New Password/i);
-    await user.type(newPasswordInput, 'newpassword123');
-
-    const confirmPasswordInput = screen.getByLabelText(/Confirm New Password/i);
-    await user.type(confirmPasswordInput, 'differentpassword');
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'differentpassword');
 
     const submitButton = screen.getByRole('button', { name: /Change Password/i });
     await user.click(submitButton);
@@ -125,14 +129,10 @@ describe('ChangePasswordDialog', () => {
       />
     );
 
-    const currentPasswordInput = screen.getByLabelText(/Current Password/i);
-    await user.type(currentPasswordInput, 'samepassword');
-
-    const newPasswordInput = screen.getByLabelText(/New Password/i);
-    await user.type(newPasswordInput, 'samepassword');
-
-    const confirmPasswordInput = screen.getByLabelText(/Confirm New Password/i);
-    await user.type(confirmPasswordInput, 'samepassword');
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'samepassword');
+    await user.type(inputs.newPassword, 'samepassword');
+    await user.type(inputs.confirmPassword, 'samepassword');
 
     const submitButton = screen.getByRole('button', { name: /Change Password/i });
     await user.click(submitButton);
@@ -153,14 +153,10 @@ describe('ChangePasswordDialog', () => {
       />
     );
 
-    const currentPasswordInput = screen.getByLabelText(/Current Password/i);
-    await user.type(currentPasswordInput, 'oldpassword');
-
-    const newPasswordInput = screen.getByLabelText(/New Password/i);
-    await user.type(newPasswordInput, 'newpassword123');
-
-    const confirmPasswordInput = screen.getByLabelText(/Confirm New Password/i);
-    await user.type(confirmPasswordInput, 'newpassword123');
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'newpassword123');
 
     const submitButton = screen.getByRole('button', { name: /Change Password/i });
     await user.click(submitButton);
@@ -185,14 +181,10 @@ describe('ChangePasswordDialog', () => {
       />
     );
 
-    const currentPasswordInput = screen.getByLabelText(/Current Password/i);
-    await user.type(currentPasswordInput, 'oldpassword');
-
-    const newPasswordInput = screen.getByLabelText(/New Password/i);
-    await user.type(newPasswordInput, 'newpassword123');
-
-    const confirmPasswordInput = screen.getByLabelText(/Confirm New Password/i);
-    await user.type(confirmPasswordInput, 'newpassword123');
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'newpassword123');
 
     const submitButton = screen.getByRole('button', { name: /Change Password/i });
     await user.click(submitButton);

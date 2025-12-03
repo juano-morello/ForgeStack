@@ -35,8 +35,8 @@ describe('PricingSection', () => {
   });
 
   it('highlights the popular tier', () => {
-    const { container } = render(<PricingSection />);
-    
+    render(<PricingSection />);
+
     const popularBadge = screen.getByText('POPULAR');
     expect(popularBadge).toBeInTheDocument();
     

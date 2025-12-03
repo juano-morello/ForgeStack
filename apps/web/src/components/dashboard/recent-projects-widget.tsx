@@ -6,10 +6,9 @@
 
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Separator } from '@/components/ui/separator';
-import { FolderKanban, Calendar, Plus } from 'lucide-react';
+import { FolderKanban, Calendar } from 'lucide-react';
 import type { Project } from '@/types/project';
 
 interface RecentProjectsWidgetProps {

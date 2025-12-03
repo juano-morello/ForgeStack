@@ -79,8 +79,11 @@ describe('ChangeEmailDialog', () => {
       />
     );
 
-    const newEmailInput = screen.getByLabelText(/New Email/i);
-    await user.type(newEmailInput, 'invalid-email');
+    // Use getElementById to avoid label matching issues
+    // Use "test@x" which passes browser's lenient email validation but fails our regex
+    // (our regex requires format: something@something.something)
+    const newEmailInput = document.getElementById('new-email') as HTMLInputElement;
+    await user.type(newEmailInput, 'test@x');
 
     const submitButton = screen.getByRole('button', { name: /Send Verification Email/i });
     await user.click(submitButton);
