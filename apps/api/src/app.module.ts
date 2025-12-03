@@ -33,6 +33,8 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { AdminModule } from './admin/admin.module';
 import { UsersModule } from './users/users.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { UsageModule } from './usage/usage.module';
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { UsersModule } from './users/users.module';
     RolesModule,
     AdminModule,
     UsersModule,
+    UsageModule,
+    DashboardModule,
   ],
   providers: [
     {

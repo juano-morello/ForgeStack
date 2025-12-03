@@ -8,6 +8,7 @@ import {
   eq,
   and,
   isNull,
+  count,
   withServiceContext,
   withTenantContext,
   apiKeys,
@@ -148,6 +149,22 @@ export class ApiKeysRepository {
         .update(apiKeys)
         .set({ lastUsedAt: new Date() })
         .where(eq(apiKeys.id, id));
+    });
+  }
+
+  /**
+   * Count API keys in an organization within tenant context
+   */
+  async count(ctx: TenantContext): Promise<number> {
+    this.logger.debug(`Counting API keys in org ${ctx.orgId}`);
+
+    return withTenantContext(ctx, async (tx) => {
+      const [result] = await tx
+        .select({ count: count() })
+        .from(apiKeys)
+        .where(isNull(apiKeys.revokedAt));
+
+      return Number(result?.count ?? 0);
     });
   }
 }

@@ -9,6 +9,7 @@ import {
   and,
   desc,
   count,
+  sql,
   isNull,
   isNotNull,
   lt,
@@ -267,6 +268,31 @@ export class FilesRepository {
         .limit(1);
 
       return file || null;
+    });
+  }
+
+  /**
+   * Get total storage used by an organization (in bytes)
+   * Uses service context to bypass RLS for org-wide calculation
+   */
+  async getStorageUsed(orgId: string): Promise<number> {
+    this.logger.debug(`Calculating storage used for org ${orgId}`);
+
+    return withServiceContext('FilesRepository.getStorageUsed', async (tx) => {
+      const result = await tx
+        .select({
+          total: sql<number>`COALESCE(SUM(${files.size}), 0)`,
+        })
+        .from(files)
+        .where(
+          and(
+            eq(files.orgId, orgId),
+            isNull(files.deletedAt),
+            isNotNull(files.uploadedAt),
+          ),
+        );
+
+      return Number(result[0]?.total ?? 0);
     });
   }
 }

@@ -144,3 +144,56 @@ export const organizationApi = {
     api.patch<OrganizationResponse>(`/organizations/${orgId}`, data),
 };
 
+// Dashboard API Methods
+export interface DashboardSummary {
+  stats: {
+    projects: number;
+    members: number;
+    apiKeys: number;
+    storageUsedBytes: number;
+  };
+  recentActivity: Array<{
+    id: string;
+    orgId: string;
+    actorId: string | null;
+    actorName: string | null;
+    actorAvatar: string | null;
+    type: string;
+    title: string;
+    description: string | null;
+    resourceType: string | null;
+    resourceId: string | null;
+    resourceName: string | null;
+    metadata: Record<string, unknown> | null;
+    aggregationCount: number;
+    createdAt: string;
+  }>;
+  recentProjects: Array<{
+    id: string;
+    orgId: string;
+    name: string;
+    description: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  orgHealth?: {
+    subscriptionStatus: string;
+    usageSummary: {
+      apiCalls: {
+        current: number;
+        limit: number | null;
+        percentage: number;
+      };
+      storage: {
+        current: number;
+        limit: number | null;
+        percentage: number;
+      };
+    };
+  };
+}
+
+export const dashboardApi = {
+  getSummary: () => api.get<DashboardSummary>('/dashboard/summary'),
+};
+
