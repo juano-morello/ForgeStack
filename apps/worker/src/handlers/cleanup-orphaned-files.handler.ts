@@ -6,6 +6,9 @@
 import { Job } from 'bullmq';
 import { files, withServiceContext, eq, and, isNull, lt } from '@forgestack/db';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('CleanupOrphanedFiles');
 
 export interface CleanupOrphanedFilesJobData {
   olderThanHours?: number; // Default: 24
@@ -28,7 +31,7 @@ export async function handleCleanupOrphanedFiles(job: Job<CleanupOrphanedFilesJo
   const olderThanHours = job.data.olderThanHours ?? 24;
   const batchSize = job.data.batchSize ?? 100;
 
-  console.log(`[CleanupOrphanedFiles] Processing job ${job.id} (older than ${olderThanHours}h)`);
+  logger.info({ jobId: job.id, olderThanHours, batchSize }, 'Processing cleanup orphaned files job');
 
   const olderThan = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
 
@@ -41,7 +44,7 @@ export async function handleCleanupOrphanedFiles(job: Job<CleanupOrphanedFilesJo
       .limit(batchSize);
   });
 
-  console.log(`[CleanupOrphanedFiles] Found ${orphanedFiles.length} orphaned files`);
+  logger.info({ count: orphanedFiles.length }, 'Found orphaned files');
 
   let deletedCount = 0;
   let failedCount = 0;
@@ -62,16 +65,14 @@ export async function handleCleanupOrphanedFiles(job: Job<CleanupOrphanedFilesJo
       });
 
       deletedCount++;
-      console.log(`[CleanupOrphanedFiles] Deleted orphaned file: ${file.id} (${file.key})`);
+      logger.debug({ fileId: file.id, key: file.key }, 'Deleted orphaned file');
     } catch (error) {
       failedCount++;
-      console.error(`[CleanupOrphanedFiles] Failed to delete file ${file.id}:`, error);
+      logger.error({ fileId: file.id, error }, 'Failed to delete orphaned file');
     }
   }
 
-  console.log(
-    `[CleanupOrphanedFiles] Completed: ${deletedCount} deleted, ${failedCount} failed`,
-  );
+  logger.info({ deletedCount, failedCount }, 'Cleanup orphaned files completed');
 
   return {
     deletedCount,

@@ -27,6 +27,12 @@ export const config = {
     // Example: "price_123:starter,price_456:pro,price_789:enterprise"
     priceToPlanMap: parsePriceToPlanMap(process.env.STRIPE_PRICE_TO_PLAN_MAP || ''),
   },
+  otel: {
+    enabled: process.env.OTEL_ENABLED === 'true',
+    exporterType: process.env.OTEL_EXPORTER_TYPE || 'console',
+    otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318/v1/traces',
+    serviceName: process.env.OTEL_SERVICE_NAME || 'forgestack-worker',
+  },
 };
 
 /**

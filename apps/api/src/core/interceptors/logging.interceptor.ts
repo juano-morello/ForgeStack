@@ -1,6 +1,6 @@
 /**
  * Request logging interceptor
- * Logs request method, path, status code, and response time
+ * Logs request method, path, status code, and response time with trace context
  */
 
 import {
@@ -8,37 +8,65 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { trace } from '@opentelemetry/api';
+import { createLogger } from '../../telemetry/logger';
+
+const logger = createLogger('HTTP');
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('HTTP');
-
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
-    const { method, url } = request;
+    const { method, url, headers } = request;
     const startTime = Date.now();
+
+    // Get trace context
+    const span = trace.getActiveSpan();
+    const traceId = span?.spanContext().traceId;
+
+    logger.info(
+      {
+        method,
+        path: url,
+        userAgent: headers['user-agent'],
+        traceId,
+      },
+      'Request received',
+    );
 
     return next.handle().pipe(
       tap({
         next: () => {
           const response = context.switchToHttp().getResponse();
-          const statusCode = response.statusCode;
           const duration = Date.now() - startTime;
 
-          this.logger.log(
-            `${method} ${url} ${statusCode} - ${duration}ms`,
+          logger.info(
+            {
+              method,
+              path: url,
+              statusCode: response.statusCode,
+              duration,
+              traceId,
+            },
+            'Request completed',
           );
         },
         error: (error) => {
           const duration = Date.now() - startTime;
-          const statusCode = error.status || 500;
 
-          this.logger.warn(
-            `${method} ${url} ${statusCode} - ${duration}ms`,
+          logger.error(
+            {
+              method,
+              path: url,
+              statusCode: error.status || 500,
+              duration,
+              traceId,
+              error: error.message,
+            },
+            'Request failed',
           );
         },
       }),

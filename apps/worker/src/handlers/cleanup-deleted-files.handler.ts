@@ -6,6 +6,9 @@
 import { Job } from 'bullmq';
 import { files, withServiceContext, eq, and, isNotNull, lt } from '@forgestack/db';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('CleanupDeletedFiles');
 
 export interface CleanupDeletedFilesJobData {
   olderThanDays?: number; // Default: 30
@@ -28,7 +31,7 @@ export async function handleCleanupDeletedFiles(job: Job<CleanupDeletedFilesJobD
   const olderThanDays = job.data.olderThanDays ?? 30;
   const batchSize = job.data.batchSize ?? 100;
 
-  console.log(`[CleanupDeletedFiles] Processing job ${job.id} (older than ${olderThanDays} days)`);
+  logger.info({ jobId: job.id, olderThanDays, batchSize }, 'Processing cleanup deleted files job');
 
   const olderThan = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
 
@@ -47,7 +50,7 @@ export async function handleCleanupDeletedFiles(job: Job<CleanupDeletedFilesJobD
       .limit(batchSize);
   });
 
-  console.log(`[CleanupDeletedFiles] Found ${deletedFiles.length} deleted files to clean up`);
+  logger.info({ count: deletedFiles.length }, 'Found deleted files to clean up');
 
   // Group by org for storage update
   const storageByOrg = new Map<string, number>();
@@ -74,22 +77,25 @@ export async function handleCleanupDeletedFiles(job: Job<CleanupDeletedFilesJobD
       });
 
       deletedCount++;
-      console.log(`[CleanupDeletedFiles] Permanently deleted file: ${file.id} (${file.key})`);
+      logger.debug({ fileId: file.id, key: file.key }, 'Permanently deleted file');
     } catch (error) {
       failedCount++;
-      console.error(`[CleanupDeletedFiles] Failed to delete file ${file.id}:`, error);
+      logger.error({ fileId: file.id, error }, 'Failed to delete file');
     }
   }
 
   // Log storage reclaimed per org (storage tracking to be implemented in future)
   for (const [orgId, reclaimedBytes] of storageByOrg) {
-    console.log(
-      `[CleanupDeletedFiles] Reclaimed ${reclaimedBytes} bytes for org ${orgId}`,
-    );
+    logger.debug({ orgId, reclaimedBytes }, 'Reclaimed storage for org');
   }
 
-  console.log(
-    `[CleanupDeletedFiles] Completed: ${deletedCount} deleted, ${failedCount} failed, ${storageByOrg.size} orgs updated`,
+  logger.info(
+    {
+      deletedCount,
+      failedCount,
+      orgsUpdated: storageByOrg.size,
+    },
+    'Cleanup deleted files completed'
   );
 
   return {

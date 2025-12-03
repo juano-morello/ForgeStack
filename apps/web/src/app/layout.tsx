@@ -4,6 +4,9 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
+// Force dynamic rendering for all pages to prevent prerendering issues with client hooks
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'ForgeStack',
   description: 'Multi-tenant SaaS Starter Kit',

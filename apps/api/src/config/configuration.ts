@@ -14,5 +14,11 @@ export default () => ({
     enabled: process.env.RATE_LIMIT_ENABLED !== 'false',
     failOpen: process.env.RATE_LIMIT_FAIL_OPEN !== 'false',
   },
+  otel: {
+    enabled: process.env.OTEL_ENABLED === 'true',
+    exporterType: process.env.OTEL_EXPORTER_TYPE || 'console',
+    exporterOtlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318',
+    serviceName: process.env.OTEL_SERVICE_NAME || 'forgestack-api',
+  },
 });
 

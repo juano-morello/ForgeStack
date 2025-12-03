@@ -1,0 +1,41 @@
+# =======================================================
+# Fly.io Configuration - ForgeStack API
+# =======================================================
+# Deploy: fly deploy -c deploy/fly.api.toml
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "forgestack-api"
+primary_region = "iad"  # US East (Virginia) - change to your preferred region
+
+[build]
+  dockerfile = "apps/api/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "4000"
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  path = "/api/v1/health"
+  timeout = "5s"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Secrets to set via CLI:
+# fly secrets set DATABASE_URL="postgresql://..." -c deploy/fly.api.toml
+# fly secrets set REDIS_URL="redis://..." -c deploy/fly.api.toml
+# fly secrets set BETTER_AUTH_SECRET="..." -c deploy/fly.api.toml
+

@@ -1,0 +1,59 @@
+# =============================================================================
+# Grafana Datasources Configuration
+# =============================================================================
+# Auto-provisioned datasources for ForgeStack observability
+# Docs: https://grafana.com/docs/grafana/latest/administration/provisioning/
+
+apiVersion: 1
+
+datasources:
+  # Tempo - Distributed Tracing
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: true
+    jsonData:
+      httpMethod: GET
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        filterByTraceID: true
+        filterBySpanID: true
+      tracesToMetrics:
+        datasourceUid: prometheus
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      lokiSearch:
+        datasourceUid: loki
+
+  # Loki - Log Aggregation
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    uid: loki
+    jsonData:
+      derivedFields:
+        - datasourceUid: tempo
+          matcherRegex: '"trace_id":"([a-f0-9]+)"'
+          name: TraceID
+          url: '$${__value.raw}'
+
+  # Prometheus - Metrics
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    uid: prometheus
+    jsonData:
+      httpMethod: POST
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
+

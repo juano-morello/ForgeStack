@@ -12,29 +12,38 @@ import { handleIncomingWebhookProcessing, IncomingWebhookJobData } from './handl
 import { handleAuditLog, AuditLogJobData } from './handlers/audit-log.handler';
 import { handleActivity, ActivityJobData } from './handlers/activity.handler';
 import { handleNotificationEmail, NotificationEmailJobData } from './handlers/notification-email.handler';
+import { createLogger } from './telemetry/logger';
+import { withTracing } from './telemetry/tracing';
 
+const logger = createLogger('Worker');
 const connection = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
 
 const workers: Worker[] = [];
 
 /**
- * Helper to create a worker with standard event handlers
+ * Helper to create a worker with standard event handlers and tracing
  */
 function createWorker<T>(
   queueName: string,
   handler: Processor<T>
 ): Worker<T> {
-  const worker = new Worker<T>(queueName, handler, {
+  // Wrap handler with tracing
+  const tracedHandler = withTracing(queueName, handler);
+
+  const worker = new Worker<T>(queueName, tracedHandler, {
     connection,
     concurrency: config.worker.concurrency,
   });
 
   worker.on('completed', (job) => {
-    console.log(`[${queueName}] Job ${job.id} completed`);
+    logger.info({ jobId: job.id, queue: queueName }, 'Job completed');
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[${queueName}] Job ${job?.id} failed:`, err.message);
+    logger.error(
+      { jobId: job?.id, queue: queueName, error: err.message },
+      'Job failed'
+    );
   });
 
   workers.push(worker);
@@ -55,15 +64,21 @@ createWorker<NotificationEmailJobData>(QUEUE_NAMES.NOTIFICATION_EMAIL, handleNot
 
 // Graceful shutdown
 async function shutdown() {
-  console.log('[Worker] Shutting down...');
+  logger.info('Shutting down...');
   await Promise.all(workers.map((w) => w.close()));
   await connection.quit();
-  console.log('[Worker] Shutdown complete');
+  logger.info('Shutdown complete');
   process.exit(0);
 }
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-console.log('[Worker] Started and listening for jobs...');
+logger.info(
+  {
+    concurrency: config.worker.concurrency,
+    queues: Object.values(QUEUE_NAMES),
+  },
+  'Worker started and listening for jobs'
+);
 

@@ -3,6 +3,9 @@
  * NestJS API server entry point
  */
 
+// IMPORTANT: Import OTEL SDK first for auto-instrumentation
+import './telemetry/otel';
+
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';

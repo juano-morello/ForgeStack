@@ -10,6 +10,9 @@ import {
   webhookDeliveries,
   eq,
 } from '@forgestack/db';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('WebhookDelivery');
 
 export interface WebhookDeliveryJobData {
   deliveryId: string;
@@ -85,7 +88,7 @@ async function updateDeliveryRecord(
 export async function handleWebhookDelivery(job: Job<WebhookDeliveryJobData>) {
   const { deliveryId, url, secret, payload, eventId, eventType, attemptNumber } = job.data;
 
-  console.log(`[WebhookDelivery] Processing delivery ${deliveryId} for event ${eventType} (attempt ${attemptNumber})`);
+  logger.info(`[WebhookDelivery] Processing delivery ${deliveryId} for event ${eventType} (attempt ${attemptNumber})`);
 
   const timestamp = Math.floor(Date.now() / 1000);
   const payloadString = JSON.stringify(payload);
@@ -129,16 +132,16 @@ export async function handleWebhookDelivery(job: Job<WebhookDeliveryJobData>) {
     });
 
     if (!response.ok) {
-      console.error(`[WebhookDelivery] Delivery ${deliveryId} failed with status ${response.status}`);
+      logger.error(`[WebhookDelivery] Delivery ${deliveryId} failed with status ${response.status}`);
       throw new Error(`Webhook returned ${response.status}`);
     }
 
-    console.log(`[WebhookDelivery] Delivery ${deliveryId} succeeded with status ${response.status}`);
+    logger.info(`[WebhookDelivery] Delivery ${deliveryId} succeeded with status ${response.status}`);
     return { success: true, status: response.status };
   } catch (error: any) {
     const errorMessage = error.name === 'AbortError' ? 'Request timeout' : error.message;
 
-    console.error(`[WebhookDelivery] Delivery ${deliveryId} failed:`, errorMessage);
+    logger.error(`[WebhookDelivery] Delivery ${deliveryId} failed:`, errorMessage);
 
     await updateDeliveryRecord(deliveryId, {
       error: errorMessage,

@@ -13,6 +13,9 @@ import {
 } from '@forgestack/db';
 import type Stripe from 'stripe';
 import { config } from '../config';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('IncomingWebhook');
 
 export interface IncomingWebhookJobData {
   eventRecordId: string;
@@ -31,7 +34,7 @@ function getPlanFromPriceId(priceId: string): string {
 export async function handleIncomingWebhookProcessing(job: Job<IncomingWebhookJobData>) {
   const { eventRecordId, provider, eventType, eventId } = job.data;
 
-  console.log(`[IncomingWebhook] Processing event ${eventRecordId} - ${eventId} (${provider}/${eventType})`);
+  logger.info({ eventRecordId, eventId, provider, eventType }, 'Processing incoming webhook event');
 
   // Fetch event from database
   const event = await withServiceContext('IncomingWebhook.fetchEvent', async (tx) => {
@@ -47,12 +50,12 @@ export async function handleIncomingWebhookProcessing(job: Job<IncomingWebhookJo
   }
 
   if (event.processedAt) {
-    console.log(`[IncomingWebhook] Event already processed: ${eventRecordId}`);
+    logger.info({ eventRecordId }, 'Event already processed');
     return { skipped: true, reason: 'already_processed' };
   }
 
   if (!event.verified) {
-    console.warn(`[IncomingWebhook] Skipping unverified event: ${eventRecordId}`);
+    logger.warn({ eventRecordId }, 'Skipping unverified event');
     return { skipped: true, reason: 'not_verified' };
   }
 
@@ -77,10 +80,10 @@ export async function handleIncomingWebhookProcessing(job: Job<IncomingWebhookJo
         .where(eq(incomingWebhookEvents.id, eventRecordId));
     });
 
-    console.log(`[IncomingWebhook] Successfully processed event ${eventRecordId}`);
+    logger.debug({ eventRecordId }, 'Successfully processed incoming webhook event');
     return { success: true };
   } catch (error) {
-    console.error(`[IncomingWebhook] Error processing event ${eventRecordId}:`, error);
+    logger.error({ eventRecordId, error }, 'Error processing incoming webhook event');
 
     // Update retry count and error
     await withServiceContext('IncomingWebhook.updateError', async (tx) => {
@@ -101,7 +104,7 @@ export async function handleIncomingWebhookProcessing(job: Job<IncomingWebhookJo
  * Handle Stripe webhook events
  */
 async function handleStripeEvent(event: Stripe.Event) {
-  console.log(`[IncomingWebhook] Handling Stripe event: ${event.type}`);
+  logger.debug(`[IncomingWebhook] Handling Stripe event: ${event.type}`);
 
   switch (event.type) {
     case 'checkout.session.completed':
@@ -130,13 +133,13 @@ async function handleStripeEvent(event: Stripe.Event) {
       break;
 
     default:
-      console.log(`[IncomingWebhook] Unhandled Stripe event type: ${event.type}`);
+      logger.debug(`[IncomingWebhook] Unhandled Stripe event type: ${event.type}`);
   }
 }
 
 async function handleCheckoutCompleted(event: Stripe.CheckoutSessionCompletedEvent) {
   const session = event.data.object;
-  console.log(`[IncomingWebhook] Checkout completed for customer ${session.customer}`);
+  logger.debug(`[IncomingWebhook] Checkout completed for customer ${session.customer}`);
   // Subscription will be handled by subscription.created event
 }
 
@@ -144,7 +147,7 @@ async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdate
   const subscription = event.data.object;
   const stripeCustomerId = subscription.customer as string;
 
-  console.log(`[IncomingWebhook] Subscription ${subscription.id} changed to ${subscription.status}`);
+  logger.debug(`[IncomingWebhook] Subscription ${subscription.id} changed to ${subscription.status}`);
 
   // Find customer in our database
   const customer = await withServiceContext('IncomingWebhook.findCustomer', async (tx) => {
@@ -156,7 +159,7 @@ async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdate
   });
 
   if (!customer) {
-    console.error(`[IncomingWebhook] Customer not found for Stripe ID ${stripeCustomerId}`);
+    logger.error(`[IncomingWebhook] Customer not found for Stripe ID ${stripeCustomerId}`);
     return;
   }
 
@@ -202,13 +205,13 @@ async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdate
       });
   });
 
-  console.log(`[IncomingWebhook] Updated subscription for org ${customer.orgId}`);
+  logger.debug(`[IncomingWebhook] Updated subscription for org ${customer.orgId}`);
 }
 
 async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDeletedEvent) {
   const subscription = event.data.object;
 
-  console.log(`[IncomingWebhook] Subscription ${subscription.id} deleted`);
+  logger.debug(`[IncomingWebhook] Subscription ${subscription.id} deleted`);
 
   // Update subscription status to canceled
   await withServiceContext('IncomingWebhook.deleteSubscription', async (tx) => {
@@ -225,7 +228,7 @@ async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDelet
 
 async function handleInvoicePaid(event: Stripe.InvoicePaidEvent) {
   const invoice = event.data.object;
-  console.log(`[IncomingWebhook] Invoice ${invoice.id} paid`);
+  logger.debug(`[IncomingWebhook] Invoice ${invoice.id} paid`);
   // Additional logic for successful payments can be added here
 }
 
@@ -236,10 +239,10 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
     ? subscriptionData
     : subscriptionData?.id ?? null;
 
-  console.log(`[IncomingWebhook] Invoice ${invoice.id} payment failed`);
+  logger.debug(`[IncomingWebhook] Invoice ${invoice.id} payment failed`);
 
   if (!stripeSubscriptionId) {
-    console.log(`[IncomingWebhook] No subscription associated with invoice ${invoice.id}`);
+    logger.debug(`[IncomingWebhook] No subscription associated with invoice ${invoice.id}`);
     return;
   }
 
@@ -254,12 +257,12 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
       .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
   });
 
-  console.log(`[IncomingWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
+  logger.debug(`[IncomingWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
 }
 
 async function handleCustomerUpdated(event: Stripe.CustomerUpdatedEvent) {
   const customer = event.data.object;
-  console.log(`[IncomingWebhook] Customer ${customer.id} updated`);
+  logger.debug(`[IncomingWebhook] Customer ${customer.id} updated`);
 
   // Update customer record
   await withServiceContext('IncomingWebhook.updateCustomer', async (tx) => {

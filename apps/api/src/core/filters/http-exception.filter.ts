@@ -9,9 +9,9 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { createLogger } from '../../telemetry/logger';
 
 /**
  * Standard error response format
@@ -33,9 +33,10 @@ interface ExceptionResponseObject {
   error?: string;
 }
 
+const logger = createLogger('HttpExceptionFilter');
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -68,13 +69,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = isProduction ? 'Internal server error' : exception.message;
       error = 'Internal Server Error';
 
-      this.logger.error(`Unhandled exception: ${exception.message}`, exception.stack);
+      logger.error(
+        {
+          error: exception.message,
+          stack: exception.stack,
+        },
+        'Unhandled exception',
+      );
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       message = 'Internal server error';
       error = 'Internal Server Error';
 
-      this.logger.error('Unknown exception type', exception);
+      logger.error({ exception }, 'Unknown exception type');
     }
 
     const errorResponse: ErrorResponse = {

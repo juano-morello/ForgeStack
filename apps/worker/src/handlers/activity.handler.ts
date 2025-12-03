@@ -5,6 +5,9 @@
 
 import { Job } from 'bullmq';
 import { withServiceContext, activities, eq, gte, and } from '@forgestack/db';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('Activity');
 
 const AGGREGATION_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const AGGREGATABLE_TYPES = ['file.uploaded', 'file.deleted', 'member.invited'];
@@ -26,7 +29,7 @@ export interface ActivityJobData {
 export async function handleActivity(job: Job<ActivityJobData>) {
   const event = job.data;
 
-  console.log(`[Activity] Processing job ${job.id} for ${event.type}`);
+  logger.info({ jobId: job.id, type: event.type, orgId: event.orgId }, 'Processing activity job');
 
   try {
     // Check if this activity type is aggregatable
@@ -36,10 +39,10 @@ export async function handleActivity(job: Job<ActivityJobData>) {
       await processSimple(event);
     }
 
-    console.log(`[Activity] Processed activity: ${event.type}`);
+    logger.info({ type: event.type }, 'Activity processed successfully');
     return { success: true, type: event.type };
   } catch (error) {
-    console.error(`[Activity] Failed to process activity:`, error);
+    logger.error({ error, type: event.type }, 'Failed to process activity');
     throw error;
   }
 }
@@ -125,7 +128,7 @@ async function processWithAggregation(event: ActivityJobData): Promise<void> {
         })
         .where(eq(activities.id, existing.id));
 
-      console.log(`[Activity] Updated aggregated activity ${existing.id} (count: ${newCount})`);
+      logger.debug({ activityId: existing.id, count: newCount }, 'Updated aggregated activity');
     } else {
       // Create new aggregated activity
       await db.insert(activities).values({
@@ -153,7 +156,7 @@ async function processWithAggregation(event: ActivityJobData): Promise<void> {
         aggregationCount: 1,
       });
 
-      console.log(`[Activity] Created new aggregated activity with key ${aggregationKey}`);
+      logger.debug({ aggregationKey }, 'Created new aggregated activity');
     }
   });
 }

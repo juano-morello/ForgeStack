@@ -1,0 +1,87 @@
+# =======================================================
+# Docker Compose - ForgeStack Production Testing
+# =======================================================
+# For local production-like testing
+# Usage: docker compose -f docker-compose.prod.yml up --build
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: forgestack-postgres-prod
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: forgestack
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: forgestack-redis-prod
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: forgestack-api
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/forgestack
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+      BETTER_AUTH_SECRET: local-test-secret-at-least-32-characters-long
+      CORS_ORIGIN: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: forgestack-worker
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/forgestack
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: forgestack-web
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/forgestack
+      BETTER_AUTH_SECRET: local-test-secret-at-least-32-characters-long
+      BETTER_AUTH_URL: http://localhost:3000
+      NODE_ENV: production
+    depends_on:
+      - api
+
+volumes:
+  postgres_prod_data:
+  redis_prod_data:
+

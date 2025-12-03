@@ -8,6 +8,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import * as path from 'path';
 import configuration from './config/configuration';
 import { validateEnv } from './config/env.validation';
+import { TelemetryModule } from './telemetry/telemetry.module';
 import { AuthModule } from './auth/auth.module';
 import { CoreModule } from './core/core.module';
 import { TenantContextGuard } from './core/guards/tenant-context.guard';
@@ -40,6 +41,7 @@ import { RateLimitingModule } from './rate-limiting/rate-limiting.module';
         path.resolve(process.cwd(), '../../.env'),
       ],
     }),
+    TelemetryModule, // Import early for global availability
     AuthModule, // Must be imported before CoreModule for guard injection
     CoreModule,
     RateLimitingModule, // Must be imported early for guard registration

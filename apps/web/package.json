@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "dotenv -e ../../.env -e ../../.env.local -e .env.local -- next dev --port 3000",
-    "build": "dotenv -e ../../.env -e ../../.env.local -- next build",
+    "build": "dotenv -e ../../.env -e ../../.env.local -- next build --experimental-build-mode=compile",
+    "build:full": "dotenv -e ../../.env -e ../../.env.local -- next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
     "clean": "rm -rf .next dist",

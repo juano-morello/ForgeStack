@@ -1,4 +1,16 @@
+# =============================================================================
+# ForgeStack - Docker Compose for Local Development
+# =============================================================================
+# Usage:
+#   docker compose up                    # Start core services (postgres, redis)
+#   docker compose --profile otel up     # Start with observability stack
+#   docker compose --profile stripe up   # Start with Stripe CLI for webhooks
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # Core Services (always started)
+  # ---------------------------------------------------------------------------
   postgres:
     image: postgres:15-alpine
     container_name: forgestack-postgres
@@ -31,7 +43,90 @@ services:
       timeout: 5s
       retries: 5
 
+  # ---------------------------------------------------------------------------
+  # Observability Stack (--profile otel)
+  # ---------------------------------------------------------------------------
+  # Grafana Tempo - Distributed Tracing Backend
+  tempo:
+    image: grafana/tempo:latest
+    container_name: forgestack-tempo
+    profiles: ["otel"]
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./docker/tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    ports:
+      - "3200:3200"   # Tempo API
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+
+  # Grafana Loki - Log Aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: forgestack-loki
+    profiles: ["otel"]
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ./docker/loki/loki.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: forgestack-prometheus
+    profiles: ["otel"]
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+
+  # Grafana - Dashboards & Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: forgestack-grafana
+    profiles: ["otel"]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
+
+  # ---------------------------------------------------------------------------
+  # Stripe CLI (--profile stripe)
+  # ---------------------------------------------------------------------------
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: forgestack-stripe-cli
+    profiles: ["stripe"]
+    command: listen --forward-to http://host.docker.internal:4000/webhooks/stripe
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_DEVICE_NAME: forgestack-dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   postgres_data:
   redis_data:
+  tempo_data:
+  loki_data:
+  prometheus_data:
+  grafana_data:
 

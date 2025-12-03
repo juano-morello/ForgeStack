@@ -4,6 +4,9 @@ import { auth } from '@/lib/auth';
 import { OrgProvider } from '@/components/providers/org-provider';
 import { AppShell } from '@/components/layout/app-shell';
 
+// Force dynamic rendering for all protected routes to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 export default async function ProtectedLayout({
   children,
 }: {

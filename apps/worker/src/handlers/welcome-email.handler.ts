@@ -6,6 +6,9 @@
 import { Job } from 'bullmq';
 import { sendEmail } from '../services/email.service';
 import { config } from '../config';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('WelcomeEmail');
 
 export interface WelcomeEmailJobData {
   userId: string;
@@ -16,7 +19,7 @@ export interface WelcomeEmailJobData {
 export async function handleWelcomeEmail(job: Job<WelcomeEmailJobData>) {
   const { email, name } = job.data;
 
-  console.log(`[WelcomeEmail] Processing job ${job.id} for ${email}`);
+  logger.info({ jobId: job.id, email, name }, 'Processing welcome email job');
 
   const greeting = name ? `Hi ${name}` : 'Welcome';
   const dashboardUrl = `${config.email.appUrl}/dashboard`;
@@ -76,7 +79,7 @@ Go to Dashboard: ${dashboardUrl}
     text,
   });
 
-  console.log(`[WelcomeEmail] Sent welcome email to ${email}`);
+  logger.info({ email }, 'Welcome email sent successfully');
   return { sent: true, email };
 }
 

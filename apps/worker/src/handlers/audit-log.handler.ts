@@ -5,6 +5,9 @@
 
 import { Job } from 'bullmq';
 import { auditLogs, withServiceContext } from '@forgestack/db';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('AuditLog');
 
 export interface AuditLogJobData {
   orgId: string;
@@ -28,7 +31,10 @@ export interface AuditLogJobData {
 export async function handleAuditLog(job: Job<AuditLogJobData>) {
   const data = job.data;
 
-  console.log(`[AuditLog] Processing job ${job.id}: ${data.action} ${data.resourceType}`);
+  logger.info(
+    { jobId: job.id, action: data.action, resourceType: data.resourceType, orgId: data.orgId },
+    'Processing audit log job'
+  );
 
   try {
     // Use service context to bypass RLS for worker processing
@@ -50,13 +56,17 @@ export async function handleAuditLog(job: Job<AuditLogJobData>) {
       });
     });
 
-    console.log(`[AuditLog] Successfully processed: ${data.action} ${data.resourceType}`);
+    logger.info({ action: data.action, resourceType: data.resourceType }, 'Audit log processed successfully');
     return { success: true };
   } catch (error) {
-    console.error('[AuditLog] Failed to process audit log:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      data,
-    });
+    logger.error(
+      {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        action: data.action,
+        resourceType: data.resourceType,
+      },
+      'Failed to process audit log'
+    );
     // Rethrow to trigger retry
     throw error;
   }

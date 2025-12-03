@@ -7,6 +7,9 @@ import { Job } from 'bullmq';
 import { sendEmail } from '../services/email.service';
 import { config } from '../config';
 import { withServiceContext, notifications, users, eq, and } from '@forgestack/db';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('NotificationEmail');
 
 export interface NotificationEmailJobData {
   userId: string;
@@ -20,7 +23,7 @@ export interface NotificationEmailJobData {
 export async function handleNotificationEmail(job: Job<NotificationEmailJobData>) {
   const { userId, title, body, link } = job.data;
 
-  console.log(`[NotificationEmail] Processing job ${job.id} for user ${userId}`);
+  logger.info({ jobId: job.id, userId, title }, 'Processing notification email job');
 
   try {
     // Get user email from database
@@ -35,12 +38,12 @@ export async function handleNotificationEmail(job: Job<NotificationEmailJobData>
     });
 
     if (!user) {
-      console.error(`[NotificationEmail] User ${userId} not found`);
+      logger.error({ userId }, 'User not found');
       throw new Error(`User ${userId} not found`);
     }
 
     if (!user.email) {
-      console.error(`[NotificationEmail] User ${userId} has no email`);
+      logger.error({ userId }, 'User has no email');
       throw new Error(`User ${userId} has no email`);
     }
 
@@ -94,14 +97,14 @@ This is an automated notification from ForgeStack.
           );
       });
     } catch (updateError) {
-      console.error('[NotificationEmail] Failed to update emailSent flag:', updateError);
+      logger.error({ error: updateError }, 'Failed to update emailSent flag');
       // Don't throw - email was sent successfully
     }
 
-    console.log(`[NotificationEmail] Email sent successfully to ${user.email}`);
+    logger.info({ email: user.email }, 'Notification email sent successfully');
     return { success: true, email: user.email };
   } catch (error) {
-    console.error('[NotificationEmail] Failed to send email:', error);
+    logger.error({ error }, 'Failed to send notification email');
     throw error; // Let BullMQ retry
   }
 }

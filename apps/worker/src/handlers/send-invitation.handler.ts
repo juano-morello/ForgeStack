@@ -6,6 +6,9 @@
 import { Job } from 'bullmq';
 import { sendEmail } from '../services/email.service';
 import { config } from '../config';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('SendInvitation');
 
 export interface SendInvitationJobData {
   invitationId: string;
@@ -19,7 +22,7 @@ export interface SendInvitationJobData {
 export async function handleSendInvitation(job: Job<SendInvitationJobData>) {
   const { email, orgName, role, token, inviterName } = job.data;
 
-  console.log(`[SendInvitation] Processing job ${job.id} for ${email}`);
+  logger.info({ jobId: job.id, email, orgName, role }, 'Processing invitation email job');
 
   const acceptUrl = `${config.email.appUrl}/invitations/accept?token=${token}`;
   const declineUrl = `${config.email.appUrl}/invitations/decline?token=${token}`;
@@ -86,7 +89,7 @@ This invitation will expire in 7 days.
     text,
   });
 
-  console.log(`[SendInvitation] Sent invitation email to ${email}`);
+  logger.info({ email, orgName }, 'Invitation email sent successfully');
   return { sent: true, email };
 }
 

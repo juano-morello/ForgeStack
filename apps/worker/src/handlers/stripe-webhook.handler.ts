@@ -19,6 +19,9 @@ import { NotificationEmailJobData } from './notification-email.handler';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 import { config } from '../config';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('StripeWebhook');
 
 export interface StripeWebhookJobData {
   eventId: string;
@@ -67,7 +70,7 @@ async function notifyOrgOwners(
   try {
     const ownerUserIds = await getOrgOwnerUserIds(orgId);
     if (ownerUserIds.length === 0) {
-      console.log(`[StripeWebhook] No owners found for org ${orgId}`);
+      logger.debug(`[StripeWebhook] No owners found for org ${orgId}`);
       return;
     }
 
@@ -87,9 +90,9 @@ async function notifyOrgOwners(
     }
 
     await connection.quit();
-    console.log(`[StripeWebhook] Queued ${notification.type} notification for ${ownerUserIds.length} owners of org ${orgId}`);
+    logger.debug({ notificationType: notification.type, ownerCount: ownerUserIds.length, orgId }, 'Queued notification for org owners');
   } catch (error) {
-    console.error(`[StripeWebhook] Failed to queue ${notification.type} notification:`, error);
+    logger.error({ notificationType: notification.type, error }, 'Failed to queue notification');
     // Don't throw - notification should not break the main operation
   }
 }
@@ -97,7 +100,7 @@ async function notifyOrgOwners(
 export async function handleStripeWebhook(job: Job<StripeWebhookJobData>) {
   const { eventId, eventType, payload } = job.data;
 
-  console.log(`[StripeWebhook] Processing event ${eventId} (${eventType})`);
+  logger.info({ eventId, eventType }, 'Processing Stripe webhook event');
 
   try {
     switch (eventType) {
@@ -123,7 +126,7 @@ export async function handleStripeWebhook(job: Job<StripeWebhookJobData>) {
         break;
 
       default:
-        console.log(`[StripeWebhook] Unhandled event type: ${eventType}`);
+        logger.debug({ eventType }, 'Unhandled Stripe event type');
     }
 
     // Mark event as processed
@@ -134,10 +137,10 @@ export async function handleStripeWebhook(job: Job<StripeWebhookJobData>) {
         .where(eq(billingEvents.stripeEventId, eventId));
     });
 
-    console.log(`[StripeWebhook] Successfully processed event ${eventId}`);
+    logger.info({ eventId }, 'Stripe webhook event processed successfully');
     return { success: true, eventId };
   } catch (error) {
-    console.error(`[StripeWebhook] Error processing event ${eventId}:`, error);
+    logger.error({ eventId, error }, 'Error processing Stripe webhook event');
 
     // Mark event as failed
     await withServiceContext('StripeWebhook.markFailed', async (tx) => {
@@ -159,7 +162,7 @@ async function handleCheckoutCompleted(event: Stripe.CheckoutSessionCompletedEve
   const customerId = session.customer as string;
   // Note: subscriptionId available via session.subscription if needed for future enhancements
 
-  console.log(`[StripeWebhook] Checkout completed for customer ${customerId}`);
+  logger.debug(`[StripeWebhook] Checkout completed for customer ${customerId}`);
 
   // Subscription will be handled by subscription.created event
   // This is just for logging
@@ -170,7 +173,7 @@ async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdate
   const stripeCustomerId = subscription.customer as string;
   // Note: orgId available via subscription.metadata?.orgId if needed for future enhancements
 
-  console.log(`[StripeWebhook] Subscription ${subscription.id} changed to ${subscription.status}`);
+  logger.debug(`[StripeWebhook] Subscription ${subscription.id} changed to ${subscription.status}`);
 
   // Find customer in our database
   const customer = await withServiceContext('StripeWebhook.findCustomer', async (tx) => {
@@ -182,7 +185,7 @@ async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdate
   });
 
   if (!customer) {
-    console.error(`[StripeWebhook] Customer not found for Stripe ID ${stripeCustomerId}`);
+    logger.error(`[StripeWebhook] Customer not found for Stripe ID ${stripeCustomerId}`);
     return;
   }
 
@@ -228,13 +231,13 @@ async function handleSubscriptionChange(event: Stripe.CustomerSubscriptionUpdate
       });
   });
 
-  console.log(`[StripeWebhook] Updated subscription for org ${customer.orgId}`);
+  logger.debug(`[StripeWebhook] Updated subscription for org ${customer.orgId}`);
 }
 
 async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDeletedEvent) {
   const subscription = event.data.object;
 
-  console.log(`[StripeWebhook] Subscription ${subscription.id} deleted`);
+  logger.debug(`[StripeWebhook] Subscription ${subscription.id} deleted`);
 
   // Update subscription status to canceled and get org info for notification
   const orgInfo = await withServiceContext('StripeWebhook.deleteSubscription', async (tx) => {
@@ -280,7 +283,7 @@ async function handleSubscriptionDeleted(event: Stripe.CustomerSubscriptionDelet
 
 async function handleInvoicePaid(event: Stripe.InvoicePaidEvent) {
   const invoice = event.data.object;
-  console.log(`[StripeWebhook] Invoice ${invoice.id} paid`);
+  logger.debug(`[StripeWebhook] Invoice ${invoice.id} paid`);
   // Additional logic for successful payments can be added here
 }
 
@@ -292,10 +295,10 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
     ? subscriptionData
     : subscriptionData?.id ?? null;
 
-  console.log(`[StripeWebhook] Invoice ${invoice.id} payment failed`);
+  logger.debug(`[StripeWebhook] Invoice ${invoice.id} payment failed`);
 
   if (!stripeSubscriptionId) {
-    console.log(`[StripeWebhook] No subscription associated with invoice ${invoice.id}`);
+    logger.debug(`[StripeWebhook] No subscription associated with invoice ${invoice.id}`);
     return;
   }
 
@@ -327,7 +330,7 @@ async function handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEven
     return org ? { orgId: org.id, orgName: org.name } : null;
   });
 
-  console.log(`[StripeWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
+  logger.debug(`[StripeWebhook] Updated subscription ${stripeSubscriptionId} to past_due`);
 
   // Notify all org owners about failed payment
   if (orgInfo) {

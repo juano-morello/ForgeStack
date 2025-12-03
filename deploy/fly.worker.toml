@@ -1,0 +1,30 @@
+# =======================================================
+# Fly.io Configuration - ForgeStack Worker
+# =======================================================
+# Deploy: fly deploy -c deploy/fly.worker.toml
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "forgestack-worker"
+primary_region = "iad"  # US East (Virginia) - change to your preferred region
+
+[build]
+  dockerfile = "apps/worker/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+# Worker has no HTTP service - it's a background process
+[processes]
+  worker = "node dist/index.js"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Secrets to set via CLI:
+# fly secrets set DATABASE_URL="postgresql://..." -c deploy/fly.worker.toml
+# fly secrets set REDIS_URL="redis://..." -c deploy/fly.worker.toml
+# fly secrets set RESEND_API_KEY="re_..." -c deploy/fly.worker.toml
+# fly secrets set STRIPE_SECRET_KEY="sk_..." -c deploy/fly.worker.toml
+

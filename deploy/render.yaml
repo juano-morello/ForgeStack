@@ -1,0 +1,85 @@
+# =======================================================
+# Render Blueprint - ForgeStack
+# =======================================================
+# Deploy: Push to GitHub and connect via Render Dashboard
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # API Service
+  - type: web
+    name: forgestack-api
+    runtime: docker
+    dockerfilePath: apps/api/Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forgestack-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: forgestack-redis
+          type: redis
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+    healthCheckPath: /api/v1/health
+
+  # Worker Service
+  - type: worker
+    name: forgestack-worker
+    runtime: docker
+    dockerfilePath: apps/worker/Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forgestack-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: forgestack-redis
+          type: redis
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+
+  # Web Service
+  - type: web
+    name: forgestack-web
+    runtime: docker
+    dockerfilePath: apps/web/Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forgestack-db
+          property: connectionString
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: forgestack-api
+          type: web
+          property: host
+      - key: NODE_ENV
+        value: production
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+    healthCheckPath: /
+
+databases:
+  - name: forgestack-db
+    plan: starter
+    databaseName: forgestack
+    user: forgestack
+
+# Note: Redis must be created separately on Render
+# Create a Redis instance and link it as 'forgestack-redis'
+
