@@ -25,6 +25,23 @@ async function seed() {
   // Seed RBAC permissions and system roles first
   await seedRbac(db);
 
+  // Create super-admin user (for platform administration)
+  const [superAdmin] = await db
+    .insert(users)
+    .values({
+      id: randomUUID(),
+      name: 'Super Admin',
+      email: 'superadmin@forgestack.dev',
+      emailVerified: true,
+      isSuperAdmin: true,
+    })
+    .onConflictDoNothing()
+    .returning();
+
+  if (superAdmin) {
+    console.log('Created super-admin user:', superAdmin.email);
+  }
+
   // Create test user (better-auth compatible with id, name, email)
   const [user] = await db
     .insert(users)

@@ -12,6 +12,18 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
+
+  // Super-admin flag (can only be set via DB/seed, never via API)
+  isSuperAdmin: boolean('is_super_admin').default(false).notNull(),
+
+  // User suspension fields
+  suspendedAt: timestamp('suspended_at', { withTimezone: true }),
+  suspendedReason: text('suspended_reason'),
+  suspendedBy: text('suspended_by'),
+
+  // Last login tracking
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
+
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

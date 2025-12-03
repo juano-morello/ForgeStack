@@ -31,6 +31,7 @@ import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { RateLimitingModule } from './rate-limiting/rate-limiting.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { RolesModule } from './roles/roles.module';
     FeatureFlagsModule,
     PermissionsModule,
     RolesModule,
+    AdminModule,
   ],
   providers: [
     {
