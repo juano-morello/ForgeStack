@@ -12,12 +12,16 @@ import {
 import { type TenantContext } from '@forgestack/db';
 import { CreateOrganizationDto, UpdateOrganizationDto, QueryOrganizationsDto } from './dto';
 import { OrganizationsRepository, type MembershipResult } from './organizations.repository';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @Injectable()
 export class OrganizationsService {
   private readonly logger = new Logger(OrganizationsService.name);
 
-  constructor(private readonly organizationsRepository: OrganizationsRepository) {}
+  constructor(
+    private readonly organizationsRepository: OrganizationsRepository,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   /**
    * Verify membership and create tenant context
@@ -97,13 +101,51 @@ export class OrganizationsService {
 
     const { ctx } = await this.createTenantContext(userId, orgId, { requireOwner: true });
 
+    // Get current state for audit log
+    const before = await this.organizationsRepository.findById(ctx, orgId);
+    if (!before) {
+      throw new NotFoundException('Organization not found');
+    }
+
     const result = await this.organizationsRepository.update(ctx, orgId, {
       name: dto.name,
+      logo: dto.logo,
+      timezone: dto.timezone,
+      language: dto.language,
     });
 
     if (!result) {
       throw new NotFoundException('Organization not found');
     }
+
+    // Log audit event with changes
+    await this.auditLogsService.log(
+      {
+        orgId: ctx.orgId,
+        actorId: ctx.userId,
+        actorType: 'user',
+      },
+      {
+        action: 'organization.updated',
+        resourceType: 'organization',
+        resourceId: result.id,
+        resourceName: result.name,
+        changes: {
+          before: {
+            name: before.name,
+            logo: before.logo,
+            timezone: before.timezone,
+            language: before.language,
+          },
+          after: {
+            name: result.name,
+            logo: result.logo,
+            timezone: result.timezone,
+            language: result.language,
+          },
+        },
+      },
+    );
 
     this.logger.log(`Organization ${orgId} updated`);
     return result;

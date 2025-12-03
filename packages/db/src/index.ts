@@ -33,6 +33,11 @@ export {
   // Tables
   users,
   usersRelations,
+  sessions,
+  sessionsRelations,
+  accounts,
+  accountsRelations,
+  verifications,
   organizations,
   organizationsRelations,
   organizationMembers,
