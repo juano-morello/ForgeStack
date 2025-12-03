@@ -36,7 +36,8 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 | 🔐 **Authentication** | Email/password auth with [better-auth](https://better-auth.com) |
 | 🏢 **Multi-tenancy** | Organization-based data isolation |
 | 🛡️ **Row-Level Security** | PostgreSQL RLS policies for data protection |
-| 👥 **Team Management** | Invite members, manage roles (OWNER/MEMBER) |
+| 👥 **Team Management** | Invite members, assign roles with granular permissions |
+| 🔒 **Granular RBAC** | Custom roles with fine-grained permissions (33 permissions, 11 resources) |
 | 📧 **Email Integration** | Transactional emails with [Resend](https://resend.com) |
 | 💳 **Billing & Subscriptions** | Stripe integration with checkout and customer portal |
 | 📁 **File Uploads** | S3-compatible storage (Cloudflare R2) with signed URLs |
@@ -47,6 +48,8 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 | 🔔 **Notifications** | In-app and email notifications |
 | 🚩 **Feature Flags** | Plan-based gating, rollouts, overrides |
 | ⚡ **Rate Limiting** | Plan-based API rate limits with Redis |
+| 📡 **Observability** | OpenTelemetry tracing, Pino structured logs, Prometheus metrics |
+| 🐳 **Docker Ready** | Multi-stage Dockerfiles with deployment templates |
 | 🎨 **Modern UI** | Next.js 16 + React 19 + Tailwind CSS + shadcn/ui |
 | 📦 **Monorepo** | pnpm workspaces + Turborepo |
 | ✅ **Tested** | 95%+ coverage with Jest, Vitest, and Playwright |
@@ -93,22 +96,30 @@ ForgeStack/
 │   ├── web/                 # Next.js Frontend (Port 3000)
 │   └── worker/              # BullMQ Background Jobs
 ├── packages/
-│   ├── db/                  # Drizzle ORM + Schema + RLS
+│   ├── db/                  # Drizzle ORM + Schema + RLS + RBAC
 │   ├── shared/              # Shared TypeScript types & constants
 │   └── ui/                  # Shared UI components (future)
+├── deploy/                  # Deployment templates
+│   ├── fly.toml             # Fly.io configuration
+│   ├── railway.toml         # Railway configuration
+│   └── render.yaml          # Render configuration
 ├── docs/
-│   └── specs/               # Feature specifications
-├── docker-compose.yml       # Local development services
-└── turbo.json              # Turborepo configuration
+│   ├── specs/               # Feature specifications
+│   └── proposals/           # Feature proposals & roadmap
+├── docker-compose.yml            # Local development services
+├── docker-compose.prod.yml       # Production deployment
+├── docker-compose.observability.yml  # Observability stack
+└── turbo.json                    # Turborepo configuration
 ```
 
 | Package | Description |
 |---------|-------------|
-| `apps/api` | NestJS backend with REST endpoints, authentication, and business logic |
+| `apps/api` | NestJS backend with REST endpoints, authentication, RBAC, and business logic |
 | `apps/web` | Next.js frontend with App Router, React Server Components, and client-side state |
 | `apps/worker` | Background job processor for emails and async tasks |
-| `packages/db` | Database schema, migrations, RLS policies, and Drizzle client |
+| `packages/db` | Database schema, migrations, RLS policies, RBAC tables, and Drizzle client |
 | `packages/shared` | Shared TypeScript types, constants, and validation schemas |
+| `deploy/` | Platform-specific deployment configurations (Fly.io, Railway, Render) |
 
 ---
 
@@ -192,7 +203,9 @@ ForgeStack/
 │   │   │   ├── audit-logs/        # Compliance audit logs
 │   │   │   ├── auth/              # Authentication module
 │   │   │   ├── billing/           # Stripe billing integration
-│   │   │   ├── core/              # Guards, filters, interceptors
+│   │   │   ├── core/              # Guards, decorators, interceptors
+│   │   │   │   ├── guards/        # Auth, tenant, permission guards
+│   │   │   │   └── decorators/    # @RequireRole, @RequirePermission
 │   │   │   ├── feature-flags/     # Feature flag management
 │   │   │   ├── files/             # File upload (R2/S3)
 │   │   │   ├── health/            # Health check endpoint
@@ -200,19 +213,23 @@ ForgeStack/
 │   │   │   ├── members/           # Organization members
 │   │   │   ├── notifications/     # In-app & email notifications
 │   │   │   ├── organizations/     # Organization CRUD
+│   │   │   ├── permissions/       # Permissions module (RBAC)
 │   │   │   ├── projects/          # Projects CRUD
 │   │   │   ├── queue/             # BullMQ queue service
 │   │   │   ├── rate-limiting/     # API rate limiting
+│   │   │   ├── roles/             # Roles module (RBAC)
 │   │   │   └── webhooks/          # Webhook endpoints & delivery
 │   │   └── test/                  # Test utilities & integration tests
 │   │
 │   ├── web/
 │   │   ├── src/
 │   │   │   ├── app/               # Next.js App Router pages
+│   │   │   │   └── (protected)/settings/roles/  # Role management UI
 │   │   │   ├── components/        # React components
-│   │   │   ├── hooks/             # Custom React hooks
+│   │   │   │   └── roles/         # RBAC components (PermissionGate, etc.)
+│   │   │   ├── hooks/             # Custom React hooks (usePermission, etc.)
 │   │   │   ├── lib/               # Utilities & API client
-│   │   │   └── types/             # TypeScript types
+│   │   │   └── types/             # TypeScript types (rbac.ts, etc.)
 │   │   └── e2e/                   # Playwright E2E tests
 │   │
 │   └── worker/
@@ -224,6 +241,11 @@ ForgeStack/
 │   ├── db/
 │   │   ├── src/
 │   │   │   ├── schema/            # Drizzle table definitions
+│   │   │   │   ├── roles.ts       # Roles table
+│   │   │   │   ├── permissions.ts # Permissions table
+│   │   │   │   ├── role-permissions.ts  # Role-permission mapping
+│   │   │   │   └── member-roles.ts      # User-role assignment
+│   │   │   ├── seed/              # Seed scripts (RBAC seed)
 │   │   │   ├── context.ts         # Tenant context & RLS
 │   │   │   └── index.ts           # Exports
 │   │   └── drizzle/               # Migration files
@@ -233,7 +255,14 @@ ForgeStack/
 │           ├── constants.ts       # Shared constants
 │           └── types.ts           # Shared TypeScript types
 │
-└── docs/specs/                    # Feature specifications
+├── deploy/                        # Deployment configurations
+│   ├── fly.toml                   # Fly.io
+│   ├── railway.toml               # Railway
+│   └── render.yaml                # Render
+│
+└── docs/
+    ├── specs/                     # Feature specifications
+    └── proposals/                 # Feature proposals & roadmap
 ```
 
 ---
@@ -380,17 +409,31 @@ await withTenantContext({ orgId, userId, role }, async (tx) => {
 3. `withTenantContext()` sets PostgreSQL session variables
 4. RLS policies automatically filter all queries
 
-### Organization & Member Management
+### Organization & Role-Based Access Control
+
+ForgeStack uses a granular RBAC system with customizable roles and permissions:
 
 ```
-User creates org → Becomes OWNER → Can invite members
-                                 → Can manage roles
-                                 → Can delete org
+User creates org → Assigned OWNER role → Full access (wildcard *)
+                                       → Can create custom roles
+                                       → Can assign roles to members
 
-Member joins     → Receives MEMBER role
-                → Can view/create projects
-                → Cannot manage members
+Member joins     → Assigned MEMBER role → Standard CRUD permissions
+                                        → Can be upgraded to Admin/custom roles
 ```
+
+**System Roles (cannot be modified):**
+
+| Role | Description | Permissions |
+|------|-------------|-------------|
+| **Owner** | Full access to all resources | `*` (wildcard) |
+| **Admin** | Administrative access | All except `roles:*` and `billing:manage` |
+| **Member** | Standard team member | Create/read/update projects, view members |
+| **Viewer** | Read-only access | All `*:read` permissions |
+
+**Permission Format:** `resource:action` (e.g., `projects:create`, `members:update`)
+
+**Supported Resources:** projects, members, billing, settings, api_keys, webhooks, audit_logs, roles, files, notifications, feature_flags
 
 ### Email Invitations
 
@@ -469,6 +512,45 @@ All protected endpoints require:
 ## 🆕 V2 Features
 
 ForgeStack V2 introduces enterprise-grade features for production SaaS applications.
+
+### 🔒 Granular RBAC with Permissions
+
+Role-based access control with fine-grained permissions:
+
+| Feature | Description |
+|---------|-------------|
+| **Custom Roles** | Create org-specific roles beyond system defaults |
+| **33 Permissions** | Fine-grained permissions across 11 resources |
+| **Permission Guards** | `@RequirePermission('resource:action')` decorator |
+| **Wildcard Support** | `*` for all permissions, `resource:*` for all actions |
+| **Frontend Gates** | `<PermissionGate>` component and `usePermission` hook |
+
+```typescript
+// Backend: Protect endpoints with permissions
+@RequirePermission('projects:delete')
+@Delete(':id')
+async deleteProject(@Param('id') id: string) { ... }
+
+// Frontend: Conditional rendering based on permissions
+<PermissionGate permission="members:invite">
+  <InviteButton />
+</PermissionGate>
+
+// Frontend: Check permissions in hooks
+const canInvite = usePermission('members:invite');
+```
+
+**API Endpoints:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/roles` | List all roles (system + custom) |
+| `POST` | `/roles` | Create custom role |
+| `PATCH` | `/roles/:id` | Update custom role |
+| `DELETE` | `/roles/:id` | Delete custom role |
+| `GET` | `/permissions` | List all permissions |
+| `POST` | `/members/:userId/roles` | Assign roles to member |
+| `GET` | `/members/:userId/roles` | Get member's roles |
 
 ### 💳 Billing & Subscriptions (Stripe)
 
@@ -647,6 +729,90 @@ X-RateLimit-Reset: 1700000000
 Retry-After: 45  (only on 429)
 ```
 
+### 📡 OpenTelemetry Observability
+
+Production-grade observability with distributed tracing, structured logging, and metrics:
+
+| Feature | Description |
+|---------|-------------|
+| **Distributed Tracing** | OpenTelemetry traces with Tempo/Jaeger export |
+| **Structured Logging** | Pino JSON logs with trace correlation |
+| **Metrics** | Prometheus-compatible metrics endpoint |
+| **Auto-Instrumentation** | HTTP, PostgreSQL, Redis, BullMQ |
+| **Log Aggregation** | Loki-compatible log forwarding |
+
+**Configuration:**
+
+```bash
+# Enable OpenTelemetry
+OTEL_ENABLED=true
+OTEL_SERVICE_NAME=forgestack-api
+OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
+
+# Log level
+LOG_LEVEL=info  # debug, info, warn, error
+```
+
+**Observability Stack (Docker Compose):**
+
+```bash
+# Start the full observability stack
+docker-compose -f docker-compose.observability.yml up -d
+```
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Grafana | http://localhost:3001 | Dashboards & visualization |
+| Tempo | http://localhost:3200 | Distributed tracing |
+| Loki | http://localhost:3100 | Log aggregation |
+| Prometheus | http://localhost:9090 | Metrics collection |
+
+**Trace Correlation:**
+
+All logs include trace IDs for correlation:
+
+```json
+{
+  "level": "info",
+  "time": 1700000000000,
+  "msg": "Project created",
+  "traceId": "abc123...",
+  "spanId": "def456...",
+  "orgId": "org_xxx",
+  "userId": "user_xxx"
+}
+```
+
+### 🐳 Docker & Deployment
+
+Production-ready containerization with multi-stage builds:
+
+| Feature | Description |
+|---------|-------------|
+| **Multi-Stage Builds** | Optimized images (~150MB for API) |
+| **Health Checks** | Built-in container health checks |
+| **Non-Root User** | Security-hardened containers |
+| **Platform Templates** | Fly.io, Railway, Render configs |
+| **GitHub Actions** | CI/CD pipeline for Docker builds |
+
+**Build Images:**
+
+```bash
+# Build all images
+docker build -t forgestack-api -f apps/api/Dockerfile .
+docker build -t forgestack-web -f apps/web/Dockerfile .
+docker build -t forgestack-worker -f apps/worker/Dockerfile .
+```
+
+**Deployment Templates:**
+
+| Platform | Config File |
+|----------|-------------|
+| Fly.io | `deploy/fly.toml` |
+| Railway | `deploy/railway.toml` |
+| Render | `deploy/render.yaml` |
+| Docker Compose | `docker-compose.prod.yml` |
+
 ---
 
 ## 🧪 Testing
@@ -715,6 +881,12 @@ BETTER_AUTH_URL=https://api.yourdomain.com
 FRONTEND_URL=https://app.yourdomain.com
 RESEND_API_KEY=re_xxxxxxxxxxxx
 EMAIL_FROM=noreply@yourdomain.com
+
+# Observability (optional but recommended)
+OTEL_ENABLED=true
+OTEL_SERVICE_NAME=forgestack-api
+OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
+LOG_LEVEL=info
 ```
 
 ### Docker Deployment
@@ -724,6 +896,32 @@ EMAIL_FROM=noreply@yourdomain.com
 docker build -t forgestack-api -f apps/api/Dockerfile .
 docker build -t forgestack-web -f apps/web/Dockerfile .
 docker build -t forgestack-worker -f apps/worker/Dockerfile .
+
+# Run with Docker Compose (production)
+docker-compose -f docker-compose.prod.yml up -d
+
+# Run with observability stack
+docker-compose -f docker-compose.prod.yml -f docker-compose.observability.yml up -d
+```
+
+### Platform Deployments
+
+Pre-configured deployment templates are available in the `deploy/` directory:
+
+| Platform | Command | Notes |
+|----------|---------|-------|
+| **Fly.io** | `fly deploy` | Uses `deploy/fly.toml` |
+| **Railway** | Connect via Dashboard | Uses `deploy/railway.toml` |
+| **Render** | Connect via Dashboard | Uses `deploy/render.yaml` |
+
+### GitHub Actions CI/CD
+
+The repository includes a GitHub Actions workflow for automated Docker builds:
+
+```yaml
+# .github/workflows/docker-build.yml
+# Triggers on push to main branch
+# Builds and pushes images to container registry
 ```
 
 ---
