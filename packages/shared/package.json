@@ -12,7 +12,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src --ext .ts",
     "test": "echo 'No tests configured yet'",
     "clean": "rm -rf dist"

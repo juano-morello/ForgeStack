@@ -143,7 +143,7 @@ export async function handleWebhookDelivery(job: Job<WebhookDeliveryJobData>) {
       ? (error.name === 'AbortError' ? 'Request timeout' : error.message)
       : 'Unknown error';
 
-    logger.error(`[WebhookDelivery] Delivery ${deliveryId} failed:`, errorMessage);
+    logger.error({ deliveryId, error: errorMessage }, 'Delivery failed');
 
     await updateDeliveryRecord(deliveryId, {
       error: errorMessage,
