@@ -52,6 +52,7 @@ describe('InvitationsController (Integration)', () => {
     app = moduleRef.createNestApplication();
 
     // Mock the request user and tenant context
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     app.use((req: any, _res: unknown, next: () => void) => {
       req.user = { id: mockUserId, email: 'test@example.com' };
       req.tenantContext = mockCtx;
@@ -223,6 +224,7 @@ describe('PublicInvitationsController (Integration)', () => {
     app = moduleRef.createNestApplication();
 
     // Mock the request user for authenticated endpoints
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     app.use((req: any, _res: unknown, next: () => void) => {
       req.user = { id: mockUserId, email: mockUserEmail };
       next();

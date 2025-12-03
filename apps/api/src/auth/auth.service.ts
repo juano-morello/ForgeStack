@@ -146,7 +146,10 @@ export class AuthService {
    * Extract session token from request
    * Checks cookies first, then Authorization header
    */
-  extractSessionToken(request: any): string | undefined {
+  extractSessionToken(request: {
+    cookies?: Record<string, string>;
+    headers?: Record<string, string | string[] | undefined>;
+  }): string | undefined {
     // Check cookies (primary method for browser requests)
     const cookieToken = request.cookies?.['better-auth.session_token'];
     if (cookieToken) {
@@ -155,7 +158,7 @@ export class AuthService {
 
     // Check Authorization header (for API clients)
     const authHeader = request.headers?.authorization;
-    if (authHeader?.startsWith('Bearer ')) {
+    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
       return authHeader.slice(7);
     }
 

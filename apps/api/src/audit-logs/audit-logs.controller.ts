@@ -14,13 +14,13 @@ import {
 } from '@nestjs/common';
 import { type TenantContext } from '@forgestack/db';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
-import { RequireRole } from '../core/decorators/require-role.decorator';
+import { RequirePermission } from '../core/decorators/require-permission.decorator';
 import { AuditLogsService } from './audit-logs.service';
 import { BillingService } from '../billing/billing.service';
 import { AuditLogQueryDto } from './dto';
 
 @Controller('audit-logs')
-@RequireRole('OWNER')
+@RequirePermission('audit_logs:read')
 export class AuditLogsController {
   private readonly logger = new Logger(AuditLogsController.name);
 

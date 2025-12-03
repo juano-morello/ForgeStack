@@ -13,6 +13,7 @@ export interface Organization {
   updatedAt?: string;
   role?: OrgRole;
   memberCount?: number;
+  effectivePermissions?: string[];
 }
 
 export interface OrganizationsResponse {

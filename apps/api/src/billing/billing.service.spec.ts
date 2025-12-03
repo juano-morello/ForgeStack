@@ -88,6 +88,7 @@ describe('BillingService', () => {
 
     it('should create new customer if not exists', async () => {
       billingRepository.findCustomerByOrgId.mockResolvedValue(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       stripeService.createCustomer.mockResolvedValue({ id: 'cus_123' } as any);
       billingRepository.createCustomer.mockResolvedValue({
         id: 'cust-123',
@@ -125,6 +126,7 @@ describe('BillingService', () => {
       stripeService.createCheckoutSession.mockResolvedValue({
         id: 'cs_123',
         url: 'https://checkout.stripe.com/...',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       const result = await service.createCheckoutSession(
@@ -158,6 +160,7 @@ describe('BillingService', () => {
 
       stripeService.createPortalSession.mockResolvedValue({
         url: 'https://billing.stripe.com/...',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       const result = await service.createPortalSession('org-123', 'https://example.com/return');

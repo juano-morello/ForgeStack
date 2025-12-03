@@ -67,14 +67,14 @@ export class ApiKeyGuard implements CanActivate {
    * Extract API key from request headers
    * Checks X-API-Key header and Authorization: Bearer header
    */
-  private extractApiKey(request: any): string | null {
+  private extractApiKey(request: { headers: Record<string, string | string[] | undefined> }): string | null {
     // Check X-API-Key header
     const xApiKey = request.headers['x-api-key'];
-    if (xApiKey) return xApiKey as string;
+    if (typeof xApiKey === 'string') return xApiKey;
 
     // Check Authorization: Bearer header
     const auth = request.headers['authorization'];
-    if (auth?.startsWith('Bearer ')) {
+    if (typeof auth === 'string' && auth.startsWith('Bearer ')) {
       const token = auth.slice(7);
       // Only treat as API key if it has the fsk_ prefix
       if (token.startsWith('fsk_')) {

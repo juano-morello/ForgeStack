@@ -33,7 +33,7 @@ async function bootstrap() {
   // JSON body parser with raw body for webhooks
   app.use(
     json({
-      verify: (req: any, res, buf) => {
+      verify: (req: { url?: string; rawBody?: Buffer }, res, buf) => {
         // Store raw body for webhook signature verification
         if (req.url === '/api/v1/billing/webhook' || req.url === '/api/v1/webhooks/stripe') {
           req.rawBody = buf;

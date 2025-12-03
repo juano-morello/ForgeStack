@@ -75,6 +75,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   ownedOrganizations: many(organizations),
   // Organization memberships
   memberships: many(organizationMembers),
+  // Role assignments
+  memberRoles: many(memberRoles),
   // Sessions
   sessions: many(sessions),
   // Accounts
@@ -104,6 +106,7 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 // Import for relations (will be defined in other files)
 import { organizations } from './organizations';
 import { organizationMembers } from './organization-members';
+import { memberRoles } from './member-roles';
 
 // Type exports
 export type User = typeof users.$inferSelect;

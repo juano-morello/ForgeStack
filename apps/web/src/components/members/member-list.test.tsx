@@ -16,6 +16,13 @@ vi.mock('@/hooks/use-toast', () => ({
   }),
 }));
 
+// Mock the MemberRolesBadges component to avoid OrgContext dependency
+vi.mock('./member-roles-badges', () => ({
+  MemberRolesBadges: ({ roles }: { roles?: unknown[] }) => (
+    <div data-testid="member-roles-badges">{roles?.length ?? 0} roles</div>
+  ),
+}));
+
 import { useSession } from '@/lib/auth-client';
 
 describe('MemberList', () => {
@@ -51,6 +58,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-1', email: 'owner@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,
@@ -356,6 +364,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-2', email: 'member@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,
@@ -410,6 +419,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-2', email: 'member@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,
@@ -455,6 +465,7 @@ describe('MemberList', () => {
     vi.mocked(useSession).mockReturnValue({
       data: {
         user: { id: 'user-2', email: 'member@example.com' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session: {} as any,
       },
       isPending: false,

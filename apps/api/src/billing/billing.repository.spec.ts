@@ -11,6 +11,7 @@ jest.mock('@forgestack/db', () => ({
   eq: jest.fn((field, value) => ({ field, value })),
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockTx: any;
 
 const resetMockTx = () => {
@@ -107,6 +108,7 @@ describe('BillingRepository', () => {
         status: 'active',
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await repository.upsertSubscription(subscriptionData as any);
 
       expect(result).toEqual({ id: 'test-id' });
@@ -135,6 +137,7 @@ describe('BillingRepository', () => {
       const eventData = {
         stripeEventId: 'evt_123',
         eventType: 'customer.subscription.created',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         payload: { id: 'evt_123' } as any,
         orgId: 'org-123',
       };

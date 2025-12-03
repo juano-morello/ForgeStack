@@ -19,7 +19,7 @@ import type { TenantContext } from '@forgestack/db';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto, UpdateProjectDto, QueryProjectsDto } from './dto';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
-import { RequireRole } from '../core/decorators/require-role.decorator';
+import { RequirePermission } from '../core/decorators/require-permission.decorator';
 
 @Controller('projects')
 export class ProjectsController {
@@ -79,11 +79,11 @@ export class ProjectsController {
   }
 
   /**
-   * Delete a project (OWNER only)
+   * Delete a project
    * DELETE /projects/:id
    */
   @Delete(':id')
-  @RequireRole('OWNER')
+  @RequirePermission('projects:delete')
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentTenant() ctx: TenantContext,

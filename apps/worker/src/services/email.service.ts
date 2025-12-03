@@ -5,6 +5,9 @@
 
 import { Resend } from 'resend';
 import { config } from '../config';
+import { createLogger } from '../telemetry/logger';
+
+const logger = createLogger('EmailService');
 
 // Initialize Resend client (will be null if no API key)
 const resend = config.email.resendApiKey ? new Resend(config.email.resendApiKey) : null;
@@ -25,10 +28,14 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ id: string
 
   if (!resend) {
     // Development mode: log email instead of sending
-    console.log('[Email] No RESEND_API_KEY configured, logging email:');
-    console.log(`  To: ${to}`);
-    console.log(`  Subject: ${subject}`);
-    console.log(`  Body: ${text || html.substring(0, 200)}...`);
+    logger.info(
+      {
+        to,
+        subject,
+        bodyPreview: text || html.substring(0, 200),
+      },
+      'No RESEND_API_KEY configured, logging email instead of sending'
+    );
     return { id: `dev-${Date.now()}` };
   }
 
@@ -41,11 +48,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ id: string
   });
 
   if (error) {
-    console.error('[Email] Failed to send:', error);
+    logger.error({ error }, 'Failed to send email');
     throw new Error(`Failed to send email: ${error.message}`);
   }
 
-  console.log(`[Email] Sent successfully, id: ${data?.id}`);
+  logger.info({ emailId: data?.id }, 'Email sent successfully');
   return { id: data?.id || 'unknown' };
 }
 

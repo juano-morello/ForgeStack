@@ -138,10 +138,12 @@ export async function handleWebhookDelivery(job: Job<WebhookDeliveryJobData>) {
 
     logger.info(`[WebhookDelivery] Delivery ${deliveryId} succeeded with status ${response.status}`);
     return { success: true, status: response.status };
-  } catch (error: any) {
-    const errorMessage = error.name === 'AbortError' ? 'Request timeout' : error.message;
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error
+      ? (error.name === 'AbortError' ? 'Request timeout' : error.message)
+      : 'Unknown error';
 
-    logger.error(`[WebhookDelivery] Delivery ${deliveryId} failed:`, errorMessage);
+    logger.error({ deliveryId, error: errorMessage }, 'Delivery failed');
 
     await updateDeliveryRecord(deliveryId, {
       error: errorMessage,

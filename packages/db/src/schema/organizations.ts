@@ -4,6 +4,8 @@ import { users } from './users';
 import { organizationMembers } from './organization-members';
 import { projects } from './projects';
 import { invitations } from './invitations';
+import { roles } from './roles';
+import { memberRoles } from './member-roles';
 
 /**
  * Organizations table - tenant entities for multi-tenancy
@@ -32,6 +34,10 @@ export const organizationsRelations = relations(organizations, ({ one, many }) =
   projects: many(projects),
   // Pending invitations
   invitations: many(invitations),
+  // Custom roles for this organization
+  roles: many(roles),
+  // Member role assignments
+  memberRoles: many(memberRoles),
 }));
 
 // Type exports

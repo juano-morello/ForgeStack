@@ -70,6 +70,14 @@ export {
   featureFlagsRelations,
   organizationFeatureOverrides,
   organizationFeatureOverridesRelations,
+  roles,
+  rolesRelations,
+  permissions,
+  permissionsRelations,
+  rolePermissions,
+  rolePermissionsRelations,
+  memberRoles,
+  memberRolesRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -113,5 +121,13 @@ export type {
   NewFeatureFlag,
   OrganizationFeatureOverride,
   NewOrganizationFeatureOverride,
+  Role,
+  NewRole,
+  Permission,
+  NewPermission,
+  RolePermission,
+  NewRolePermission,
+  MemberRole,
+  NewMemberRole,
 } from './schema/index.js';
 

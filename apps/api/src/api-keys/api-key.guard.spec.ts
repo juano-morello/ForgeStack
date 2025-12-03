@@ -66,6 +66,7 @@ describe('ApiKeyGuard', () => {
         }),
       }),
       getHandler: jest.fn(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   };
 
@@ -148,6 +149,7 @@ describe('ApiKeyGuard', () => {
           getRequest: () => mockRequest,
         }),
         getHandler: jest.fn(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
       service.validateKey.mockResolvedValue(mockKeyData);
@@ -156,6 +158,7 @@ describe('ApiKeyGuard', () => {
       await guard.canActivate(context);
 
       expect(mockRequest).toHaveProperty('tenantContext');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((mockRequest as any).tenantContext).toEqual({
         orgId: mockKeyData.orgId,
         userId: mockKeyData.createdBy,

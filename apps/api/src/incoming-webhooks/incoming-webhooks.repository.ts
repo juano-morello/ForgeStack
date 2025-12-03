@@ -117,14 +117,17 @@ export class IncomingWebhooksRepository {
         .orderBy(desc(incomingWebhookEvents.createdAt));
 
       if (conditions.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query = query.where(and(...conditions)) as any;
       }
 
       if (filters.limit) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query = query.limit(filters.limit) as any;
       }
 
       if (filters.offset) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query = query.offset(filters.offset) as any;
       }
 

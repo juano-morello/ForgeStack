@@ -38,6 +38,7 @@ describe('StripeWebhookService', () => {
           if (key === 'STRIPE_WEBHOOK_SECRET') return 'whsec_test_123';
           return null;
         }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
     }).toThrow('STRIPE_SECRET_KEY is not configured');
   });
@@ -50,6 +51,7 @@ describe('StripeWebhookService', () => {
         if (key === 'STRIPE_WEBHOOK_SECRET') return '';
         return null;
       }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     // The service should be created successfully

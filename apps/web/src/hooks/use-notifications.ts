@@ -197,6 +197,7 @@ export function useUnreadCount(pollInterval: number = 30000) {
         setError('Unable to connect to server');
         // Only log in development for debugging
         if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
           console.debug('[useUnreadCount] Network error - API may be unavailable');
         }
       } else if (err instanceof ApiError) {
