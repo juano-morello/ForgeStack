@@ -158,7 +158,7 @@ export class AuthService {
 
     // Check Authorization header (for API clients)
     const authHeader = request.headers?.authorization;
-    if (authHeader?.startsWith('Bearer ')) {
+    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
       return authHeader.slice(7);
     }
 
