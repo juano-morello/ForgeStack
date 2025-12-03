@@ -184,5 +184,73 @@ export class BillingService {
   async hasFeature(ctx: TenantContext, featureKey: string): Promise<boolean> {
     return this.featureFlagsService.isEnabled(ctx, featureKey);
   }
+
+  /**
+   * Get invoices for an organization
+   */
+  async getInvoices(orgId: string): Promise<Stripe.Invoice[]> {
+    this.logger.debug(`Getting invoices for org ${orgId}`);
+
+    // Get customer
+    const customer = await this.billingRepository.findCustomerByOrgId(orgId);
+    if (!customer) {
+      return [];
+    }
+
+    // Get invoices from Stripe
+    const stripe = this.stripeService.getStripeInstance();
+    const invoices = await stripe.invoices.list({
+      customer: customer.stripeCustomerId,
+      limit: 100,
+    });
+
+    return invoices.data;
+  }
+
+  /**
+   * Get a single invoice
+   */
+  async getInvoice(orgId: string, invoiceId: string): Promise<Stripe.Invoice> {
+    this.logger.debug(`Getting invoice ${invoiceId} for org ${orgId}`);
+
+    // Get customer to verify ownership
+    const customer = await this.billingRepository.findCustomerByOrgId(orgId);
+    if (!customer) {
+      throw new NotFoundException('No billing customer found for this organization');
+    }
+
+    // Get invoice from Stripe
+    const stripe = this.stripeService.getStripeInstance();
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+
+    // Verify invoice belongs to this customer
+    if (invoice.customer !== customer.stripeCustomerId) {
+      throw new ForbiddenException('Invoice does not belong to this organization');
+    }
+
+    return invoice;
+  }
+
+  /**
+   * Get projected invoice for current period
+   */
+  async getProjectedInvoice(orgId: string): Promise<Stripe.Invoice> {
+    this.logger.debug(`Getting projected invoice for org ${orgId}`);
+
+    // Get customer
+    const customer = await this.billingRepository.findCustomerByOrgId(orgId);
+    if (!customer) {
+      throw new NotFoundException('No billing customer found for this organization');
+    }
+
+    // Get upcoming invoice from Stripe
+    const stripe = this.stripeService.getStripeInstance();
+    // Use createPreview for upcoming invoice in newer Stripe API versions
+    const upcomingInvoice = await stripe.invoices.createPreview({
+      customer: customer.stripeCustomerId,
+    });
+
+    return upcomingInvoice;
+  }
 }
 

@@ -9,5 +9,8 @@ export const QUEUE_NAMES = {
   AUDIT_LOGS: 'audit-logs',
   ACTIVITIES: 'activities',
   NOTIFICATION_EMAIL: 'notification-email',
+  USAGE_AGGREGATION: 'usage-aggregation',
+  STRIPE_USAGE_REPORT: 'stripe-usage-report',
+  ACTIVE_SEATS: 'active-seats',
 } as const;
 

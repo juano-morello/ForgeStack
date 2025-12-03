@@ -22,6 +22,7 @@ export const config = {
     appUrl: process.env.APP_URL || 'http://localhost:3000',
   },
   stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY || '',
     // Map Stripe price IDs to plan names
     // Format: comma-separated pairs of "priceId:planName"
     // Example: "price_123:starter,price_456:pro,price_789:enterprise"

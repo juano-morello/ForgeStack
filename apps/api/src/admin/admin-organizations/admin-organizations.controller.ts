@@ -153,7 +153,7 @@ export class AdminOrganizationsController {
   private getAuditContext(req: RequestWithUser): PlatformAuditContext {
     return {
       actorId: req.user.id,
-      actorEmail: req.user.email,
+      actorEmail: req.user.email || '',
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'] as string | undefined,
     };
