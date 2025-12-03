@@ -17,8 +17,8 @@ export function MarketingNav() {
   }
 
   const navLinks = [
-    { href: '#features', label: 'Features' },
-    { href: '#pricing', label: 'Pricing' },
+    { href: '/features', label: 'Features' },
+    { href: '/pricing', label: 'Pricing' },
     { href: '#docs', label: 'Docs' },
   ];
 
@@ -56,14 +56,14 @@ export function MarketingNav() {
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/sign-in">Sign In</Link>
+              <Link href="/login">Log in</Link>
             </Button>
             <Button
               size="sm"
               className="bg-white text-black hover:bg-white/90"
               asChild
             >
-              <Link href="/sign-up">Get Started</Link>
+              <Link href="/signup">Get Started</Link>
             </Button>
           </div>
 
@@ -98,8 +98,8 @@ export function MarketingNav() {
             ))}
             <div className="flex flex-col items-center gap-4 mt-8">
               <Button variant="ghost" size="lg" asChild className="w-40">
-                <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
-                  Sign In
+                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                  Log in
                 </Link>
               </Button>
               <Button
@@ -107,7 +107,7 @@ export function MarketingNav() {
                 className="bg-white text-black hover:bg-white/90 w-40"
                 asChild
               >
-                <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
                   Get Started
                 </Link>
               </Button>
