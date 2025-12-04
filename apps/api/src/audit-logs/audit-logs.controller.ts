@@ -12,6 +12,7 @@ import {
   Logger,
   Header,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { type TenantContext } from '@forgestack/db';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { RequirePermission } from '../core/decorators/require-permission.decorator';
@@ -19,6 +20,8 @@ import { AuditLogsService } from './audit-logs.service';
 import { BillingService } from '../billing/billing.service';
 import { AuditLogQueryDto } from './dto';
 
+@ApiTags('Audit Logs')
+@ApiBearerAuth()
 @Controller('audit-logs')
 @RequirePermission('audit_logs:read')
 export class AuditLogsController {
@@ -35,6 +38,22 @@ export class AuditLogsController {
    * Requires audit-logs feature flag for plan gating
    */
   @Get()
+  @ApiOperation({
+    summary: 'List audit logs',
+    description: 'Get a paginated list of audit logs with filters (OWNER only, requires audit-logs feature)'
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (1-100)', example: 50 })
+  @ApiQuery({ name: 'actorId', required: false, type: String, description: 'Filter by actor user ID' })
+  @ApiQuery({ name: 'actorEmail', required: false, type: String, description: 'Filter by actor email' })
+  @ApiQuery({ name: 'action', required: false, type: String, description: 'Filter by action type' })
+  @ApiQuery({ name: 'resourceType', required: false, type: String, description: 'Filter by resource type' })
+  @ApiQuery({ name: 'resourceId', required: false, type: String, description: 'Filter by resource ID' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Filter from this date (ISO 8601)' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Filter to this date (ISO 8601)' })
+  @ApiResponse({ status: 200, description: 'Audit logs retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires audit_logs:read permission and audit-logs feature' })
   async findAll(
     @CurrentTenant() ctx: TenantContext,
     @Query() query: AuditLogQueryDto,
@@ -50,6 +69,15 @@ export class AuditLogsController {
    * Get audit log statistics (OWNER only)
    */
   @Get('stats')
+  @ApiOperation({
+    summary: 'Get audit log statistics',
+    description: 'Get statistics about audit logs for a date range (OWNER only)'
+  })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date (ISO 8601)' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date (ISO 8601)' })
+  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires audit_logs:read permission' })
   async getStats(
     @CurrentTenant() ctx: TenantContext,
     @Query() query: Pick<AuditLogQueryDto, 'startDate' | 'endDate'>,
@@ -63,6 +91,21 @@ export class AuditLogsController {
    * Export audit logs as CSV or JSON (OWNER only)
    */
   @Get('export')
+  @ApiOperation({
+    summary: 'Export audit logs',
+    description: 'Export audit logs as CSV or JSON (OWNER only)'
+  })
+  @ApiQuery({ name: 'format', required: false, enum: ['csv', 'json'], description: 'Export format', example: 'csv' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({ name: 'actorId', required: false, type: String, description: 'Filter by actor user ID' })
+  @ApiQuery({ name: 'action', required: false, type: String, description: 'Filter by action type' })
+  @ApiQuery({ name: 'resourceType', required: false, type: String, description: 'Filter by resource type' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Filter from this date' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Filter to this date' })
+  @ApiResponse({ status: 200, description: 'Audit logs exported successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires audit_logs:read permission' })
   @Header('Content-Type', 'text/csv')
   @Header('Content-Disposition', 'attachment; filename="audit-logs.csv"')
   async export(
@@ -79,6 +122,15 @@ export class AuditLogsController {
    * Get a single audit log entry (OWNER only)
    */
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get audit log entry',
+    description: 'Get a single audit log entry by ID (OWNER only)'
+  })
+  @ApiParam({ name: 'id', description: 'Audit log ID', type: String })
+  @ApiResponse({ status: 200, description: 'Audit log retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Audit log not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires audit_logs:read permission' })
   async findOne(
     @CurrentTenant() ctx: TenantContext,
     @Param('id') id: string,
