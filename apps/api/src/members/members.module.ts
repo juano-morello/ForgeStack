@@ -14,7 +14,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
   imports: [AuditLogsModule, NotificationsModule],
   controllers: [MembersController],
   providers: [MembersService, MembersRepository],
-  exports: [MembersService],
+  exports: [MembersService, MembersRepository],
 })
 export class MembersModule {}
 

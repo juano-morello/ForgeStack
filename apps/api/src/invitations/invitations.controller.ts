@@ -16,6 +16,7 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { type TenantContext } from '@forgestack/db';
 import { InvitationsService } from './invitations.service';
 import {
@@ -29,6 +30,8 @@ import { NoOrgRequired } from '../core/decorators/no-org-required.decorator';
 import { Public } from '../core/decorators/public.decorator';
 import type { RequestWithUser } from '../core/types';
 
+@ApiTags('Invitations')
+@ApiBearerAuth()
 @Controller('organizations/:orgId/invitations')
 export class InvitationsController {
   private readonly logger = new Logger(InvitationsController.name);
@@ -40,6 +43,11 @@ export class InvitationsController {
    * POST /organizations/:orgId/invitations
    */
   @Post()
+  @ApiOperation({ summary: 'Create invitation', description: 'Create a new invitation to join the organization' })
+  @ApiParam({ name: 'orgId', description: 'Organization UUID' })
+  @ApiResponse({ status: 201, description: 'Invitation created' })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   async create(
     @Body() createInvitationDto: CreateInvitationDto,
     @CurrentTenant() ctx: TenantContext,
@@ -53,6 +61,10 @@ export class InvitationsController {
    * GET /organizations/:orgId/invitations
    */
   @Get()
+  @ApiOperation({ summary: 'List invitations', description: 'List all pending invitations for the organization' })
+  @ApiParam({ name: 'orgId', description: 'Organization UUID' })
+  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'accepted', 'declined'] })
+  @ApiResponse({ status: 200, description: 'List of invitations' })
   async findAll(
     @Query() query: QueryInvitationsDto,
     @CurrentTenant() ctx: TenantContext,
@@ -66,6 +78,11 @@ export class InvitationsController {
    * DELETE /organizations/:orgId/invitations/:id
    */
   @Delete(':id')
+  @ApiOperation({ summary: 'Cancel invitation', description: 'Cancel a pending invitation' })
+  @ApiParam({ name: 'orgId', description: 'Organization UUID' })
+  @ApiParam({ name: 'id', description: 'Invitation UUID' })
+  @ApiResponse({ status: 200, description: 'Invitation canceled' })
+  @ApiResponse({ status: 404, description: 'Invitation not found' })
   async cancel(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentTenant() ctx: TenantContext,

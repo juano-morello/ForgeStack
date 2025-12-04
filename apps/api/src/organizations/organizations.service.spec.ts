@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { createMockOrganization, mockUUID } from '../../test/test-utils';
 
 // Mock the repository module
@@ -32,12 +33,20 @@ describe('OrganizationsService', () => {
       findMembership: jest.fn(),
     };
 
+    const mockAuditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrganizationsService,
         {
           provide: OrganizationsRepository,
           useValue: mockRepository,
+        },
+        {
+          provide: AuditLogsService,
+          useValue: mockAuditLogsService,
         },
       ],
     }).compile();
@@ -154,9 +163,11 @@ describe('OrganizationsService', () => {
       const orgId = mockUUID();
       const userId = mockUUID();
       const dto = { name: 'Updated Name' };
+      const beforeOrg = createMockOrganization({ id: orgId, name: 'Old Name' });
       const mockOrg = createMockOrganization({ id: orgId, name: dto.name });
 
       repository.findMembership.mockResolvedValueOnce({ role: 'OWNER' });
+      repository.findById.mockResolvedValueOnce(beforeOrg);
       repository.update.mockResolvedValueOnce(mockOrg);
 
       const result = await service.update(orgId, userId, dto);

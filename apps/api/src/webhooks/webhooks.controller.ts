@@ -16,11 +16,14 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { WebhooksService } from './webhooks.service';
 import { CreateEndpointDto, UpdateEndpointDto, DeliveryQueryDto } from './dto';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { type TenantContext } from '@forgestack/db';
 
+@ApiTags('Webhooks')
+@ApiBearerAuth()
 @Controller('webhooks')
 export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);
@@ -32,6 +35,9 @@ export class WebhooksController {
    * Create a new webhook endpoint (OWNER only)
    */
   @Post('endpoints')
+  @ApiOperation({ summary: 'Create webhook endpoint', description: 'Create a new webhook endpoint (OWNER only)' })
+  @ApiResponse({ status: 201, description: 'Webhook endpoint created' })
+  @ApiResponse({ status: 403, description: 'Forbidden - OWNER role required' })
   async createEndpoint(@CurrentTenant() ctx: TenantContext, @Body() dto: CreateEndpointDto) {
     this.logger.debug(`POST /webhooks/endpoints for org ${ctx.orgId}`);
     return this.webhooksService.createEndpoint(ctx, dto);

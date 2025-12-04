@@ -156,7 +156,7 @@ export class OrganizationsRepository {
   async update(
     ctx: TenantContext,
     orgId: string,
-    data: Partial<Pick<Organization, 'name'>>,
+    data: Partial<Pick<Organization, 'name' | 'logo' | 'timezone' | 'language'>>,
   ): Promise<Organization | null> {
     this.logger.debug(`Updating organization ${orgId}`);
 

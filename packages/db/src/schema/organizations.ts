@@ -17,12 +17,18 @@ export const organizations = pgTable('organizations', {
     .notNull()
     .references(() => users.id),
 
+  // Organization branding and preferences
+  logo: text('logo'),
+  timezone: varchar('timezone', { length: 50 }).default('UTC'),
+  language: varchar('language', { length: 10 }).default('en'),
+
   // Organization suspension fields
   suspendedAt: timestamp('suspended_at', { withTimezone: true }),
   suspendedReason: text('suspended_reason'),
   suspendedBy: text('suspended_by').references(() => users.id),
 
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
 
 /**

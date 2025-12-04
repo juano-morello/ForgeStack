@@ -1,0 +1,176 @@
+# Webhooks
+
+Learn how to configure and handle webhooks in ForgeStack.
+
+## Overview
+
+ForgeStack supports outgoing webhooks to notify your application of events:
+
+- Organization events (created, updated, deleted)
+- Project events (created, updated, deleted)
+- Member events (invited, joined, removed)
+- Billing events (subscription created, payment succeeded, payment failed)
+- Custom events
+
+## Creating a Webhook Endpoint
+
+### Via UI
+
+Navigate to Settings > Webhooks and click "Create Endpoint".
+
+### Via API
+
+```typescript
+const response = await fetch(`/api/v1/organizations/${orgId}/webhooks`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your-api-key',
+  },
+  body: JSON.stringify({
+    url: 'https://your-app.com/webhooks',
+    events: ['project.created', 'project.updated'],
+    secret: 'your-webhook-secret',
+  }),
+});
+
+const webhook = await response.json();
+```
+
+## Webhook Payload
+
+All webhook payloads follow this structure:
+
+```json
+{
+  "id": "evt_1234567890",
+  "type": "project.created",
+  "timestamp": "2024-01-01T00:00:00Z",
+  "organizationId": "org_1234567890",
+  "data": {
+    "id": "proj_1234567890",
+    "name": "My Project",
+    "createdAt": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+## Verifying Webhook Signatures
+
+Always verify webhook signatures to ensure requests are from ForgeStack:
+
+```typescript
+import crypto from 'crypto';
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+
+// In your webhook handler
+export async function POST(request: Request) {
+  const payload = await request.text();
+  const signature = request.headers.get('x-webhook-signature');
+
+  if (!verifyWebhookSignature(payload, signature, process.env.WEBHOOK_SECRET)) {
+    return new Response('Invalid signature', { status: 401 });
+  }
+
+  const event = JSON.parse(payload);
+  // Handle event
+}
+```
+
+<Callout type="warning" title="Security">
+  Always verify webhook signatures to prevent unauthorized requests.
+</Callout>
+
+## Handling Events
+
+### Example Handler
+
+```typescript
+export async function POST(request: Request) {
+  const event = await request.json();
+
+  switch (event.type) {
+    case 'project.created':
+      await handleProjectCreated(event.data);
+      break;
+    case 'project.updated':
+      await handleProjectUpdated(event.data);
+      break;
+    case 'subscription.payment_succeeded':
+      await handlePaymentSucceeded(event.data);
+      break;
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  return new Response('OK', { status: 200 });
+}
+```
+
+## Retry Logic
+
+ForgeStack automatically retries failed webhook deliveries:
+
+- Initial attempt
+- Retry after 1 minute
+- Retry after 5 minutes
+- Retry after 15 minutes
+- Retry after 1 hour
+
+<Callout type="info" title="Idempotency">
+  Ensure your webhook handlers are idempotent as events may be delivered multiple times.
+</Callout>
+
+## Testing Webhooks
+
+### Local Testing with ngrok
+
+```bash
+ngrok http 3000
+```
+
+Use the ngrok URL as your webhook endpoint during development.
+
+### Webhook Logs
+
+View webhook delivery logs in the UI to debug issues:
+
+- Request payload
+- Response status
+- Response body
+- Retry attempts
+
+## Event Types
+
+| Event Type | Description |
+|------------|-------------|
+| `organization.created` | Organization was created |
+| `organization.updated` | Organization was updated |
+| `project.created` | Project was created |
+| `project.updated` | Project was updated |
+| `project.deleted` | Project was deleted |
+| `member.invited` | Member was invited |
+| `member.joined` | Member accepted invitation |
+| `subscription.created` | Subscription was created |
+| `subscription.payment_succeeded` | Payment succeeded |
+| `subscription.payment_failed` | Payment failed |
+
+## Next Steps
+
+- [API Reference](/docs/api/endpoints) - Full webhook API documentation
+

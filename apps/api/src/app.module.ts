@@ -32,6 +32,9 @@ import { RateLimitingModule } from './rate-limiting/rate-limiting.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { RolesModule } from './roles/roles.module';
 import { AdminModule } from './admin/admin.module';
+import { UsersModule } from './users/users.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { UsageModule } from './usage/usage.module';
 
 @Module({
   imports: [
@@ -66,6 +69,9 @@ import { AdminModule } from './admin/admin.module';
     PermissionsModule,
     RolesModule,
     AdminModule,
+    UsersModule,
+    UsageModule,
+    DashboardModule,
   ],
   providers: [
     {

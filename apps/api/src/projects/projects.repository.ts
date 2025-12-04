@@ -158,5 +158,35 @@ export class ProjectsRepository {
       return deleted || null;
     });
   }
+
+  /**
+   * Count projects in an organization within tenant context
+   */
+  async count(ctx: TenantContext): Promise<number> {
+    this.logger.debug(`Counting projects in org ${ctx.orgId}`);
+
+    return withTenantContext(ctx, async (tx) => {
+      const [result] = await tx
+        .select({ count: count() })
+        .from(projects);
+
+      return Number(result?.count ?? 0);
+    });
+  }
+
+  /**
+   * Find recent projects within tenant context
+   */
+  async findRecent(ctx: TenantContext, limit = 5): Promise<Project[]> {
+    this.logger.debug(`Finding ${limit} recent projects in org ${ctx.orgId}`);
+
+    return withTenantContext(ctx, async (tx) => {
+      return tx
+        .select()
+        .from(projects)
+        .orderBy(desc(projects.updatedAt))
+        .limit(limit);
+    });
+  }
 }
 

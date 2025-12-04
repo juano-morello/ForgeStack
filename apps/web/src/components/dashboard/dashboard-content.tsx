@@ -3,17 +3,23 @@
 /**
  * Dashboard Content Component
  *
- * Client component for dashboard that uses org context.
+ * Client component for dashboard that uses org context and displays dashboard summary.
  */
 
-import Link from 'next/link';
 import { useOrgContext } from '@/components/providers/org-provider';
-import { RecentProjects } from '@/components/projects/recent-projects';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { WelcomeHeader } from './welcome-header';
+import { StatsOverview } from './stats-overview';
+import { RecentActivity } from './recent-activity';
+import { RecentProjectsWidget } from './recent-projects-widget';
+import { QuickActions } from './quick-actions';
+import { OrgHealth } from './org-health';
 import { EmptyState } from '@/components/shared/empty-state';
-import { StatsCard } from '@/components/shared/stats-card';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
+import { Building2 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Building2, FolderKanban, Users, Plus, ArrowRight } from 'lucide-react';
 
 interface DashboardContentProps {
   userId: string;
@@ -22,36 +28,19 @@ interface DashboardContentProps {
 }
 
 export function DashboardContent({ userId: _userId, userEmail: _userEmail, userName }: DashboardContentProps) {
-  const { organizations, currentOrg, isLoading } = useOrgContext();
+  const { organizations, currentOrg, isLoading: orgLoading } = useOrgContext();
+  const { data, isLoading: dashboardLoading, error } = useDashboard({
+    orgId: currentOrg?.id || '',
+    autoFetch: !!currentOrg?.id,
+  });
 
   const hasOrgs = organizations.length > 0;
+  const isOwner = currentOrg?.role === 'OWNER';
 
-  return (
-    <div className="space-y-6">
-      {/* Welcome Message */}
-      {currentOrg && (
-        <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">Welcome back{userName ? `, ${userName}` : ''}!</CardTitle>
-                <CardDescription className="mt-1">
-                  You're working in <span className="font-semibold text-foreground">{currentOrg.name}</span>
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/organizations">
-                  Switch Organization
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-        </Card>
-      )}
-
-      {/* No Organizations - Call to Action */}
-      {!isLoading && !hasOrgs && (
+  // No organizations state
+  if (!orgLoading && !hasOrgs) {
+    return (
+      <div className="space-y-6">
         <Card>
           <CardContent className="pt-6">
             <EmptyState
@@ -65,74 +54,70 @@ export function DashboardContent({ userId: _userId, userEmail: _userEmail, userN
             />
           </CardContent>
         </Card>
-      )}
+      </div>
+    );
+  }
 
-      {/* Stats Row (when user has an org selected) */}
-      {currentOrg && (
-        <div className="grid gap-4 md:grid-cols-3">
-          <StatsCard
-            icon={Building2}
-            title="Organizations"
-            value={organizations.length}
-          />
-          <StatsCard
-            icon={FolderKanban}
-            title="Total Projects"
-            value="—"
-          />
-          <StatsCard
-            icon={Users}
-            title="Team Members"
-            value={currentOrg.memberCount || 1}
-          />
+  // Loading state
+  if (dashboardLoading || !data) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-20 w-full" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
         </div>
-      )}
-
-      {/* Recent Projects Section (when user has an org selected) */}
-      {currentOrg && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">Recent Projects</h2>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/projects/new">
-                <Plus className="h-4 w-4" />
-                New Project
-              </Link>
-            </Button>
-          </div>
-          <RecentProjects limit={5} />
+        <div className="grid gap-6 md:grid-cols-2">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-96" />
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Quick Actions (when user has an org selected) */}
-      {currentOrg && (
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks to get you started</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <Button variant="outline" className="justify-start h-auto py-3" asChild>
-              <Link href="/projects/new">
-                <FolderKanban className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-semibold">Create Project</div>
-                  <div className="text-xs text-muted-foreground">Start a new project</div>
-                </div>
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start h-auto py-3" asChild>
-              <Link href="/organizations">
-                <Building2 className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-semibold">Manage Organizations</div>
-                  <div className="text-xs text-muted-foreground">View all organizations</div>
-                </div>
-              </Link>
-            </Button>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button variant="outline" size="sm" className="mt-4" asChild>
+                <Link href="/projects">View Projects</Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      {currentOrg && userName && (
+        <WelcomeHeader userName={userName} orgName={currentOrg.name} />
       )}
+
+      {/* Stats Overview */}
+      <StatsOverview stats={data.stats} />
+
+      {/* Two Column Layout */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Left Column */}
+        <div className="space-y-6">
+          <RecentActivity activities={data.recentActivity} />
+          {isOwner && data.orgHealth && <OrgHealth health={data.orgHealth} />}
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          <RecentProjectsWidget projects={data.recentProjects} />
+          <QuickActions isOwner={isOwner} />
+        </div>
+      </div>
     </div>
   );
 }

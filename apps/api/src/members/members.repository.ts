@@ -200,5 +200,21 @@ export class MembersRepository {
       return result?.count || 0;
     });
   }
+
+  /**
+   * Count all members in an organization
+   */
+  async count(orgId: string): Promise<number> {
+    this.logger.debug(`Counting all members for org ${orgId}`);
+
+    return withServiceContext('MembersRepository.count', async (tx) => {
+      const [result] = await tx
+        .select({ count: count() })
+        .from(organizationMembers)
+        .where(eq(organizationMembers.orgId, orgId));
+
+      return result?.count || 0;
+    });
+  }
 }
 

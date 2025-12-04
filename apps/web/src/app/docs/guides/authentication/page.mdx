@@ -1,0 +1,104 @@
+# Authentication
+
+Learn how to implement authentication in your ForgeStack application.
+
+## Overview
+
+ForgeStack provides multiple authentication methods out of the box:
+
+- Email/password authentication
+- OAuth providers (Google, GitHub, etc.)
+- Magic link authentication
+- Session management
+- API key authentication
+
+## Email/Password Authentication
+
+### Sign Up
+
+Create a new user account with email and password:
+
+```typescript
+import { authClient } from '@/lib/auth-client';
+
+const result = await authClient.signUp.email({
+  email: 'user@example.com',
+  password: 'securePassword123',
+  name: 'John Doe',
+});
+```
+
+### Sign In
+
+Authenticate an existing user:
+
+```typescript
+const result = await authClient.signIn.email({
+  email: 'user@example.com',
+  password: 'securePassword123',
+});
+```
+
+<Callout type="warning" title="Password Requirements">
+  Passwords must be at least 8 characters long and include uppercase, lowercase, and numbers.
+</Callout>
+
+## OAuth Authentication
+
+### Configure OAuth Providers
+
+Add OAuth provider credentials to your `.env` file:
+
+```bash
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+```
+
+### Sign In with OAuth
+
+```typescript
+await authClient.signIn.social({
+  provider: 'google',
+  callbackURL: '/dashboard',
+});
+```
+
+## Session Management
+
+### Get Current Session
+
+```typescript
+const session = await authClient.getSession();
+if (session) {
+  console.log('User:', session.user);
+}
+```
+
+### Sign Out
+
+```typescript
+await authClient.signOut();
+```
+
+## API Key Authentication
+
+For server-to-server communication, use API keys:
+
+```bash
+curl -X GET https://api.yourapp.com/api/v1/projects \
+  -H "X-API-Key: your-api-key" \
+  -H "X-Org-Id: your-org-id"
+```
+
+<Callout type="info">
+  Learn more about API keys in the [API Reference](/docs/api/authentication).
+</Callout>
+
+## Next Steps
+
+- [Organizations](/docs/guides/organizations) - Learn about multi-tenancy
+- [Billing](/docs/guides/billing) - Set up subscriptions
+- [Webhooks](/docs/guides/webhooks) - Configure event notifications
+

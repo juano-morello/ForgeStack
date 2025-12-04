@@ -281,7 +281,7 @@ describe('SignupForm', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('redirects to dashboard after successful signup', async () => {
+    it('redirects to onboarding after successful signup', async () => {
       const user = userEvent.setup();
       vi.mocked(signUp.email).mockResolvedValue({});
 
@@ -300,7 +300,7 @@ describe('SignupForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/dashboard');
+        expect(mockPush).toHaveBeenCalledWith('/onboarding');
         expect(mockRefresh).toHaveBeenCalled();
       });
     });

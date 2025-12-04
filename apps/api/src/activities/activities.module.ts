@@ -11,7 +11,7 @@ import { ActivitiesRepository } from './activities.repository';
 @Module({
   controllers: [ActivitiesController],
   providers: [ActivitiesRepository, ActivitiesService],
-  exports: [ActivitiesService],
+  exports: [ActivitiesService, ActivitiesRepository],
 })
 export class ActivitiesModule {}
 

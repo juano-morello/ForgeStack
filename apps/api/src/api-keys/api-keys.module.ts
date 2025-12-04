@@ -14,7 +14,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module';
   imports: [AuditLogsModule],
   controllers: [ApiKeysController],
   providers: [ApiKeysService, ApiKeysRepository, ApiKeyGuard],
-  exports: [ApiKeysService, ApiKeyGuard],
+  exports: [ApiKeysService, ApiKeysRepository, ApiKeyGuard],
 })
 export class ApiKeysModule {}
 
