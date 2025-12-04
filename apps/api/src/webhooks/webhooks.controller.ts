@@ -16,7 +16,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { WebhooksService } from './webhooks.service';
 import { CreateEndpointDto, UpdateEndpointDto, DeliveryQueryDto } from './dto';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';

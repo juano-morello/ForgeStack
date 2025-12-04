@@ -4,7 +4,7 @@
  */
 
 import { Controller, Get, Query, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { type TenantContext } from '@forgestack/db';
 import { UsageService } from './usage.service';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
