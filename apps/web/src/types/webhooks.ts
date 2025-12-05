@@ -10,7 +10,7 @@ export type { WebhookEventType, BaseWebhookEndpoint, WebhookEndpointWithSecret, 
 export { WEBHOOK_EVENTS } from '@forgestack/shared/browser';
 
 // Aliases for backward compatibility
-import type { BaseWebhookEndpoint, WebhookEndpointWithSecret, CreateWebhookEndpointInput, UpdateWebhookEndpointInput } from '@forgestack/shared/browser';
+import type { BaseWebhookEndpoint, CreateWebhookEndpointInput, UpdateWebhookEndpointInput } from '@forgestack/shared/browser';
 export type WebhookEndpoint = BaseWebhookEndpoint;
 export type CreateWebhookEndpointRequest = CreateWebhookEndpointInput;
 export type UpdateWebhookEndpointRequest = UpdateWebhookEndpointInput;

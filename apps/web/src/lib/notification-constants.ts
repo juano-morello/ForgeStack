@@ -5,7 +5,7 @@
  * Base types imported from @forgestack/shared
  */
 
-import { NOTIFICATION_TYPES as BASE_NOTIFICATION_TYPES, type NotificationType, type NotificationPriority } from '@forgestack/shared/browser';
+import { type NotificationPriority } from '@forgestack/shared/browser';
 
 // Extended notification type info for UI display
 export const NOTIFICATION_TYPES = {
