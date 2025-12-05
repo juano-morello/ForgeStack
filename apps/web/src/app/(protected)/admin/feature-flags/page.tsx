@@ -10,7 +10,6 @@
 import { useState } from 'react';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useFeatureFlags, useFeatureOverrides } from '@/hooks/use-feature-flags';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -128,52 +127,42 @@ export default function FeatureFlagsAdminPage() {
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertDescription>Please select an organization to continue.</AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <ShieldAlert className="h-4 w-4" />
+        <AlertDescription>Please select an organization to continue.</AlertDescription>
+      </Alert>
     );
   }
 
   if (!isOwner) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <PageHeader title="Feature Flags" description="Manage feature flags" />
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertDescription>
-              Only organization owners can manage feature flags. Please contact an owner if you need
-              access.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <>
+        <PageHeader title="Feature Flags" description="Manage feature flags" />
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertDescription>
+            Only organization owners can manage feature flags. Please contact an owner if you need
+            access.
+          </AlertDescription>
+        </Alert>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <PageHeader
-          title="Feature Flags"
-          description="Manage feature flags and organization overrides"
-          actions={
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Flag
-            </Button>
-          }
-        />
+    <>
+      <PageHeader
+        title="Feature Flags"
+        description="Manage feature flags and organization overrides"
+        actions={
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Flag
+          </Button>
+        }
+      />
 
-        <Tabs defaultValue="flags" className="space-y-6">
+      <Tabs defaultValue="flags" className="space-y-6">
           <TabsList>
             <TabsTrigger value="flags">Feature Flags</TabsTrigger>
             {selectedFlagForOverrides && (
@@ -204,9 +193,9 @@ export default function FeatureFlagsAdminPage() {
               />
             </TabsContent>
           )}
-        </Tabs>
+      </Tabs>
 
-        {/* Create Dialog */}
+      {/* Create Dialog */}
         <FeatureFlagDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
@@ -248,8 +237,7 @@ export default function FeatureFlagsAdminPage() {
             onCreate={createOverride}
           />
         )}
-      </main>
-    </div>
+    </>
   );
 }
 

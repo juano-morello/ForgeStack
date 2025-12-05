@@ -9,7 +9,6 @@
 import { useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { useOrgContext } from '@/components/providers/org-provider';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -125,42 +124,32 @@ export default function ProfilePage() {
 
   if (isPending) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <PageHeader title="Profile Settings" description="Loading..." />
-          <div className="space-y-6">
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </main>
-      </div>
+      <>
+        <PageHeader title="Profile Settings" description="Loading..." />
+        <div className="space-y-6">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </>
     );
   }
 
   if (!session?.user) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>Unable to load user session.</AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>Unable to load user session.</AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-        <PageHeader
-          title="Profile Settings"
-          description="Manage your personal profile information"
-        />
+    <>
+      <PageHeader
+        title="Profile Settings"
+        description="Manage your personal profile information"
+      />
 
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Avatar Section */}
           <Card>
             <CardHeader>
@@ -279,20 +268,19 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        {/* Dialogs */}
-        <ChangeEmailDialog
-          open={isEmailDialogOpen}
-          onOpenChange={setIsEmailDialogOpen}
-          currentEmail={session.user.email}
-        />
-        <ChangePasswordDialog
-          open={isPasswordDialogOpen}
-          onOpenChange={setIsPasswordDialogOpen}
-        />
-      </main>
-    </div>
+      {/* Dialogs */}
+      <ChangeEmailDialog
+        open={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        currentEmail={session.user.email}
+      />
+      <ChangePasswordDialog
+        open={isPasswordDialogOpen}
+        onOpenChange={setIsPasswordDialogOpen}
+      />
+    </>
   );
 }
 

@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useBilling } from '@/hooks/use-billing';
 import { useUsageSummary, useUsageHistory, useProjectedInvoice, useInvoices } from '@/hooks/use-usage';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { SubscriptionStatus } from '@/components/billing/subscription-status';
 import { PlanSelector } from '@/components/billing/plan-selector';
@@ -92,48 +91,38 @@ export default function BillingPage() {
 
   if (isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <PageHeader
-            title="Billing & Subscription"
-            description="Loading..."
-          />
-          <div className="space-y-6">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-        </main>
-      </div>
+      <>
+        <PageHeader
+          title="Billing & Subscription"
+          description="Loading..."
+        />
+        <div className="space-y-6">
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </>
     );
   }
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please select an organization to view billing settings.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select an organization to view billing settings.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <PageHeader
-          title="Billing & Subscription"
-          description={`Manage billing for ${currentOrg.name}`}
-        />
+    <>
+      <PageHeader
+        title="Billing & Subscription"
+        description={`Manage billing for ${currentOrg.name}`}
+      />
 
-        <div className="space-y-8">
+      <div className="space-y-8">
           {/* Error Alert */}
           {error && (
             <Alert variant="destructive">
@@ -246,9 +235,8 @@ export default function BillingPage() {
               </AlertDescription>
             </Alert>
           )}
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
 

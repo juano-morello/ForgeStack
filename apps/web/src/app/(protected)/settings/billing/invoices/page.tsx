@@ -10,7 +10,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useInvoices } from '@/hooks/use-usage';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { InvoiceTable } from '@/components/usage/invoice-table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,75 +31,60 @@ export default function InvoicesPage() {
 
   if (isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <PageHeader
-            title="Invoice History"
-            description="Loading..."
-          />
-          <Skeleton className="h-96 w-full" />
-        </main>
-      </div>
+      <>
+        <PageHeader
+          title="Invoice History"
+          description="Loading..."
+        />
+        <Skeleton className="h-96 w-full" />
+      </>
     );
   }
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please select an organization to view invoices.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select an organization to view invoices.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   if (!isOwner) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Only organization owners can view invoices.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>
+          Only organization owners can view invoices.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   // Filter invoices by status
-  const filteredInvoices = statusFilter === 'all' 
-    ? invoices 
+  const filteredInvoices = statusFilter === 'all'
+    ? invoices
     : invoices.filter(inv => inv.status === statusFilter);
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <div className="mb-6">
-          <Button variant="ghost" asChild>
-            <Link href="/settings/billing">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Billing
-            </Link>
-          </Button>
-        </div>
+    <>
+      <div className="mb-6">
+        <Button variant="ghost" asChild>
+          <Link href="/settings/billing">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Billing
+          </Link>
+        </Button>
+      </div>
 
-        <PageHeader
-          title="Invoice History"
-          description={`All invoices for ${currentOrg.name}`}
-        />
+      <PageHeader
+        title="Invoice History"
+        description={`All invoices for ${currentOrg.name}`}
+      />
 
-        <div className="mt-8">
+      <div className="mt-8">
           <Tabs defaultValue="all" onValueChange={setStatusFilter}>
             <TabsList>
               <TabsTrigger value="all">All</TabsTrigger>
@@ -123,9 +107,8 @@ export default function InvoicesPage() {
               )}
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
 

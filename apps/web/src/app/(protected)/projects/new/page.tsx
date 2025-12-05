@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { ProjectForm } from '@/components/projects/project-form';
 import { useProjects } from '@/hooks/use-projects';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,66 +42,53 @@ export default function NewProjectPage() {
 
   if (isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-48" />
-            <Skeleton className="h-4 w-64" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </main>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-          <EmptyState
-            icon={Building2}
-            title="No Organization Selected"
-            description="Please select or create an organization first."
-            action={{
-              label: 'Create Organization',
-              href: '/organizations/new',
-            }}
-          />
-        </main>
-      </div>
+      <EmptyState
+        icon={Building2}
+        title="No Organization Selected"
+        description="Please select or create an organization first."
+        action={{
+          label: 'Create Organization',
+          href: '/organizations/new',
+        }}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-        <PageHeader
-          title="Create New Project"
-          description={`Create a new project in ${currentOrg.name}`}
-          actions={
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/projects">
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Link>
-            </Button>
-          }
-        />
+    <>
+      <PageHeader
+        title="Create New Project"
+        description={`Create a new project in ${currentOrg.name}`}
+        actions={
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/projects">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          </Button>
+        }
+      />
 
-        <Card>
-          <CardContent className="pt-6">
-            <ProjectForm
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isSubmitting={isSubmitting}
-            />
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+      <Card>
+        <CardContent className="pt-6">
+          <ProjectForm
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            isSubmitting={isSubmitting}
+          />
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

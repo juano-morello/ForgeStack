@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useProjects } from '@/hooks/use-projects';
 import { DeleteProjectDialog } from '@/components/projects/delete-project-dialog';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -78,54 +77,45 @@ export default function ProjectDetailPage() {
 
   if (isLoading || isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-48" />
-            <Skeleton className="h-4 w-64" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </main>
+      <div className="max-w-4xl">
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="h-64 w-full" />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold">Error</h2>
-            <p className="mt-2 text-destructive">{error}</p>
-            <Button variant="link" asChild className="mt-4">
-              <Link href="/projects">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Projects
-              </Link>
-            </Button>
-          </div>
-        </main>
+      <div className="max-w-4xl">
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold">Error</h2>
+          <p className="mt-2 text-destructive">{error}</p>
+          <Button variant="link" asChild className="mt-4">
+            <Link href="/projects">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Projects
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold">Project Not Found</h2>
-            <Button variant="link" asChild className="mt-4">
-              <Link href="/projects">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Projects
-              </Link>
-            </Button>
-          </div>
-        </main>
+      <div className="max-w-4xl">
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold">Project Not Found</h2>
+          <Button variant="link" asChild className="mt-4">
+            <Link href="/projects">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Projects
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -133,10 +123,8 @@ export default function ProjectDetailPage() {
   const isOwner = currentOrg?.role === 'OWNER';
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-        <PageHeader
+    <>
+      <PageHeader
           title={project.name}
           description={currentOrg?.name}
           actions={
@@ -209,7 +197,6 @@ export default function ProjectDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </main>
 
       <DeleteProjectDialog
         project={project}
@@ -218,7 +205,7 @@ export default function ProjectDetailPage() {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
       />
-    </div>
+    </>
   );
 }
 
