@@ -1,6 +1,16 @@
 -- Fix RLS policies to ensure bypass works correctly
 -- Drop existing policies and recreate with proper bypass logic
 
+-- First, ensure RLS is enabled on all tables
+ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organizations FORCE ROW LEVEL SECURITY;
+ALTER TABLE organization_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organization_members FORCE ROW LEVEL SECURITY;
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE projects FORCE ROW LEVEL SECURITY;
+ALTER TABLE invitations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE invitations FORCE ROW LEVEL SECURITY;
+
 -- Drop all existing organization policies
 DROP POLICY IF EXISTS organizations_select_policy ON organizations;
 DROP POLICY IF EXISTS organizations_insert_policy ON organizations;
