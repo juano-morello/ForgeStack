@@ -31,9 +31,10 @@ export interface AuditEventData {
 
 /**
  * Audit context for logging
+ * orgId is nullable for user-scoped events (e.g., onboarding completion)
  */
 export interface AuditContext {
-  orgId: string;
+  orgId: string | null;
   actorId?: string;
   actorType: AuditActorType;
   actorName?: string;

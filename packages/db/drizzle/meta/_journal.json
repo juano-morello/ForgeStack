@@ -120,6 +120,13 @@
       "when": 1764900200000,
       "tag": "0016_add_missing_user_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1764900300000,
+      "tag": "0017_allow_null_org_id_audit_logs",
+      "breakpoints": true
     }
   ]
 }
