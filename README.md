@@ -6,7 +6,7 @@
 
 **A production-ready, multi-tenant SaaS starter kit with enterprise-grade security**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-61dafb?logo=react&logoColor=black)](https://react.dev/)
 [![NestJS](https://img.shields.io/badge/NestJS-11-e0234e?logo=nestjs&logoColor=white)](https://nestjs.com/)
@@ -39,18 +39,22 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 | 👥 **Team Management** | Invite members, assign roles with granular permissions |
 | 🔒 **Granular RBAC** | Custom roles with fine-grained permissions (33 permissions, 11 resources) |
 | 📧 **Email Integration** | Transactional emails with [Resend](https://resend.com) |
-| 💳 **Billing & Subscriptions** | Stripe integration with checkout and customer portal |
+| 💳 **Billing & Subscriptions** | Stripe integration with checkout, customer portal & usage metering |
 | 📁 **File Uploads** | S3-compatible storage (Cloudflare R2) with signed URLs |
-| 🔑 **API Keys** | Generate, manage, and authenticate with API keys |
+| 🔑 **API Keys** | Generate, manage, and authenticate with scoped API keys |
 | 🪝 **Webhooks** | Outgoing events + incoming Stripe webhook handling |
-| 📋 **Audit Logs** | Immutable compliance logs with export |
+| 📋 **Audit Logs** | Immutable compliance logs with export (org + platform level) |
 | 📊 **Activity Feed** | Real-time timeline with aggregation |
-| 🔔 **Notifications** | In-app and email notifications |
-| 🚩 **Feature Flags** | Plan-based gating, rollouts, overrides |
+| 🔔 **Notifications** | In-app and email notifications with preferences |
+| 🚩 **Feature Flags** | Plan-based gating, percentage rollouts, org overrides |
 | ⚡ **Rate Limiting** | Plan-based API rate limits with Redis |
+| 📈 **Usage Tracking** | API calls, storage, and seat metering with limits |
+| 🛠️ **Super Admin Panel** | Platform-wide user/org management with suspension |
+| 📚 **Documentation Site** | Built-in MDX documentation with API guides |
+| 🎯 **Onboarding Flow** | Guided setup with org creation and team invites |
 | 📡 **Observability** | OpenTelemetry tracing, Pino structured logs, Prometheus metrics |
 | 🐳 **Docker Ready** | Multi-stage Dockerfiles with deployment templates |
-| 🎨 **Modern UI** | Next.js 16 + React 19 + Tailwind CSS + shadcn/ui |
+| 🎨 **Modern UI** | Next.js 16 + React 19 + Tailwind CSS + shadcn/ui + Storybook |
 | 📦 **Monorepo** | pnpm workspaces + Turborepo |
 | ✅ **Tested** | 95%+ coverage with Jest, Vitest, and Playwright |
 
@@ -97,29 +101,99 @@ ForgeStack/
 │   └── worker/              # BullMQ Background Jobs
 ├── packages/
 │   ├── db/                  # Drizzle ORM + Schema + RLS + RBAC
-│   ├── shared/              # Shared TypeScript types & constants
-│   └── ui/                  # Shared UI components (future)
+│   ├── shared/              # Shared types, constants, logger & queue names
+│   ├── sdk/                 # TypeScript SDK for API consumption
+│   └── ui/                  # Shared UI component library (shadcn/ui based)
 ├── deploy/                  # Deployment templates
-│   ├── fly.toml             # Fly.io configuration
-│   ├── railway.toml         # Railway configuration
+│   ├── fly.api.toml         # Fly.io API configuration
+│   ├── fly.web.toml         # Fly.io Web configuration
+│   ├── fly.worker.toml      # Fly.io Worker configuration
+│   ├── railway.json         # Railway configuration
 │   └── render.yaml          # Render configuration
+├── docker/                  # Observability stack configs
+│   ├── grafana/             # Grafana dashboards
+│   ├── prometheus/          # Prometheus config
+│   ├── tempo/               # Tempo tracing config
+│   └── loki/                # Loki logging config
 ├── docs/
 │   ├── specs/               # Feature specifications
 │   └── proposals/           # Feature proposals & roadmap
 ├── docker-compose.yml            # Local development services
 ├── docker-compose.prod.yml       # Production deployment
-├── docker-compose.observability.yml  # Observability stack
 └── turbo.json                    # Turborepo configuration
 ```
 
 | Package | Description |
 |---------|-------------|
-| `apps/api` | NestJS backend with REST endpoints, authentication, RBAC, and business logic |
-| `apps/web` | Next.js frontend with App Router, React Server Components, and client-side state |
-| `apps/worker` | Background job processor for emails and async tasks |
-| `packages/db` | Database schema, migrations, RLS policies, RBAC tables, and Drizzle client |
-| `packages/shared` | Shared TypeScript types, constants, and validation schemas |
+| `apps/api` | NestJS backend with REST endpoints, authentication, RBAC, admin panel, and business logic |
+| `apps/web` | Next.js frontend with App Router, marketing pages, docs site, onboarding, and dashboard |
+| `apps/worker` | Background job processor for emails, webhooks, usage aggregation, and cleanup tasks |
+| `packages/db` | Database schema (26 tables), migrations, RLS policies, RBAC tables, and Drizzle client |
+| `packages/shared` | Centralized types, constants, Pino logger factory, and queue name definitions |
+| `packages/sdk` | TypeScript SDK for external API consumption with typed methods |
+| `packages/ui` | Reusable UI component library with shadcn/ui primitives, compound components, and Storybook |
 | `deploy/` | Platform-specific deployment configurations (Fly.io, Railway, Render) |
+
+---
+
+## 🗄️ Database Schema
+
+ForgeStack uses **26 PostgreSQL tables** with Drizzle ORM and Row-Level Security:
+
+### Core Tables
+
+| Table | Description |
+|-------|-------------|
+| `users` | User accounts with auth, profile, suspension status |
+| `organizations` | Multi-tenant organizations with settings |
+| `organization_members` | User-org membership with legacy role |
+| `projects` | Organization projects with metadata |
+| `invitations` | Pending member invitations with tokens |
+
+### RBAC Tables
+
+| Table | Description |
+|-------|-------------|
+| `roles` | System and custom roles per organization |
+| `permissions` | Available permissions (resource:action format) |
+| `role_permissions` | Many-to-many role-permission mapping |
+| `member_roles` | User role assignments within organizations |
+
+### Billing & Usage Tables
+
+| Table | Description |
+|-------|-------------|
+| `customers` | Stripe customer records per organization |
+| `subscriptions` | Active subscription details |
+| `plans` | Available subscription plans |
+| `usage_records` | API call, storage, and seat usage tracking |
+| `usage_limits` | Plan-based usage limits |
+| `billing_events` | Billing event history |
+
+### Feature & Content Tables
+
+| Table | Description |
+|-------|-------------|
+| `feature_flags` | Feature flag definitions with rules |
+| `files` | File metadata for R2/S3 uploads |
+| `activities` | Activity feed entries |
+| `notifications` | In-app notifications with read status |
+| `audit_logs` | Organization-scoped audit trail |
+| `platform_audit_logs` | Platform-wide admin actions |
+
+### Webhook Tables
+
+| Table | Description |
+|-------|-------------|
+| `webhook_endpoints` | Registered outgoing webhook URLs |
+| `webhook_deliveries` | Delivery attempts with status |
+| `incoming_webhook_events` | Received webhook events (Stripe) |
+
+### API Key Table
+
+| Table | Description |
+|-------|-------------|
+| `api_keys` | API keys with scopes and hashed secrets |
 
 ---
 
@@ -197,72 +271,182 @@ pnpm dev
 ForgeStack/
 ├── apps/
 │   ├── api/
-│   │   ├── src/
-│   │   │   ├── activities/        # Activity feed module
-│   │   │   ├── api-keys/          # API key management
-│   │   │   ├── audit-logs/        # Compliance audit logs
-│   │   │   ├── auth/              # Authentication module
-│   │   │   ├── billing/           # Stripe billing integration
-│   │   │   ├── core/              # Guards, decorators, interceptors
-│   │   │   │   ├── guards/        # Auth, tenant, permission guards
-│   │   │   │   └── decorators/    # @RequireRole, @RequirePermission
-│   │   │   ├── feature-flags/     # Feature flag management
-│   │   │   ├── files/             # File upload (R2/S3)
-│   │   │   ├── health/            # Health check endpoint
-│   │   │   ├── invitations/       # Member invitation system
-│   │   │   ├── members/           # Organization members
-│   │   │   ├── notifications/     # In-app & email notifications
-│   │   │   ├── organizations/     # Organization CRUD
-│   │   │   ├── permissions/       # Permissions module (RBAC)
-│   │   │   ├── projects/          # Projects CRUD
-│   │   │   ├── queue/             # BullMQ queue service
-│   │   │   ├── rate-limiting/     # API rate limiting
-│   │   │   ├── roles/             # Roles module (RBAC)
-│   │   │   └── webhooks/          # Webhook endpoints & delivery
-│   │   └── test/                  # Test utilities & integration tests
+│   │   └── src/
+│   │       ├── activities/        # Activity feed module
+│   │       ├── admin/             # Super admin modules
+│   │       │   ├── admin-organizations/  # Org management (suspend, transfer)
+│   │       │   ├── admin-users/          # User management (suspend, delete)
+│   │       │   └── platform-audit/       # Platform-wide audit logs
+│   │       ├── api-keys/          # API key management with scopes
+│   │       ├── audit-logs/        # Organization compliance audit logs
+│   │       ├── auth/              # Authentication (better-auth)
+│   │       ├── billing/           # Stripe billing (checkout, portal, invoices)
+│   │       ├── core/              # Guards, decorators, interceptors, filters
+│   │       ├── dashboard/         # Dashboard summary stats
+│   │       ├── feature-flags/     # Feature flags with org overrides
+│   │       ├── files/             # File upload (R2/S3) with signed URLs
+│   │       ├── health/            # Health check endpoint
+│   │       ├── incoming-webhooks/ # Stripe webhook processing
+│   │       ├── invitations/       # Member invitation system
+│   │       ├── members/           # Organization members & role assignment
+│   │       ├── notifications/     # In-app & email notifications
+│   │       ├── organizations/     # Organization CRUD
+│   │       ├── permissions/       # Permissions listing (RBAC)
+│   │       ├── projects/          # Projects CRUD
+│   │       ├── queue/             # BullMQ queue service
+│   │       ├── rate-limiting/     # Plan-based API rate limiting
+│   │       ├── roles/             # Custom roles (RBAC)
+│   │       ├── telemetry/         # OpenTelemetry + Pino logging
+│   │       ├── usage/             # Usage tracking & limits
+│   │       ├── users/             # User profile management
+│   │       └── webhooks/          # Outgoing webhook endpoints & delivery
 │   │
 │   ├── web/
-│   │   ├── src/
-│   │   │   ├── app/               # Next.js App Router pages
-│   │   │   │   └── (protected)/settings/roles/  # Role management UI
-│   │   │   ├── components/        # React components
-│   │   │   │   └── roles/         # RBAC components (PermissionGate, etc.)
-│   │   │   ├── hooks/             # Custom React hooks (usePermission, etc.)
-│   │   │   ├── lib/               # Utilities & API client
-│   │   │   └── types/             # TypeScript types (rbac.ts, etc.)
-│   │   └── e2e/                   # Playwright E2E tests
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── (auth)/        # Login, signup, invitation accept
+│   │       │   ├── (marketing)/   # Landing page, features, pricing
+│   │       │   ├── (onboarding)/  # Guided onboarding flow
+│   │       │   ├── (protected)/   # Authenticated app pages
+│   │       │   │   ├── admin/     # Feature flags admin
+│   │       │   │   ├── dashboard/ # Main dashboard
+│   │       │   │   ├── activities/# Activity feed
+│   │       │   │   ├── notifications/ # Notifications page
+│   │       │   │   ├── organizations/ # Org list, create, members
+│   │       │   │   ├── projects/  # Project list, detail, edit
+│   │       │   │   └── settings/  # All settings pages
+│   │       │   ├── (super-admin)/ # Platform admin panel
+│   │       │   ├── api/           # Next.js API routes (auth, health)
+│   │       │   └── docs/          # MDX documentation site
+│   │       ├── components/        # 24 component directories
+│   │       ├── hooks/             # 27 custom React hooks
+│   │       ├── lib/               # API client, auth, utilities
+│   │       └── types/             # 16 TypeScript type files
 │   │
 │   └── worker/
 │       └── src/
-│           ├── handlers/          # Job handlers (email, webhooks)
-│           └── worker.ts          # BullMQ worker setup
+│           ├── handlers/          # 13 job handlers
+│           │   ├── welcome-email.handler.ts
+│           │   ├── send-invitation.handler.ts
+│           │   ├── notification-email.handler.ts
+│           │   ├── webhook-delivery.handler.ts
+│           │   ├── audit-log.handler.ts
+│           │   ├── activity.handler.ts
+│           │   ├── stripe-webhook.handler.ts
+│           │   ├── stripe-usage-report.handler.ts
+│           │   ├── usage-aggregation.handler.ts
+│           │   ├── active-seats.handler.ts
+│           │   ├── cleanup-deleted-files.handler.ts
+│           │   ├── cleanup-orphaned-files.handler.ts
+│           │   └── incoming-webhook-processing.handler.ts
+│           ├── services/          # Email service (Resend)
+│           └── telemetry/         # OpenTelemetry + logging
 │
 ├── packages/
 │   ├── db/
-│   │   ├── src/
-│   │   │   ├── schema/            # Drizzle table definitions
-│   │   │   │   ├── roles.ts       # Roles table
-│   │   │   │   ├── permissions.ts # Permissions table
-│   │   │   │   ├── role-permissions.ts  # Role-permission mapping
-│   │   │   │   └── member-roles.ts      # User-role assignment
-│   │   │   ├── seed/              # Seed scripts (RBAC seed)
-│   │   │   ├── context.ts         # Tenant context & RLS
-│   │   │   └── index.ts           # Exports
-│   │   └── drizzle/               # Migration files
+│   │   └── src/
+│   │       ├── schema/            # 26 Drizzle table definitions
+│   │       ├── seed/              # RBAC & data seed scripts
+│   │       ├── context.ts         # Tenant context & RLS
+│   │       └── index.ts           # Exports
 │   │
-│   └── shared/
+│   ├── shared/
+│   │   └── src/
+│   │       ├── types/             # 8 shared type modules
+│   │       ├── browser.ts         # Browser-safe exports
+│   │       ├── constants.ts       # Validation constants
+│   │       ├── logger.ts          # Pino logger factory
+│   │       ├── queues.ts          # Queue name definitions
+│   │       └── index.ts           # Main exports
+│   │
+│   ├── sdk/
+│   │   └── src/
+│   │       ├── client.ts          # API client implementation
+│   │       ├── types.ts           # SDK types
+│   │       └── index.ts           # Exports
+│   │
+│   └── ui/
 │       └── src/
-│           ├── constants.ts       # Shared constants
-│           └── types.ts           # Shared TypeScript types
+│           ├── components/        # 22 base + 4 compound components
+│           ├── hooks/             # use-toast
+│           ├── lib/               # cn utility
+│           ├── tokens/            # Design tokens (colors, spacing, typography)
+│           └── styles.css         # Global styles
 │
-├── deploy/                        # Deployment configurations
-│   ├── fly.toml                   # Fly.io
-│   ├── railway.toml               # Railway
-│   └── render.yaml                # Render
-│
-└── docs/
-    ├── specs/                     # Feature specifications
-    └── proposals/                 # Feature proposals & roadmap
+├── deploy/                        # Platform deployment configs
+├── docker/                        # Observability stack configs
+└── docs/                          # Specs & proposals
+```
+
+### Worker Job Handlers
+
+The worker processes 13 different job types:
+
+| Handler | Queue | Description |
+|---------|-------|-------------|
+| `welcome-email` | `email` | Send welcome email to new users |
+| `send-invitation` | `email` | Send member invitation emails |
+| `notification-email` | `email` | Send notification emails |
+| `webhook-delivery` | `webhooks` | Deliver outgoing webhooks with retries |
+| `audit-log` | `audit` | Process and store audit log entries |
+| `activity` | `activity` | Process activity feed entries |
+| `stripe-webhook` | `stripe` | Process incoming Stripe webhooks |
+| `stripe-usage-report` | `billing` | Report usage to Stripe for metered billing |
+| `usage-aggregation` | `usage` | Aggregate usage data (daily/monthly) |
+| `active-seats` | `usage` | Count active seats for billing |
+| `cleanup-deleted-files` | `files` | Remove soft-deleted files from storage |
+| `cleanup-orphaned-files` | `files` | Clean up orphaned file uploads |
+| `incoming-webhook-processing` | `webhooks` | Process incoming webhook events |
+
+---
+
+## 📦 Package Exports
+
+### @forgestack/shared
+
+The shared package provides multiple entry points for different environments:
+
+| Import Path | Description | Environment |
+|-------------|-------------|-------------|
+| `@forgestack/shared` | Full exports (types, constants, logger, queues) | Node.js |
+| `@forgestack/shared/browser` | Browser-safe exports (types, constants only) | Browser |
+| `@forgestack/shared/types` | Type definitions only | Both |
+| `@forgestack/shared/constants` | Validation constants | Both |
+| `@forgestack/shared/logger` | Pino logger factory with OpenTelemetry | Node.js |
+| `@forgestack/shared/queues` | BullMQ queue name definitions | Node.js |
+
+**Shared Types:**
+
+```typescript
+// Import in browser (Next.js client components)
+import { OrgRole, PaginatedResponse, WebhookEventType } from '@forgestack/shared/browser';
+
+// Import in Node.js (API, Worker)
+import { createLogger, QUEUE_NAMES } from '@forgestack/shared';
+```
+
+### @forgestack/sdk
+
+TypeScript SDK for external API consumption:
+
+```typescript
+import { ForgeStackClient } from '@forgestack/sdk';
+
+const client = new ForgeStackClient({
+  baseUrl: 'https://api.yourapp.com',
+  apiKey: 'fsk_xxxxxxxxxxxx',
+});
+
+const projects = await client.projects.list();
+```
+
+### @forgestack/ui
+
+Shared UI component library:
+
+```typescript
+import { Button, Card, ConfirmDialog, EmptyState, PageHeader, StatCard } from '@forgestack/ui';
+import { useToast } from '@forgestack/ui';
 ```
 
 ---
@@ -370,6 +554,79 @@ See `.env.example` for the complete list with documentation.
 
 ---
 
+## 🌐 Web App Routes
+
+### Public Routes
+
+| Route | Description |
+|-------|-------------|
+| `/` | Marketing landing page |
+| `/features` | Features overview |
+| `/pricing` | Pricing plans |
+| `/login` | User login |
+| `/signup` | User registration |
+| `/docs` | Documentation site |
+| `/docs/*` | Documentation pages |
+
+### Protected Routes (Authenticated)
+
+| Route | Description |
+|-------|-------------|
+| `/dashboard` | Main dashboard with stats |
+| `/organizations` | Organization list |
+| `/organizations/new` | Create organization |
+| `/organizations/:id/members` | Manage members |
+| `/projects` | Project list |
+| `/projects/:id` | Project details |
+| `/projects/:id/edit` | Edit project |
+| `/activities` | Activity feed |
+| `/notifications` | Notifications center |
+
+### Settings Routes
+
+| Route | Description |
+|-------|-------------|
+| `/settings/profile` | User profile settings |
+| `/settings/organization` | Organization settings |
+| `/settings/api-keys` | API key management |
+| `/settings/webhooks` | Webhook endpoints |
+| `/settings/roles` | Custom role management |
+| `/settings/roles/:roleId` | Edit role permissions |
+| `/settings/billing` | Subscription & billing |
+| `/settings/billing/invoices` | Invoice history |
+| `/settings/audit-logs` | Organization audit logs |
+| `/settings/notifications` | Notification preferences |
+| `/settings/features` | Feature flag status |
+
+### Admin Routes
+
+| Route | Description |
+|-------|-------------|
+| `/admin/feature-flags` | Feature flag management |
+
+### Super Admin Routes (Platform)
+
+| Route | Description |
+|-------|-------------|
+| `/super-admin` | Platform dashboard |
+| `/super-admin/users` | User management |
+| `/super-admin/users/:id` | User details |
+| `/super-admin/organizations` | Organization management |
+| `/super-admin/organizations/:id` | Organization details |
+| `/super-admin/audit-logs` | Platform audit logs |
+
+### Onboarding Routes
+
+| Route | Description |
+|-------|-------------|
+| `/onboarding` | Onboarding flow start |
+| `/onboarding/create-org` | Create first organization |
+| `/onboarding/choose-plan` | Select subscription plan |
+| `/onboarding/invite-team` | Invite team members |
+| `/onboarding/complete` | Onboarding complete |
+
+---
+
 ## 🔐 Key Features Documentation
 
 ### Authentication Flow
@@ -457,9 +714,12 @@ http://localhost:4000/api/v1
 
 All protected endpoints require:
 - Valid session cookie (`better-auth.session_token`)
-- Organization context header (`X-Org-Id`)
+- Organization context header (`X-Org-Id`) for org-scoped endpoints
 
-### Endpoints
+Alternatively, use API key authentication:
+- Header: `X-API-Key: fsk_xxxxxxxxxxxx`
+
+### Core Endpoints
 
 #### Health & Auth
 
@@ -474,6 +734,7 @@ All protected endpoints require:
 |--------|----------|-------------|------|
 | `GET` | `/organizations` | List user's orgs | Yes* |
 | `POST` | `/organizations` | Create org | Yes* |
+| `GET` | `/organizations/:id` | Get org details | Yes |
 | `PATCH` | `/organizations/:id` | Update org | OWNER |
 | `DELETE` | `/organizations/:id` | Delete org | OWNER |
 
@@ -481,29 +742,42 @@ All protected endpoints require:
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/projects` | List projects (supports `?search=`) | Yes |
-| `GET` | `/projects/:id` | Get project | Yes |
+| `GET` | `/projects` | List projects | Yes |
 | `POST` | `/projects` | Create project | Yes |
+| `GET` | `/projects/:id` | Get project | Yes |
 | `PATCH` | `/projects/:id` | Update project | Yes |
 | `DELETE` | `/projects/:id` | Delete project | OWNER |
 
-#### Members
+#### Members & Invitations
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/members` | List members | Yes |
-| `PATCH` | `/members/:userId/role` | Update role | OWNER |
-| `DELETE` | `/members/:userId` | Remove member | OWNER |
-
-#### Invitations
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `GET` | `/invitations` | List pending | OWNER |
-| `POST` | `/invitations` | Send invite | OWNER |
-| `DELETE` | `/invitations/:id` | Cancel invite | OWNER |
+| `GET` | `/organizations/:orgId/members` | List members | Yes |
+| `PATCH` | `/organizations/:orgId/members/:userId` | Update member role | OWNER |
+| `DELETE` | `/organizations/:orgId/members/:userId` | Remove member | OWNER |
+| `POST` | `/organizations/:orgId/invitations` | Send invite | OWNER |
+| `GET` | `/organizations/:orgId/invitations` | List invitations | OWNER |
+| `DELETE` | `/organizations/:orgId/invitations/:id` | Cancel invite | OWNER |
 | `POST` | `/invitations/accept` | Accept invite | Yes* |
 | `POST` | `/invitations/decline` | Decline invite | Yes* |
+
+#### Dashboard & Activities
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/dashboard/summary` | Dashboard stats | Yes |
+| `GET` | `/activities` | List activities | Yes |
+| `GET` | `/activities/recent` | Recent activities | Yes |
+
+#### Users
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `PATCH` | `/users/me/profile` | Update profile | Yes* |
+| `POST` | `/users/me/change-password` | Change password | Yes* |
+| `POST` | `/users/me/change-email` | Change email | Yes* |
+| `GET` | `/users/me/onboarding-status` | Get onboarding status | Yes* |
+| `POST` | `/users/me/complete-onboarding` | Complete onboarding | Yes* |
 
 > *Endpoints marked with `*` do not require `X-Org-Id` header
 
@@ -512,6 +786,23 @@ All protected endpoints require:
 ## 🆕 V2 Features
 
 ForgeStack V2 introduces enterprise-grade features for production SaaS applications.
+
+### 🛠️ Super Admin Panel
+
+Platform-wide administration for managing users and organizations:
+
+| Feature | Description |
+|---------|-------------|
+| **User Management** | List, view, suspend/unsuspend, delete users |
+| **Org Management** | List, view, suspend/unsuspend, transfer ownership, delete orgs |
+| **Platform Audit Logs** | Track all admin actions across the platform |
+| **Dashboard** | Platform-wide statistics and health overview |
+
+**Super Admin Routes:**
+- `/super-admin` - Dashboard with platform stats
+- `/super-admin/users` - User management table
+- `/super-admin/organizations` - Organization management table
+- `/super-admin/audit-logs` - Platform-wide audit trail
 
 ### 🔒 Granular RBAC with Permissions
 
@@ -729,6 +1020,61 @@ X-RateLimit-Reset: 1700000000
 Retry-After: 45  (only on 429)
 ```
 
+### 📈 Usage Tracking & Limits
+
+Track and enforce usage limits per organization:
+
+| Feature | Description |
+|---------|-------------|
+| **API Call Tracking** | Count API requests per org with daily/monthly aggregation |
+| **Storage Metering** | Track file storage usage per org |
+| **Seat Counting** | Active seat tracking for billing |
+| **Usage Limits** | Plan-based limits with enforcement |
+| **Usage History** | Historical usage data for analytics |
+
+**API Endpoints:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/billing/usage` | Current usage summary |
+| `GET` | `/billing/usage/history` | Historical usage data |
+| `GET` | `/billing/usage/api-calls` | API call breakdown |
+| `GET` | `/billing/usage/storage` | Storage usage details |
+| `GET` | `/billing/usage/seats` | Active seat count |
+| `GET` | `/billing/usage/limits` | Current plan limits |
+
+### 📚 Built-in Documentation Site
+
+MDX-powered documentation with guides and API reference:
+
+| Feature | Description |
+|---------|-------------|
+| **MDX Support** | Write docs in MDX with React components |
+| **API Reference** | Auto-generated API documentation |
+| **Guides** | Step-by-step tutorials |
+| **Code Blocks** | Syntax-highlighted code examples |
+| **Sidebar Navigation** | Organized doc structure |
+
+**Documentation Routes:**
+- `/docs` - Documentation home
+- `/docs/installation` - Installation guide
+- `/docs/quickstart` - Quick start tutorial
+- `/docs/api` - API reference
+- `/docs/sdk` - SDK documentation
+- `/docs/guides` - How-to guides
+
+### 🎯 Guided Onboarding
+
+Step-by-step onboarding flow for new users:
+
+| Step | Description |
+|------|-------------|
+| **Welcome** | Introduction to the platform |
+| **Create Org** | Set up first organization |
+| **Choose Plan** | Select subscription plan |
+| **Invite Team** | Invite initial team members |
+| **Complete** | Success and next steps |
+
 ### 📡 OpenTelemetry Observability
 
 Production-grade observability with distributed tracing, structured logging, and metrics:
@@ -736,7 +1082,7 @@ Production-grade observability with distributed tracing, structured logging, and
 | Feature | Description |
 |---------|-------------|
 | **Distributed Tracing** | OpenTelemetry traces with Tempo/Jaeger export |
-| **Structured Logging** | Pino JSON logs with trace correlation |
+| **Structured Logging** | Pino JSON logs with trace correlation (shared logger factory) |
 | **Metrics** | Prometheus-compatible metrics endpoint |
 | **Auto-Instrumentation** | HTTP, PostgreSQL, Redis, BullMQ |
 | **Log Aggregation** | Loki-compatible log forwarding |
@@ -753,24 +1099,29 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4318
 LOG_LEVEL=info  # debug, info, warn, error
 ```
 
-**Observability Stack (Docker Compose):**
+**Observability Stack:**
 
-```bash
-# Start the full observability stack
-docker-compose -f docker-compose.observability.yml up -d
-```
+Start the full observability stack with the configs in `/docker/`:
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Grafana | http://localhost:3001 | Dashboards & visualization |
-| Tempo | http://localhost:3200 | Distributed tracing |
-| Loki | http://localhost:3100 | Log aggregation |
-| Prometheus | http://localhost:9090 | Metrics collection |
+| Service | Port | Purpose |
+|---------|------|---------|
+| Grafana | 3001 | Dashboards & visualization |
+| Tempo | 3200 | Distributed tracing |
+| Loki | 3100 | Log aggregation |
+| Prometheus | 9090 | Metrics collection |
 
 **Trace Correlation:**
 
-All logs include trace IDs for correlation:
+All logs include trace IDs for correlation via the shared logger factory:
 
+```typescript
+// Using the shared logger factory
+import { createLogger } from '@forgestack/shared';
+const logger = createLogger({ module: 'MyService' });
+logger.info('Project created', { projectId: 'xxx' });
+```
+
+Output:
 ```json
 {
   "level": "info",
@@ -778,9 +1129,32 @@ All logs include trace IDs for correlation:
   "msg": "Project created",
   "traceId": "abc123...",
   "spanId": "def456...",
-  "orgId": "org_xxx",
-  "userId": "user_xxx"
+  "projectId": "xxx",
+  "service": "forgestack-api"
 }
+```
+
+### 🎨 Shared UI Component Library
+
+Reusable UI components with Storybook documentation:
+
+| Component Type | Examples |
+|----------------|----------|
+| **Base Components** | Button, Card, Input, Select, Dialog, Table, Tabs, etc. |
+| **Compound Components** | ConfirmDialog, EmptyState, PageHeader, StatCard |
+| **Design Tokens** | Colors, spacing, typography scales |
+
+**Usage:**
+
+```typescript
+import { Button, Card, ConfirmDialog } from '@forgestack/ui';
+import { useToast } from '@forgestack/ui';
+```
+
+**Storybook:**
+
+```bash
+cd packages/ui && pnpm storybook
 ```
 
 ### 🐳 Docker & Deployment
@@ -793,7 +1167,6 @@ Production-ready containerization with multi-stage builds:
 | **Health Checks** | Built-in container health checks |
 | **Non-Root User** | Security-hardened containers |
 | **Platform Templates** | Fly.io, Railway, Render configs |
-| **GitHub Actions** | CI/CD pipeline for Docker builds |
 
 **Build Images:**
 
@@ -806,10 +1179,10 @@ docker build -t forgestack-worker -f apps/worker/Dockerfile .
 
 **Deployment Templates:**
 
-| Platform | Config File |
+| Platform | Config Files |
 |----------|-------------|
-| Fly.io | `deploy/fly.toml` |
-| Railway | `deploy/railway.toml` |
+| Fly.io | `deploy/fly.api.toml`, `deploy/fly.web.toml`, `deploy/fly.worker.toml` |
+| Railway | `deploy/railway.json` |
 | Render | `deploy/render.yaml` |
 | Docker Compose | `docker-compose.prod.yml` |
 
