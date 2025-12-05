@@ -92,6 +92,20 @@ export async function withTenantContext<T>(
   } catch (error) {
     // Rollback on error
     await client.query('ROLLBACK');
+    // Log the actual database error for debugging
+    if (error && typeof error === 'object') {
+      const dbError = error as Record<string, unknown>;
+      if (dbError.code || dbError.detail || dbError.constraint) {
+        console.error('[DB Error]', {
+          code: dbError.code,
+          message: dbError.message,
+          detail: dbError.detail,
+          constraint: dbError.constraint,
+          table: dbError.table,
+          column: dbError.column,
+        });
+      }
+    }
     throw error;
   } finally {
     // Release client back to pool
