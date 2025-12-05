@@ -8,11 +8,13 @@ import { FilesRepository } from '../files/files.repository';
 import { BillingService } from '../billing/billing.service';
 import { UsageService } from '../usage/usage.service';
 
+import type { OrgRole } from '@forgestack/shared';
+
 // Mock TenantContext type
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('DashboardService', () => {

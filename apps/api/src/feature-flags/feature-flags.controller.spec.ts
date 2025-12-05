@@ -3,10 +3,12 @@ import { FeatureFlagsController } from './feature-flags.controller';
 import { FeatureFlagsService } from './feature-flags.service';
 import { createMockTenantContext } from '../../test/test-utils';
 
+import type { OrgRole } from '@forgestack/shared';
+
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('FeatureFlagsController', () => {

@@ -16,19 +16,7 @@ import {
   type Project,
   type NewProject,
 } from '@forgestack/db';
-
-export interface PaginatedProjects {
-  items: Project[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-export interface FindAllOptions {
-  search?: string;
-  page?: number;
-  limit?: number;
-}
+import type { PaginatedResponse, FindAllOptions } from '@forgestack/shared';
 
 @Injectable()
 export class ProjectsRepository {
@@ -63,7 +51,7 @@ export class ProjectsRepository {
   async findAll(
     ctx: TenantContext,
     options: FindAllOptions = {},
-  ): Promise<PaginatedProjects> {
+  ): Promise<PaginatedResponse<Project>> {
     const { search, page = 1, limit = 10 } = options;
     const offset = (page - 1) * limit;
 

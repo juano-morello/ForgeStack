@@ -2,25 +2,12 @@
  * Webhook Constants
  *
  * Constants for webhook event types, labels, and groupings.
+ * Base types and events imported from @forgestack/shared
  */
 
-import type { WebhookEventType } from '@/types/webhooks';
-
-export const WEBHOOK_EVENTS: WebhookEventType[] = [
-  'project.created',
-  'project.updated',
-  'project.deleted',
-  'member.invited',
-  'member.joined',
-  'member.removed',
-  'member.role_changed',
-  'subscription.created',
-  'subscription.updated',
-  'subscription.canceled',
-  'file.uploaded',
-  'file.deleted',
-  'test.ping',
-];
+import type { WebhookEventType } from '@forgestack/shared/browser';
+export { WEBHOOK_EVENTS } from '@forgestack/shared/browser';
+export type { WebhookEventType } from '@forgestack/shared/browser';
 
 export const EVENT_LABELS: Record<WebhookEventType, string> = {
   'project.created': 'Project Created',

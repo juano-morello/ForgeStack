@@ -1,18 +1,18 @@
 /**
  * Project Types
  *
- * Type definitions for project-related data structures.
+ * Extended type definitions for project-related data structures.
+ * Base types imported from @forgestack/shared
  */
 
-export interface Project {
-  id: string;
-  orgId: string;
-  name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+// Re-export base types from shared
+export type { BaseProject, CreateProjectInput, UpdateProjectInput } from '@forgestack/shared/browser';
 
+// Alias for backward compatibility
+import type { BaseProject } from '@forgestack/shared/browser';
+export type Project = BaseProject;
+
+// Web-specific response types
 export interface ProjectsResponse {
   items: Project[];
   total: number;
@@ -20,13 +20,7 @@ export interface ProjectsResponse {
   limit: number;
 }
 
-export interface CreateProjectDto {
-  name: string;
-  description?: string;
-}
-
-export interface UpdateProjectDto {
-  name?: string;
-  description?: string;
-}
+// Backward compatibility aliases
+export type CreateProjectDto = { name: string; description?: string };
+export type UpdateProjectDto = { name?: string; description?: string };
 

@@ -1,39 +1,19 @@
 /**
  * File Upload Types
  *
- * Type definitions for file upload functionality.
+ * Extended type definitions for file upload functionality.
+ * Base types imported from @forgestack/shared
  */
 
-export type FilePurpose = 'avatar' | 'logo' | 'attachment';
+// Re-export base types from shared
+export type { FilePurpose, BaseFile, PresignedUrlRequest, PresignedUrlResponse } from '@forgestack/shared/browser';
+export { FILE_LIMITS } from '@forgestack/shared/browser';
 
-export interface FileRecord {
-  id: string;
-  filename: string;
-  contentType: string;
-  size: number;
-  purpose: FilePurpose;
-  url: string;
-  createdAt: string;
-  entityType?: string;
-  entityId?: string;
-}
+// Aliases for backward compatibility
+import type { BaseFile } from '@forgestack/shared/browser';
+export type FileRecord = BaseFile;
 
-export interface PresignedUrlRequest {
-  filename: string;
-  contentType: string;
-  size: number;
-  purpose: FilePurpose;
-  entityType?: string;
-  entityId?: string;
-}
-
-export interface PresignedUrlResponse {
-  fileId: string;
-  uploadUrl: string;
-  expiresAt: string;
-  key?: string;
-}
-
+// Web-specific types
 export interface UploadProgress {
   loaded: number;
   total: number;

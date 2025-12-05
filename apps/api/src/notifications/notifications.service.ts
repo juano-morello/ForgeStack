@@ -7,7 +7,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { NotificationsRepository } from './notifications.repository';
 import { QueueService } from '../queue/queue.service';
-import { NOTIFICATION_TYPES } from './notification-types';
+import { NOTIFICATION_TYPES, NOTIFICATION_DEFAULTS } from './notification-types';
 import { NotificationDto, PaginatedNotificationsDto, NotificationQueryDto, UnreadCountDto } from './dto';
 import type { Notification } from '@forgestack/db';
 
@@ -54,9 +54,12 @@ export class NotificationsService {
         event.orgId
       );
 
+      // Get defaults for this notification type
+      const defaults = NOTIFICATION_DEFAULTS[event.type] || { defaultInApp: true, defaultEmail: false };
+
       // Determine if we should send in-app and/or email
-      const inAppEnabled = preference?.inAppEnabled ?? typeConfig.defaultInApp;
-      const emailEnabled = preference?.emailEnabled ?? typeConfig.defaultEmail;
+      const inAppEnabled = preference?.inAppEnabled ?? defaults.defaultInApp;
+      const emailEnabled = preference?.emailEnabled ?? defaults.defaultEmail;
 
       // Create in-app notification if enabled
       if (inAppEnabled) {
@@ -173,12 +176,12 @@ export class NotificationsService {
     const allTypes = Object.keys(NOTIFICATION_TYPES);
     return allTypes.map((type) => {
       const pref = preferences.find((p) => p.type === type);
-      const typeConfig = NOTIFICATION_TYPES[type as keyof typeof NOTIFICATION_TYPES];
+      const defaults = NOTIFICATION_DEFAULTS[type] || { defaultInApp: true, defaultEmail: false };
 
       return {
         type,
-        inAppEnabled: pref?.inAppEnabled ?? typeConfig.defaultInApp,
-        emailEnabled: pref?.emailEnabled ?? typeConfig.defaultEmail,
+        inAppEnabled: pref?.inAppEnabled ?? defaults.defaultInApp,
+        emailEnabled: pref?.emailEnabled ?? defaults.defaultEmail,
       };
     });
   }

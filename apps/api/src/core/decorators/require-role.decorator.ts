@@ -4,10 +4,9 @@
  */
 
 import { SetMetadata } from '@nestjs/common';
+import type { OrgRole } from '@forgestack/shared';
 
 export const REQUIRE_ROLE_KEY = 'require_role';
-
-export type OrgRole = 'OWNER' | 'MEMBER';
 
 /**
  * Decorator to require specific organization roles

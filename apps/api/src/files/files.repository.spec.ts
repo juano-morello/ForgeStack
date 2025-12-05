@@ -44,10 +44,12 @@ const mockDb = {
   returning: jest.fn().mockResolvedValue([]),
 };
 
+import type { OrgRole } from '@forgestack/shared';
+
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('FilesRepository', () => {

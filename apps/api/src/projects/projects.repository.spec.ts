@@ -26,11 +26,13 @@ jest.mock('@forgestack/db', () => ({
 
 import { withTenantContext } from '@forgestack/db';
 
+import type { OrgRole } from '@forgestack/shared';
+
 // Define TenantContext type locally for tests
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('ProjectsRepository', () => {

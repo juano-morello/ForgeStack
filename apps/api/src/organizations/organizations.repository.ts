@@ -16,9 +16,10 @@ import {
   type Organization,
   type NewOrganization,
 } from '@forgestack/db';
+import type { OrgRole, PaginatedResponse } from '@forgestack/shared';
 
 export interface OrganizationWithRole extends Organization {
-  role?: 'OWNER' | 'MEMBER';
+  role?: OrgRole;
 }
 
 export interface PaginatedOrganizations {
@@ -34,7 +35,7 @@ export interface FindAllOptions {
 }
 
 export interface MembershipResult {
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 @Injectable()
@@ -77,7 +78,7 @@ export class OrganizationsRepository {
   async findAllByUserId(
     userId: string,
     options: FindAllOptions = {},
-  ): Promise<PaginatedOrganizations> {
+  ): Promise<PaginatedResponse<OrganizationWithRole>> {
     const { page = 1, limit = 10 } = options;
     const offset = (page - 1) * limit;
 

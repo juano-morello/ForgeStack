@@ -20,10 +20,12 @@ import { FilesRepository } from './files.repository';
 import { StorageService } from './storage.service';
 import { ActivitiesService } from '../activities/activities.service';
 
+import type { OrgRole } from '@forgestack/shared';
+
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('FilesService', () => {

@@ -1,21 +1,19 @@
 /**
  * Organization Types
  *
- * Type definitions for organization-related data structures.
+ * Extended type definitions for organization-related data structures.
+ * Base types imported from @forgestack/shared
  */
 
-export type OrgRole = 'OWNER' | 'MEMBER';
+// Re-export base types from shared
+export type { OrgRole, BaseOrganization, CreateOrganizationInput, UpdateOrganizationInput } from '@forgestack/shared/browser';
+export type { OrganizationWithRole } from '@forgestack/shared/browser';
 
-export interface Organization {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt?: string;
-  role?: OrgRole;
-  memberCount?: number;
-  effectivePermissions?: string[];
-}
+// Alias for backward compatibility
+import type { OrganizationWithRole } from '@forgestack/shared/browser';
+export type Organization = OrganizationWithRole;
 
+// Web-specific response types
 export interface OrganizationsResponse {
   items: Organization[];
   total: number;
@@ -23,11 +21,7 @@ export interface OrganizationsResponse {
   limit: number;
 }
 
-export interface CreateOrganizationDto {
-  name: string;
-}
-
-export interface UpdateOrganizationDto {
-  name?: string;
-}
+// Backward compatibility aliases
+export type CreateOrganizationDto = { name: string };
+export type UpdateOrganizationDto = { name?: string };
 

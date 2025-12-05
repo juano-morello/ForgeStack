@@ -18,7 +18,7 @@ export interface MemberWithUser {
   userId: string;
   email: string;
   name: string | null;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
   joinedAt: Date;
 }
 
