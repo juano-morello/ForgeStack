@@ -1,60 +1,61 @@
 /**
  * ForgeStack SDK Types
+ * Extended from @forgestack/shared with SDK-specific types
  */
 
-export type OrgRole = 'OWNER' | 'MEMBER';
+// Re-export all shared types
+export type {
+  OrgRole,
+  ApiKeyScope,
+  BaseOrganization,
+  OrganizationWithRole,
+  CreateOrganizationInput,
+  UpdateOrganizationInput,
+  BaseProject,
+  CreateProjectInput,
+  UpdateProjectInput,
+  BaseApiKey,
+  ApiKeyWithSecret,
+  CreateApiKeyInput,
+  UpdateApiKeyInput,
+  PaginatedResponse,
+  PaginationParams,
+  WebhookEventType,
+  WebhookPayload,
+} from '@forgestack/shared';
 
-export type ApiKeyScope =
-  | 'projects:read' | 'projects:write'
-  | 'members:read' | 'members:write'
-  | 'billing:read' | 'billing:write'
-  | 'files:read' | 'files:write'
-  | 'api-keys:read' | 'api-keys:write'
-  | '*';
+// Aliases for SDK backward compatibility
+import type { OrganizationWithRole, BaseProject, BaseApiKey, ApiKeyWithSecret, CreateOrganizationInput, UpdateOrganizationInput, CreateProjectInput, UpdateProjectInput, CreateApiKeyInput, UpdateApiKeyInput } from '@forgestack/shared';
 
-export interface Organization {
-  id: string;
-  name: string;
-  logo: string | null;
-  timezone: string | null;
-  language: string | null;
-  createdAt: string;
-  updatedAt: string;
-  role?: OrgRole;
-  memberCount?: number;
-  effectivePermissions?: string[];
-}
+export type Organization = OrganizationWithRole;
+export type Project = BaseProject;
+export type ApiKey = BaseApiKey;
+export type ApiKeyCreated = ApiKeyWithSecret;
 
-export interface Project {
-  id: string;
-  name: string;
-  description: string | null;
-  orgId: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Request type aliases
+export type CreateOrganizationRequest = CreateOrganizationInput;
+export type UpdateOrganizationRequest = UpdateOrganizationInput;
+export type CreateProjectRequest = CreateProjectInput;
+export type UpdateProjectRequest = UpdateProjectInput;
+export type CreateApiKeyRequest = CreateApiKeyInput;
+export type UpdateApiKeyRequest = UpdateApiKeyInput;
 
-export interface ApiKey {
-  id: string;
-  name: string;
-  keyPrefix: string;
-  scopes: ApiKeyScope[];
-  lastUsedAt: string | null;
-  expiresAt: string | null;
-  revokedAt: string | null;
-  createdAt: string;
-  isRevoked: boolean;
-}
-
-export interface ApiKeyCreated extends ApiKey {
-  key: string; // Full key, shown only once
-}
-
+// SDK-specific types
 export interface User {
   id: string;
   name: string;
   email: string;
   image: string | null;
+  createdAt: string;
+}
+
+export interface Activity {
+  id: string;
+  type: string;
+  resourceType: string;
+  resourceId: string;
+  userId: string;
+  metadata: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -75,56 +76,6 @@ export interface DashboardSummary {
       seats: number;
     };
   };
-}
-
-export interface Activity {
-  id: string;
-  type: string;
-  resourceType: string;
-  resourceId: string;
-  userId: string;
-  metadata: Record<string, unknown>;
-  createdAt: string;
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-// Request DTOs
-export interface CreateOrganizationRequest {
-  name: string;
-}
-
-export interface UpdateOrganizationRequest {
-  name?: string;
-  logo?: string;
-  timezone?: string;
-  language?: string;
-}
-
-export interface CreateProjectRequest {
-  name: string;
-  description?: string;
-}
-
-export interface UpdateProjectRequest {
-  name?: string;
-  description?: string;
-}
-
-export interface CreateApiKeyRequest {
-  name: string;
-  scopes: ApiKeyScope[];
-  expiresAt?: string;
-}
-
-export interface UpdateApiKeyRequest {
-  name?: string;
-  scopes?: ApiKeyScope[];
 }
 
 export interface QueryParams {

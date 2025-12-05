@@ -1,43 +1,21 @@
 /**
  * API Keys Types
  *
- * Type definitions for API key management.
+ * Extended type definitions for API key management.
+ * Base types imported from @forgestack/shared
  */
 
-export type ApiKeyScope =
-  | 'projects:read' | 'projects:write'
-  | 'members:read' | 'members:write'
-  | 'billing:read' | 'billing:write'
-  | 'files:read' | 'files:write'
-  | 'api-keys:read' | 'api-keys:write'
-  | '*';
+// Re-export base types from shared
+export type { ApiKeyScope, BaseApiKey, ApiKeyWithSecret, CreateApiKeyInput, UpdateApiKeyInput } from '@forgestack/shared/browser';
 
-export interface ApiKey {
-  id: string;
-  name: string;
-  keyPrefix: string;
-  scopes: ApiKeyScope[];
-  lastUsedAt: string | null;
-  expiresAt: string | null;
-  createdAt: string;
-  isRevoked: boolean;
-}
+// Aliases for backward compatibility
+import type { BaseApiKey, ApiKeyWithSecret, CreateApiKeyInput, UpdateApiKeyInput } from '@forgestack/shared/browser';
+export type ApiKey = BaseApiKey;
+export type ApiKeyCreated = ApiKeyWithSecret;
+export type CreateApiKeyRequest = CreateApiKeyInput;
+export type UpdateApiKeyRequest = UpdateApiKeyInput;
 
-export interface ApiKeyCreated extends ApiKey {
-  key: string; // Full key, shown only once
-}
-
-export interface CreateApiKeyRequest {
-  name: string;
-  scopes: ApiKeyScope[];
-  expiresAt?: string;
-}
-
-export interface UpdateApiKeyRequest {
-  name?: string;
-  scopes?: ApiKeyScope[];
-}
-
+// Web-specific response types
 export interface ApiKeysResponse {
   items: ApiKey[];
   total: number;

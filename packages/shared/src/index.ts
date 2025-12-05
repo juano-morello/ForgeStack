@@ -7,24 +7,33 @@
  * - Web (Next.js)
  * - Worker (BullMQ)
  * - Database (Drizzle)
+ *
+ * NOTE: This is the main entry point that includes Node.js-only modules (logger).
+ * For browser-safe imports, use '@forgestack/shared/browser' or import specific modules.
  */
 
 export const SHARED_VERSION = '0.0.1';
 
 /**
- * Export validation constants
+ * Export validation constants (browser-safe)
  */
 export * from './constants';
 
 /**
- * Organization member roles
+ * Export queue names (browser-safe)
  */
-export const ORG_ROLES = {
-  OWNER: 'OWNER',
-  MEMBER: 'MEMBER',
-} as const;
+export * from './queues';
 
-export type OrgRole = (typeof ORG_ROLES)[keyof typeof ORG_ROLES];
+/**
+ * Export shared types (browser-safe)
+ */
+export * from './types';
+
+/**
+ * Export logger utilities (Node.js only - uses pino)
+ * Import from '@forgestack/shared/logger' for explicit Node.js usage
+ */
+export * from './logger';
 
 /**
  * Common response type for API endpoints
@@ -36,24 +45,5 @@ export interface ApiResponse<T> {
     code: string;
     message: string;
   };
-}
-
-/**
- * Pagination parameters
- */
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-}
-
-/**
- * Paginated response wrapper
- */
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  hasMore: boolean;
 }
 

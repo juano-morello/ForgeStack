@@ -1,23 +1,19 @@
 /**
  * Notification Types
  *
- * Type definitions for notifications system.
+ * Extended type definitions for notifications system.
+ * Base types imported from @forgestack/shared
  */
 
-export interface Notification {
-  id: string;
-  userId: string;
-  orgId: string | null;
-  type: string;
-  title: string;
-  body: string | null;
-  link: string | null;
-  metadata: Record<string, unknown> | null;
-  readAt: string | null;
-  emailSent: boolean;
-  createdAt: string;
-}
+// Re-export base types from shared
+export type { NotificationType, NotificationPriority, BaseNotification } from '@forgestack/shared/browser';
+export { NOTIFICATION_TYPES } from '@forgestack/shared/browser';
 
+// Aliases for backward compatibility
+import type { BaseNotification } from '@forgestack/shared/browser';
+export type Notification = BaseNotification;
+
+// Web-specific types
 export interface NotificationFilters {
   unreadOnly?: boolean;
   type?: string;

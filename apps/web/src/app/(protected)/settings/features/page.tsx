@@ -8,7 +8,6 @@
 
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useFeaturesWithStatus } from '@/hooks/use-feature-flags';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { EnabledFeaturesCard } from '@/components/feature-flags/enabled-features-card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -25,15 +24,10 @@ export default function OrganizationFeaturesPage() {
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertDescription>Please select an organization to continue.</AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <ShieldAlert className="h-4 w-4" />
+        <AlertDescription>Please select an organization to continue.</AlertDescription>
+      </Alert>
     );
   }
 
@@ -42,15 +36,13 @@ export default function OrganizationFeaturesPage() {
   const planGatedFeatures = disabledFeatures.filter((f) => f.requiredPlan);
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-4xl">
-        <PageHeader
-          title="Features"
-          description={`Features available for ${currentOrg.name}`}
-        />
+    <>
+      <PageHeader
+        title="Features"
+        description={`Features available for ${currentOrg.name}`}
+      />
 
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Upgrade prompt if there are plan-gated features */}
           {planGatedFeatures.length > 0 && (
             <Alert>
@@ -95,9 +87,8 @@ export default function OrganizationFeaturesPage() {
               </div>
             </div>
           )}
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
 

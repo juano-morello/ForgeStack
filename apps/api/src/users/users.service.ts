@@ -262,10 +262,10 @@ export class UsersService {
     const completedAt = new Date();
     await this.usersRepository.updateOnboardingStatus(userId, completedAt);
 
-    // Log audit event (user-scoped, no orgId)
+    // Log audit event (user-scoped, no orgId - org_id is nullable for user events)
     await this.auditLogsService.log(
       {
-        orgId: null as any,
+        orgId: null,
         actorId: userId,
         actorType: 'user',
       },

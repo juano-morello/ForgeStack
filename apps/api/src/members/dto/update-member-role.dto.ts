@@ -1,7 +1,7 @@
 import { IsEnum } from 'class-validator';
+import { ORG_ROLES, type OrgRole } from '@forgestack/shared';
 
 export class UpdateMemberRoleDto {
-  @IsEnum(['OWNER', 'MEMBER'])
-  role!: 'OWNER' | 'MEMBER';
+  @IsEnum(ORG_ROLES)
+  role!: OrgRole;
 }
-

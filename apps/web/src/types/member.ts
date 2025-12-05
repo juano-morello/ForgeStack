@@ -1,12 +1,15 @@
 /**
  * Member and Invitation Types
+ * Base types imported from @forgestack/shared
  */
+
+import type { OrgRole } from '@forgestack/shared/browser';
 
 export interface Member {
   userId: string;
   email: string;
   name: string | null;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
   joinedAt: string;
   roles?: Array<{
     id: string;
@@ -26,7 +29,7 @@ export interface Invitation {
   id: string;
   orgId: string;
   email: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
   expiresAt: string;
   createdAt: string;
 }
@@ -40,7 +43,7 @@ export interface InvitationsResponse {
 
 export interface CreateInvitationDto {
   email: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 export interface AcceptInvitationDto {
@@ -48,7 +51,7 @@ export interface AcceptInvitationDto {
 }
 
 export interface UpdateMemberRoleDto {
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 export interface AcceptedInvitationResponse {
@@ -56,6 +59,6 @@ export interface AcceptedInvitationResponse {
     id: string;
     name: string;
   };
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 

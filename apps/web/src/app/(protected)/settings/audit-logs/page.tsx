@@ -10,7 +10,6 @@
 import { useState } from 'react';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useAuditLogs } from '@/hooks/use-audit-logs';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -88,66 +87,53 @@ export default function AuditLogsPage() {
 
   if (isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <PageHeader title="Audit Logs" description="Loading..." />
-          <div className="space-y-6">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </main>
-      </div>
+      <>
+        <PageHeader title="Audit Logs" description="Loading..." />
+        <div className="space-y-6">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </>
     );
   }
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please select an organization to view audit logs.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select an organization to view audit logs.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   if (!isOwner) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <PageHeader
-            title="Audit Logs"
-            description={`Audit logs for ${currentOrg.name}`}
-          />
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertDescription>
-              Only organization owners can view audit logs. Please contact an owner if you need
-              access.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <>
+        <PageHeader
+          title="Audit Logs"
+          description={`Audit logs for ${currentOrg.name}`}
+        />
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertDescription>
+            Only organization owners can view audit logs. Please contact an owner if you need
+            access.
+          </AlertDescription>
+        </Alert>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <PageHeader
-          title="Audit Logs"
-          description={`View and export audit logs for ${currentOrg.name}`}
-        />
+    <>
+      <PageHeader
+        title="Audit Logs"
+        description={`View and export audit logs for ${currentOrg.name}`}
+      />
 
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Info Section */}
           <div className="rounded-lg border bg-muted/50 p-4">
             <div className="flex items-start justify-between">
@@ -191,9 +177,8 @@ export default function AuditLogsPage() {
             pagination={pagination}
             onPageChange={handlePageChange}
           />
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
 

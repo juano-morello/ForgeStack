@@ -11,8 +11,8 @@ export const auditLogs = pgTable(
   'audit_logs',
   {
     id: uuid('id').primaryKey().defaultRandom(),
+    // org_id is nullable for user-scoped events (e.g., onboarding completion)
     orgId: uuid('org_id')
-      .notNull()
       .references(() => organizations.id, { onDelete: 'cascade' }),
     
     // Actor information (denormalized for historical accuracy)

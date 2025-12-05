@@ -9,24 +9,19 @@
 
 import { OrgList } from '@/components/organizations/org-list';
 import { CreateOrgDialog } from '@/components/organizations/create-org-dialog';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 
 export default function OrganizationsPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
+    <>
+      <PageHeader
+        title="Organizations"
+        description="Manage your organizations and team workspaces"
+        actions={<CreateOrgDialog />}
+      />
 
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <PageHeader
-          title="Organizations"
-          description="Manage your organizations and team workspaces"
-          actions={<CreateOrgDialog />}
-        />
-
-        <OrgList />
-      </main>
-    </div>
+      <OrgList />
+    </>
   );
 }
 

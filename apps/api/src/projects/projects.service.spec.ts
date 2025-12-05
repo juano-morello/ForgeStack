@@ -22,11 +22,13 @@ jest.mock('./projects.repository', () => ({
 import { ProjectsRepository } from './projects.repository';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
+import type { OrgRole } from '@forgestack/shared';
+
 // Define TenantContext type locally for tests
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('ProjectsService', () => {

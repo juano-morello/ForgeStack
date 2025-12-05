@@ -17,10 +17,12 @@ jest.mock('@forgestack/db', () => ({
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 
+import type { OrgRole } from '@forgestack/shared';
+
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('FilesController', () => {

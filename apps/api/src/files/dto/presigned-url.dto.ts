@@ -4,6 +4,7 @@
 
 import { IsString, IsNotEmpty, IsNumber, Min, Max, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { FILE_LIMITS } from '@forgestack/shared';
 
 export class PresignedUrlRequestDto {
   @ApiProperty({
@@ -26,11 +27,11 @@ export class PresignedUrlRequestDto {
     description: 'Size of the file in bytes (max 50MB)',
     example: 1024000,
     minimum: 1,
-    maximum: 52428800
+    maximum: FILE_LIMITS.MAX_SIZE_BYTES
   })
   @IsNumber()
   @Min(1)
-  @Max(52428800) // 50MB max
+  @Max(FILE_LIMITS.MAX_SIZE_BYTES)
   size!: number;
 
   @ApiProperty({

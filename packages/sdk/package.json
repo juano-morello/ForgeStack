@@ -17,7 +17,9 @@
     "dev": "tsup --watch",
     "clean": "rm -rf dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@forgestack/shared": "workspace:*"
+  },
   "devDependencies": {
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"

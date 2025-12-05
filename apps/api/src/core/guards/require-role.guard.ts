@@ -10,7 +10,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { REQUIRE_ROLE_KEY, OrgRole } from '../decorators/require-role.decorator';
+import type { OrgRole } from '@forgestack/shared';
+import { REQUIRE_ROLE_KEY } from '../decorators/require-role.decorator';
 
 @Injectable()
 export class RequireRoleGuard implements CanActivate {

@@ -1,6 +1,6 @@
 import { IsEmail, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { OrgRole } from '@forgestack/db';
+import { ORG_ROLES, type OrgRole } from '@forgestack/shared';
 
 export class CreateInvitationDto {
   @ApiProperty({ description: 'Email address to invite', example: 'user@example.com' })
@@ -8,7 +8,7 @@ export class CreateInvitationDto {
   email!: string;
 
   @ApiProperty({ description: 'Role to assign', enum: ['OWNER', 'MEMBER'], example: 'MEMBER' })
-  @IsEnum(['OWNER', 'MEMBER'])
+  @IsEnum(ORG_ROLES)
   role!: OrgRole;
 }
 

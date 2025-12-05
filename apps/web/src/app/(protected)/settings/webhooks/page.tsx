@@ -10,7 +10,6 @@
 import { useState } from 'react';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useWebhookEndpoints, useWebhookDeliveries } from '@/hooks/use-webhooks';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -100,65 +99,52 @@ export default function WebhooksPage() {
 
   if (isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <PageHeader title="Webhooks" description="Loading..." />
-          <div className="space-y-6">
-            <Skeleton className="h-48 w-full" />
-          </div>
-        </main>
-      </div>
+      <>
+        <PageHeader title="Webhooks" description="Loading..." />
+        <div className="space-y-6">
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </>
     );
   }
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please select an organization to view webhooks.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select an organization to view webhooks.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   if (!isOwner) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <PageHeader
-            title="Webhooks"
-            description={`Webhooks for ${currentOrg.name}`}
-          />
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertDescription>
-              Only organization owners can manage webhooks. Please contact an owner if you need
-              access.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <>
+        <PageHeader
+          title="Webhooks"
+          description={`Webhooks for ${currentOrg.name}`}
+        />
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertDescription>
+            Only organization owners can manage webhooks. Please contact an owner if you need
+            access.
+          </AlertDescription>
+        </Alert>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <PageHeader
-          title="Webhooks"
-          description={`Manage webhooks for ${currentOrg.name}`}
-        />
+    <>
+      <PageHeader
+        title="Webhooks"
+        description={`Manage webhooks for ${currentOrg.name}`}
+      />
 
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Info Section */}
           <div className="rounded-lg border bg-card p-6">
             <div className="flex items-start gap-4">
@@ -250,8 +236,7 @@ export default function WebhooksPage() {
               )}
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
+      </div>
 
       {/* Create Dialog */}
       <WebhookEndpointDialog
@@ -300,7 +285,7 @@ export default function WebhooksPage() {
         onOpenChange={(open) => !open && setSelectedDelivery(null)}
         onRetry={retryDelivery}
       />
-    </div>
+    </>
   );
 }
 

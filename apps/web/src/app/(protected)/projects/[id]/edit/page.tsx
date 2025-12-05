@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { ProjectForm } from '@/components/projects/project-form';
 import { useProjects } from '@/hooks/use-projects';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,87 +68,69 @@ export default function EditProjectPage() {
 
   if (isLoading || isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-48" />
-            <Skeleton className="h-4 w-64" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </main>
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold">Error</h2>
-            <p className="mt-2 text-destructive">{error}</p>
-            <Button variant="link" asChild className="mt-4">
-              <Link href="/projects">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Projects
-              </Link>
-            </Button>
-          </div>
-        </main>
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold">Error</h2>
+        <p className="mt-2 text-destructive">{error}</p>
+        <Button variant="link" asChild className="mt-4">
+          <Link href="/projects">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Projects
+          </Link>
+        </Button>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-          <div className="text-center py-12">
-            <h2 className="text-xl font-semibold">Project Not Found</h2>
-            <Button variant="link" asChild className="mt-4">
-              <Link href="/projects">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Projects
-              </Link>
-            </Button>
-          </div>
-        </main>
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold">Project Not Found</h2>
+        <Button variant="link" asChild className="mt-4">
+          <Link href="/projects">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Projects
+          </Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-2xl">
-        <PageHeader
-          title="Edit Project"
-          description={`Update project details in ${currentOrg?.name}`}
-          actions={
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/projects/${project.id}`}>
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Link>
-            </Button>
-          }
-        />
+    <>
+      <PageHeader
+        title="Edit Project"
+        description={`Update project details in ${currentOrg?.name}`}
+        actions={
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/projects/${project.id}`}>
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          </Button>
+        }
+      />
 
-        <Card>
-          <CardContent className="pt-6">
-            <ProjectForm
-              project={project}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isSubmitting={isSubmitting}
-            />
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+      <Card>
+        <CardContent className="pt-6">
+          <ProjectForm
+            project={project}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            isSubmitting={isSubmitting}
+          />
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

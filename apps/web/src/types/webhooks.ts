@@ -1,34 +1,25 @@
 /**
  * Webhooks Types
  *
- * Type definitions for webhook management.
+ * Extended type definitions for webhook management.
+ * Base types imported from @forgestack/shared
  */
 
-export type WebhookEventType =
-  | 'project.created' | 'project.updated' | 'project.deleted'
-  | 'member.invited' | 'member.joined' | 'member.removed' | 'member.role_changed'
-  | 'subscription.created' | 'subscription.updated' | 'subscription.canceled'
-  | 'file.uploaded' | 'file.deleted'
-  | 'test.ping';
+// Re-export base types from shared
+export type { WebhookEventType, BaseWebhookEndpoint, WebhookEndpointWithSecret, CreateWebhookEndpointInput, UpdateWebhookEndpointInput, WebhookPayload } from '@forgestack/shared/browser';
+export { WEBHOOK_EVENTS } from '@forgestack/shared/browser';
 
-export interface WebhookEndpoint {
-  id: string;
-  url: string;
-  description: string | null;
-  events: WebhookEventType[];
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+// Aliases for backward compatibility
+import type { BaseWebhookEndpoint, CreateWebhookEndpointInput, UpdateWebhookEndpointInput } from '@forgestack/shared/browser';
+export type WebhookEndpoint = BaseWebhookEndpoint;
+export type CreateWebhookEndpointRequest = CreateWebhookEndpointInput;
+export type UpdateWebhookEndpointRequest = UpdateWebhookEndpointInput;
 
-export interface WebhookEndpointWithSecret extends WebhookEndpoint {
-  secret: string; // Only shown on creation
-}
-
+// Web-specific types
 export interface WebhookDelivery {
   id: string;
   endpointId: string;
-  eventType: WebhookEventType;
+  eventType: string;
   eventId: string;
   payload: Record<string, unknown>;
   responseStatus: number | null;
@@ -38,19 +29,5 @@ export interface WebhookDelivery {
   failedAt: string | null;
   error: string | null;
   createdAt: string;
-}
-
-export interface CreateWebhookEndpointRequest {
-  url: string;
-  description?: string;
-  events: WebhookEventType[];
-  enabled?: boolean;
-}
-
-export interface UpdateWebhookEndpointRequest {
-  url?: string;
-  description?: string;
-  events?: WebhookEventType[];
-  enabled?: boolean;
 }
 

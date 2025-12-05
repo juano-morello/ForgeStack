@@ -10,7 +10,6 @@
 import { useState } from 'react';
 import { useOrgContext } from '@/components/providers/org-provider';
 import { useApiKeys } from '@/hooks/use-api-keys';
-import { ProtectedHeader } from '@/components/layout/protected-header';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -56,65 +55,52 @@ export default function ApiKeysPage() {
 
   if (isOrgLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <PageHeader title="API Keys" description="Loading..." />
-          <div className="space-y-6">
-            <Skeleton className="h-48 w-full" />
-          </div>
-        </main>
-      </div>
+      <>
+        <PageHeader title="API Keys" description="Loading..." />
+        <div className="space-y-6">
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </>
     );
   }
 
   if (!currentOrg) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Please select an organization to view API keys.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <Alert variant="destructive">
+        <XCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select an organization to view API keys.
+        </AlertDescription>
+      </Alert>
     );
   }
 
   if (!isOwner) {
     return (
-      <div className="min-h-screen bg-background">
-        <ProtectedHeader />
-        <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <PageHeader
-            title="API Keys"
-            description={`API keys for ${currentOrg.name}`}
-          />
-          <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertDescription>
-              Only organization owners can manage API keys. Please contact an owner if you need
-              access.
-            </AlertDescription>
-          </Alert>
-        </main>
-      </div>
+      <>
+        <PageHeader
+          title="API Keys"
+          description={`API keys for ${currentOrg.name}`}
+        />
+        <Alert variant="destructive">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertDescription>
+            Only organization owners can manage API keys. Please contact an owner if you need
+            access.
+          </AlertDescription>
+        </Alert>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <ProtectedHeader />
-      <main className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <PageHeader
-          title="API Keys"
-          description={`Manage API keys for ${currentOrg.name}`}
-        />
+    <>
+      <PageHeader
+        title="API Keys"
+        description={`Manage API keys for ${currentOrg.name}`}
+      />
 
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Info Section */}
           <div className="rounded-lg border bg-card p-6">
             <div className="flex items-start gap-4">
@@ -165,8 +151,7 @@ export default function ApiKeysPage() {
               onRotate={handleRotateKey}
             />
           )}
-        </div>
-      </main>
+      </div>
 
       {/* Create Dialog */}
       <CreateApiKeyDialog
@@ -192,7 +177,7 @@ export default function ApiKeysPage() {
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </>
   );
 }
 

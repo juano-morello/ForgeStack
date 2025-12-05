@@ -10,10 +10,12 @@ jest.mock('@forgestack/db', () => ({
   subscriptions: {},
 }));
 
+import type { OrgRole } from '@forgestack/shared';
+
 interface TenantContext {
   orgId: string;
   userId: string;
-  role: 'OWNER' | 'MEMBER';
+  role: OrgRole;
 }
 
 describe('FeatureFlagsService', () => {

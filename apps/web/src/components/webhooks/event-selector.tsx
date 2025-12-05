@@ -9,8 +9,7 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { EVENT_GROUPS, EVENT_LABELS, EVENT_GROUP_LABELS } from '@/lib/webhook-constants';
-import type { WebhookEventType } from '@/types/webhooks';
+import { EVENT_GROUPS, EVENT_LABELS, EVENT_GROUP_LABELS, type WebhookEventType } from '@/lib/webhook-constants';
 
 interface EventSelectorProps {
   selectedEvents: WebhookEventType[];
