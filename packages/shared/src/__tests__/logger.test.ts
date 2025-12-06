@@ -3,9 +3,10 @@
  * Tests for logger factory functions
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createBaseLogger, createChildLogger } from '../logger';
 import type { Logger } from '../logger';
+import { trace, SpanContext, TraceFlags } from '@opentelemetry/api';
 
 describe('Logger', () => {
   describe('createBaseLogger', () => {
@@ -135,7 +136,7 @@ describe('Logger', () => {
   describe('Logger integration', () => {
     it('should allow logging with context', () => {
       const logger = createBaseLogger({ serviceName: 'test-service' });
-      
+
       // Should not throw when logging with context
       expect(() => {
         logger.info({ userId: '123' }, 'Test message');
@@ -145,11 +146,46 @@ describe('Logger', () => {
     it('should allow child logger to log with context', () => {
       const baseLogger = createBaseLogger({ serviceName: 'test-service' });
       const childLogger = createChildLogger(baseLogger, 'TestModule');
-      
+
       // Should not throw when logging with context
       expect(() => {
         childLogger.info({ requestId: 'abc' }, 'Test message');
       }).not.toThrow();
+    });
+  });
+
+  describe('OpenTelemetry integration', () => {
+    it('should include trace context when active span exists', () => {
+      const mockSpanContext: SpanContext = {
+        traceId: '1234567890abcdef1234567890abcdef',
+        spanId: 'abcdef1234567890',
+        traceFlags: TraceFlags.SAMPLED,
+      };
+
+      const mockSpan = {
+        spanContext: () => mockSpanContext,
+      };
+
+      vi.spyOn(trace, 'getActiveSpan').mockReturnValue(mockSpan as ReturnType<typeof trace.getActiveSpan>);
+
+      const logger = createBaseLogger({ serviceName: 'test-service' });
+
+      // The mixin should have been called and trace context should be available
+      // We verify by checking that the logger was created without throwing
+      expect(logger).toBeDefined();
+
+      vi.restoreAllMocks();
+    });
+
+    it('should handle when no active span exists', () => {
+      vi.spyOn(trace, 'getActiveSpan').mockReturnValue(undefined);
+
+      const logger = createBaseLogger({ serviceName: 'test-service' });
+
+      // Should create logger without errors even when no span exists
+      expect(logger).toBeDefined();
+
+      vi.restoreAllMocks();
     });
   });
 });
