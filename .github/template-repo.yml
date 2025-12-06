@@ -1,0 +1,38 @@
+# GitHub Template Repository Configuration
+# This file documents template settings (configure in GitHub UI)
+
+template:
+  name: "SaaS Starter Kit"
+  description: "Production-ready multi-tenant SaaS boilerplate with Next.js, NestJS, PostgreSQL RLS, and Stripe"
+  
+  # Files to exclude when creating from template
+  exclude:
+    - ".github/template-repo.yml"
+    - "CHANGELOG.md"
+    
+  # Default branch for new repos
+  default_branch: "main"
+  
+  # Suggested topics for the template
+  topics:
+    - saas
+    - nextjs
+    - nestjs
+    - typescript
+    - postgresql
+    - multi-tenant
+    - stripe
+    - boilerplate
+    - starter-kit
+
+# Post-creation instructions (shown in GitHub UI)
+post_creation:
+  message: |
+    ## 🎉 Your SaaS project is ready!
+    
+    ### Next Steps:
+    1. Clone this repository
+    2. Run `pnpm install`
+    3. Run `pnpm init` to customize the project
+    4. Follow the setup guide in SETUP.md
+

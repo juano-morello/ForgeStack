@@ -17,6 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check template status
+        run: |
+          if [ -f "scripts/init.ts" ]; then
+            echo "⚠️ Template not initialized. Run 'pnpm init' to set up the project."
+          fi
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:

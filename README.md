@@ -3,6 +3,7 @@
 <div align="center">
 
 ![ForgeStack](https://img.shields.io/badge/ForgeStack-Multi--Tenant_SaaS_Starter-7c3aed?style=for-the-badge)
+![GitHub Template](https://img.shields.io/badge/GitHub-Template-2ea44f?style=for-the-badge&logo=github)
 
 **A production-ready, multi-tenant SaaS starter kit with enterprise-grade security**
 
@@ -15,13 +16,47 @@
 [![Drizzle](https://img.shields.io/badge/Drizzle-ORM-c5f74f?logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
 [![Test Coverage](https://img.shields.io/badge/Coverage-95%25+-brightgreen)](.)
 
+[Use This Template](#-use-this-template) •
 [Getting Started](#-getting-started) •
 [Features](#key-features) •
 [Architecture](#-architecture) •
-[API Reference](#-api-reference) •
-[Contributing](#-contributing)
+[API Reference](#-api-reference)
 
 </div>
+
+---
+
+## 🚀 Use This Template
+
+ForgeStack is a **GitHub Template Repository**. Create your own SaaS project with one click:
+
+### Quick Start
+
+1. **Click "Use this template"** → "Create a new repository" on GitHub
+2. **Clone your new repository:**
+   ```bash
+   git clone https://github.com/your-org/your-project.git
+   cd your-project
+   ```
+3. **Install dependencies and run the setup script:**
+   ```bash
+   pnpm install
+   pnpm init
+   ```
+4. **Follow the interactive prompts** to customize:
+   - Project name (e.g., `my-saas-app`)
+   - Display name (e.g., `My SaaS App`)
+   - NPM scope (e.g., `@mycompany`)
+   - Description, author info, and repository URL
+
+The setup script will automatically:
+- Replace all ForgeStack branding with your project name
+- Update all package.json files with your npm scope
+- Configure Docker and deployment files
+- Update environment templates
+- Clean up template-specific files
+
+> 📖 **For detailed setup instructions, see [SETUP.md](SETUP.md)**
 
 ---
 
@@ -209,20 +244,25 @@ ForgeStack uses **26 PostgreSQL tables** with Drizzle ORM and Row-Level Security
 
 ## 🚀 Getting Started
 
-### 1. Clone the Repository
+> **Note:** If you're using this as a template, first follow the [Use This Template](#-use-this-template) section above.
+
+### 1. Clone and Initialize
 
 ```bash
-git clone https://github.com/your-org/forgestack.git
-cd forgestack
-```
+# If using as a template (creates your own project):
+# Use the GitHub "Use this template" button, then:
+git clone https://github.com/your-org/your-project.git
+cd your-project
+pnpm install
+pnpm init  # Interactive setup to customize branding
 
-### 2. Install Dependencies
-
-```bash
+# If developing ForgeStack itself:
+git clone https://github.com/PulseDevLabs/ForgeStack.git
+cd ForgeStack
 pnpm install
 ```
 
-### 3. Start Infrastructure
+### 2. Start Infrastructure
 
 ```bash
 docker-compose up -d
@@ -232,7 +272,7 @@ This starts:
 - **PostgreSQL** on `localhost:5432`
 - **Redis** on `localhost:6379`
 
-### 4. Configure Environment
+### 3. Configure Environment
 
 ```bash
 # Copy the environment template to create your local config
@@ -242,7 +282,7 @@ cp .env.example .env
 # All apps (api, web, worker) load from this single root .env file
 ```
 
-### 5. Run Database Migrations
+### 4. Run Database Migrations
 
 ```bash
 cd packages/db
@@ -250,7 +290,7 @@ pnpm db:push      # Apply schema
 pnpm db:migrate   # Apply RLS policies
 ```
 
-### 6. Start Development Servers
+### 5. Start Development Servers
 
 ```bash
 # From root directory
