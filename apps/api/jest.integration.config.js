@@ -22,6 +22,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@forgestack/db$': '<rootDir>/../../packages/db/src/index.ts',
+    '^@forgestack/shared/test-utils$': '<rootDir>/../../packages/shared/src/test-utils/index.ts',
     '^@forgestack/shared$': '<rootDir>/../../packages/shared/src/index.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },

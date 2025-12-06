@@ -217,10 +217,148 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forgestack_test
         run: pnpm test
 
+  test-worker:
+    name: Worker Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: forgestack_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm turbo build --filter='./packages/*'
+
+      - name: Push database schema
+        working-directory: packages/db
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forgestack_test
+        run: npx drizzle-kit push --force
+
+      - name: Run Worker tests with coverage
+        working-directory: apps/worker
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/forgestack_test
+          REDIS_URL: redis://localhost:6379
+        run: pnpm test:cov
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./apps/worker/coverage/lcov.info
+          flags: worker
+          fail_ci_if_error: false
+
+  test-shared:
+    name: Shared Package Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm turbo build --filter='@forgestack/shared'
+
+      - name: Run Shared package tests with coverage
+        working-directory: packages/shared
+        run: pnpm test:coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./packages/shared/coverage/lcov.info
+          flags: shared
+          fail_ci_if_error: false
+
+  test-sdk:
+    name: SDK Package Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages (shared and sdk)
+        run: pnpm turbo build --filter='@forgestack/sdk'
+
+      - name: Run SDK tests with coverage
+        working-directory: packages/sdk
+        run: pnpm test:coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./packages/sdk/coverage/lcov.info
+          flags: sdk
+          fail_ci_if_error: false
+
   build:
     name: Build All
     runs-on: ubuntu-latest
-    needs: [lint, test-api, test-web, test-db]
+    needs: [lint, test-api, test-web, test-db, test-worker, test-shared, test-sdk]
     steps:
       - uses: actions/checkout@v4
 

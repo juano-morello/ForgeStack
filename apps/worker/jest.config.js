@@ -19,22 +19,25 @@ module.exports = {
   },
   collectCoverageFrom: [
     '**/*.(t|j)s',
-    '!**/*.module.ts',
-    '!**/main.ts',
-    '!**/app.module.ts',
     '!**/index.ts',
-    '!**/*.dto.ts',
-    '!**/config/**',
+    '!**/config.ts',
+    '!**/queues.ts',
+    '!**/worker.ts',
+    '!**/telemetry/**',
+    '!**/__tests__/**',
+    '!**/test/**',
   ],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^@forgestack/db$': '<rootDir>/../../../packages/db/src/index.ts',
-    '^@forgestack/shared/test-utils$': '<rootDir>/../../../packages/shared/src/test-utils/index.ts',
     '^@forgestack/shared$': '<rootDir>/../../../packages/shared/src/index.ts',
     // Handle .js extensions in ESM imports (TypeScript compiles to .js but source is .ts)
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  transformIgnorePatterns: ['node_modules/(?!(@forgestack)/)'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  testTimeout: 10000,
 };
 

@@ -1,15 +1,15 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
+  "ui": "stream",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "cache": false,
       "env": ["NODE_ENV"]
     },
     "lint": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "cache": false
     },
     "dev": {
       "cache": false,
@@ -17,8 +17,28 @@
     },
     "test": {
       "dependsOn": ["build"],
-      "outputs": ["coverage/**"],
+      "cache": false,
       "env": ["NODE_ENV"]
+    },
+    "test:unit": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": ["NODE_ENV"]
+    },
+    "test:integration": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": ["NODE_ENV", "DATABASE_URL", "REDIS_URL"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": ["NODE_ENV"]
+    },
+    "test:coverage": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": ["NODE_ENV", "DATABASE_URL", "REDIS_URL"]
     },
     "clean": {
       "cache": false
