@@ -53,7 +53,7 @@ describe('WebhookDeliveryHandler', () => {
         };
         mockUpdate.mockReturnValue({ set: mockSet });
         mockSet.mockReturnValue({ where: mockWhere });
-        return callback(mockDb as any);
+        return callback(mockDb as unknown as Parameters<typeof callback>[0]);
       });
 
       mockFetch.mockResolvedValue({
@@ -122,7 +122,7 @@ describe('WebhookDeliveryHandler', () => {
         };
         mockUpdate.mockReturnValue({ set: mockSet });
         mockSet.mockReturnValue({ where: mockWhere });
-        return callback(mockDb as any);
+        return callback(mockDb as unknown as Parameters<typeof callback>[0]);
       });
 
       mockFetch.mockResolvedValue({
@@ -166,7 +166,7 @@ describe('WebhookDeliveryHandler', () => {
           update: jest.fn().mockReturnThis(),
           set: jest.fn().mockReturnThis(),
           where: jest.fn().mockResolvedValue(undefined),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockFetch.mockResolvedValue({

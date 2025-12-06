@@ -113,7 +113,7 @@ describe('PermissionsService', () => {
 
   describe('listAll', () => {
     it('should return all permissions', async () => {
-      permissionsRepository.findAll.mockResolvedValue(mockPermissions as any);
+      permissionsRepository.findAll.mockResolvedValue(mockPermissions);
 
       const result = await service.listAll();
 
@@ -124,7 +124,7 @@ describe('PermissionsService', () => {
 
   describe('listAllGrouped', () => {
     it('should return permissions grouped by resource', async () => {
-      permissionsRepository.findAll.mockResolvedValue(mockPermissions as any);
+      permissionsRepository.findAll.mockResolvedValue(mockPermissions);
 
       const result = await service.listAllGrouped();
 

@@ -59,7 +59,7 @@ export class UsersService {
     // Log audit event (user-scoped, no orgId)
     await this.auditLogsService.log(
       {
-        orgId: null as any, // User profile changes are not org-scoped
+        orgId: null as unknown as string, // User profile changes are not org-scoped
         actorId: userId,
         actorType: 'user',
       },
@@ -136,7 +136,7 @@ export class UsersService {
     // Log audit event
     await this.auditLogsService.log(
       {
-        orgId: null as any,
+        orgId: null as unknown as string,
         actorId: userId,
         actorType: 'user',
       },
@@ -199,7 +199,7 @@ export class UsersService {
     // Log audit event
     await this.auditLogsService.log(
       {
-        orgId: null as any,
+        orgId: null as unknown as string,
         actorId: userId,
         actorType: 'user',
       },

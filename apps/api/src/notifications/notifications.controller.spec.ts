@@ -5,27 +5,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
+import type { RequestWithUser } from '../core/types';
 
 describe('NotificationsController', () => {
   let controller: NotificationsController;
   let notificationsService: jest.Mocked<NotificationsService>;
 
-  const mockRequest = {
+  const mockRequest: RequestWithUser = {
     user: {
       id: 'user-123',
       email: 'test@example.com',
     },
-  };
+    session: {
+      id: 'session-123',
+      userId: 'user-123',
+      expiresAt: new Date(),
+    },
+  } as RequestWithUser;
 
   const mockNotification = {
     id: 'notif-123',
     userId: 'user-123',
+    orgId: 'org-123',
     type: 'project.created',
     title: 'New Project Created',
-    message: 'A new project has been created',
-    data: {},
-    read: false,
-    createdAt: new Date(),
+    body: 'A new project has been created',
+    link: '/projects/123',
+    metadata: {},
+    readAt: undefined,
+    emailSent: false,
+    createdAt: new Date().toISOString(),
   };
 
   beforeEach(async () => {
@@ -68,9 +77,9 @@ describe('NotificationsController', () => {
         },
       };
 
-      notificationsService.findAll.mockResolvedValue(mockResult as any);
+      notificationsService.findAll.mockResolvedValue(mockResult);
 
-      const result = await controller.findAll(mockRequest as any, query as any);
+      const result = await controller.findAll(mockRequest, query);
 
       expect(result).toEqual(mockResult);
       expect(notificationsService.findAll).toHaveBeenCalledWith('user-123', query);
@@ -81,7 +90,7 @@ describe('NotificationsController', () => {
     it('should return unread count', async () => {
       notificationsService.getUnreadCount.mockResolvedValue({ count: 5 });
 
-      const result = await controller.getUnreadCount(mockRequest as any);
+      const result = await controller.getUnreadCount(mockRequest);
 
       expect(result).toEqual({ count: 5 });
       expect(notificationsService.getUnreadCount).toHaveBeenCalledWith('user-123');
@@ -92,7 +101,7 @@ describe('NotificationsController', () => {
     it('should mark notification as read', async () => {
       notificationsService.markAsRead.mockResolvedValue(undefined);
 
-      await controller.markAsRead(mockRequest as any, 'notif-123');
+      await controller.markAsRead(mockRequest, 'notif-123');
 
       expect(notificationsService.markAsRead).toHaveBeenCalledWith('user-123', 'notif-123');
     });
@@ -102,7 +111,7 @@ describe('NotificationsController', () => {
     it('should mark all notifications as read', async () => {
       notificationsService.markAllAsRead.mockResolvedValue({ count: 5 });
 
-      const result = await controller.markAllAsRead(mockRequest as any);
+      const result = await controller.markAllAsRead(mockRequest);
 
       expect(result).toEqual({ success: true, count: 5 });
       expect(notificationsService.markAllAsRead).toHaveBeenCalledWith('user-123');
@@ -113,7 +122,7 @@ describe('NotificationsController', () => {
     it('should delete notification', async () => {
       notificationsService.delete.mockResolvedValue(undefined);
 
-      await controller.delete(mockRequest as any, 'notif-123');
+      await controller.delete(mockRequest, 'notif-123');
 
       expect(notificationsService.delete).toHaveBeenCalledWith('user-123', 'notif-123');
     });
@@ -129,9 +138,9 @@ describe('NotificationsController', () => {
         },
       ];
 
-      notificationsService.getPreferences.mockResolvedValue(mockPreferences as any);
+      notificationsService.getPreferences.mockResolvedValue(mockPreferences);
 
-      const result = await controller.getPreferences(mockRequest as any);
+      const result = await controller.getPreferences(mockRequest);
 
       expect(result).toEqual({ preferences: mockPreferences });
       expect(notificationsService.getPreferences).toHaveBeenCalledWith('user-123');
@@ -147,14 +156,19 @@ describe('NotificationsController', () => {
       };
 
       const mockUpdatedPreferences = {
+        id: 'pref-123',
+        userId: 'user-123',
+        orgId: 'org-123',
         type: 'project.created',
         inAppEnabled: true,
         emailEnabled: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
-      notificationsService.updatePreferences.mockResolvedValue(mockUpdatedPreferences as any);
+      notificationsService.updatePreferences.mockResolvedValue(mockUpdatedPreferences);
 
-      const result = await controller.updatePreferences(mockRequest as any, updateDto as any);
+      const result = await controller.updatePreferences(mockRequest, updateDto);
 
       expect(result).toEqual({ preference: mockUpdatedPreferences });
       expect(notificationsService.updatePreferences).toHaveBeenCalledWith(

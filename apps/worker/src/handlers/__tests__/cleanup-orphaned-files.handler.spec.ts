@@ -90,13 +90,13 @@ describe('CleanupOrphanedFilesHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Subsequent calls: delete individual files
         return callback({
           delete: mockDelete,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockDelete.mockReturnValue({ where: mockWhere });
@@ -140,7 +140,7 @@ describe('CleanupOrphanedFilesHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: CleanupOrphanedFilesJobData = {};
@@ -180,7 +180,7 @@ describe('CleanupOrphanedFilesHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockS3Send.mockRejectedValue(new Error('S3 error'));
@@ -226,7 +226,7 @@ describe('CleanupOrphanedFilesHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         throw new Error('Database error');

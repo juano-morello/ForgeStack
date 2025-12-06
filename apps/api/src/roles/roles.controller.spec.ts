@@ -6,15 +6,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RolesController, MemberRolesController } from './roles.controller';
 import { RolesService } from './roles.service';
 import { PermissionsRepository } from '../permissions/permissions.repository';
+import type { TenantContext } from '@forgestack/db';
 
 describe('RolesController', () => {
   let controller: RolesController;
   let rolesService: jest.Mocked<RolesService>;
 
-  const mockTenantContext = {
+  const mockTenantContext: TenantContext = {
     orgId: 'org-123',
     userId: 'user-123',
-    permissions: ['roles:read', 'roles:create', 'roles:update', 'roles:delete'],
+    role: 'OWNER',
   };
 
   const mockRole = {
@@ -26,6 +27,8 @@ describe('RolesController', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     permissions: [],
+    permissionCount: 0,
+    memberCount: 0,
   };
 
   beforeEach(async () => {
@@ -68,9 +71,9 @@ describe('RolesController', () => {
   describe('findAll', () => {
     it('should return all roles for an organization', async () => {
       const roles = [mockRole];
-      rolesService.findAllForOrg.mockResolvedValue(roles as any);
+      rolesService.findAllForOrg.mockResolvedValue(roles);
 
-      const result = await controller.findAll(mockTenantContext as any);
+      const result = await controller.findAll(mockTenantContext);
 
       expect(result).toEqual(roles);
       expect(rolesService.findAllForOrg).toHaveBeenCalledWith('org-123');
@@ -87,7 +90,7 @@ describe('RolesController', () => {
 
       rolesService.create.mockResolvedValue(mockRole);
 
-      const result = await controller.create(mockTenantContext as any, dto);
+      const result = await controller.create(mockTenantContext, dto);
 
       expect(result).toEqual(mockRole);
       expect(rolesService.create).toHaveBeenCalledWith('org-123', dto);
@@ -98,7 +101,7 @@ describe('RolesController', () => {
     it('should return a role by ID', async () => {
       rolesService.findOne.mockResolvedValue(mockRole);
 
-      const result = await controller.findOne(mockTenantContext as any, 'role-123');
+      const result = await controller.findOne(mockTenantContext, 'role-123');
 
       expect(result).toEqual(mockRole);
       expect(rolesService.findOne).toHaveBeenCalledWith('org-123', 'role-123');
@@ -115,7 +118,7 @@ describe('RolesController', () => {
       const updatedRole = { ...mockRole, ...dto };
       rolesService.update.mockResolvedValue(updatedRole);
 
-      const result = await controller.update(mockTenantContext as any, 'role-123', dto);
+      const result = await controller.update(mockTenantContext, 'role-123', dto);
 
       expect(result).toEqual(updatedRole);
       expect(rolesService.update).toHaveBeenCalledWith('org-123', 'role-123', dto);
@@ -126,7 +129,7 @@ describe('RolesController', () => {
     it('should delete a role', async () => {
       rolesService.delete.mockResolvedValue(undefined);
 
-      await controller.remove(mockTenantContext as any, 'role-123');
+      await controller.remove(mockTenantContext, 'role-123');
 
       expect(rolesService.delete).toHaveBeenCalledWith('org-123', 'role-123');
     });
@@ -138,10 +141,10 @@ describe('MemberRolesController', () => {
   let rolesService: jest.Mocked<RolesService>;
   let permissionsRepository: jest.Mocked<PermissionsRepository>;
 
-  const mockTenantContext = {
+  const mockTenantContext: TenantContext = {
     orgId: 'org-123',
     userId: 'user-123',
-    permissions: ['members:read', 'members:update'],
+    role: 'OWNER',
   };
 
   const mockRole = {
@@ -197,10 +200,10 @@ describe('MemberRolesController', () => {
       const roles = [mockRole];
       const effectivePermissions = ['projects:read', 'projects:write'];
 
-      rolesService.getMemberRoles.mockResolvedValue(roles as any);
+      rolesService.getMemberRoles.mockResolvedValue(roles);
       permissionsRepository.getEffectivePermissions.mockResolvedValue(effectivePermissions);
 
-      const result = await controller.getMemberRoles(mockTenantContext as any, 'user-456');
+      const result = await controller.getMemberRoles(mockTenantContext, 'user-456');
 
       expect(result).toEqual({
         userId: 'user-456',
@@ -220,9 +223,9 @@ describe('MemberRolesController', () => {
       const roles = [mockRole];
 
       rolesService.assignRolesToMember.mockResolvedValue(undefined);
-      rolesService.getMemberRoles.mockResolvedValue(roles as any);
+      rolesService.getMemberRoles.mockResolvedValue(roles);
 
-      const result = await controller.assignRoles(mockTenantContext as any, 'user-456', dto);
+      const result = await controller.assignRoles(mockTenantContext, 'user-456', dto);
 
       expect(result).toEqual({
         userId: 'user-456',

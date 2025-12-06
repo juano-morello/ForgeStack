@@ -6,16 +6,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuditLogsController } from './audit-logs.controller';
 import { AuditLogsService } from './audit-logs.service';
 import { BillingService } from '../billing/billing.service';
+import type { TenantContext } from '@forgestack/db';
 
 describe('AuditLogsController', () => {
   let controller: AuditLogsController;
   let auditLogsService: jest.Mocked<AuditLogsService>;
   let billingService: jest.Mocked<BillingService>;
 
-  const mockTenantContext = {
+  const mockTenantContext: TenantContext = {
     orgId: 'org-123',
     userId: 'user-123',
-    permissions: ['audit_logs:read'],
+    role: 'MEMBER',
   };
 
   const mockAuditLog = {
@@ -88,9 +89,9 @@ describe('AuditLogsController', () => {
       };
 
       billingService.requireFeature.mockResolvedValue(undefined);
-      auditLogsService.findAll.mockResolvedValue(mockResult as any);
+      auditLogsService.findAll.mockResolvedValue(mockResult);
 
-      const result = await controller.findAll(mockTenantContext as any, query as any);
+      const result = await controller.findAll(mockTenantContext, query);
 
       expect(result).toEqual(mockResult);
       expect(billingService.requireFeature).toHaveBeenCalledWith(mockTenantContext, 'audit-logs');
@@ -105,13 +106,13 @@ describe('AuditLogsController', () => {
         totalLogs: 100,
         byAction: { 'project.created': 50 },
         byResourceType: { project: 100 },
-        byActor: { 'user-123': 100 },
+        byActor: [{ actorId: 'user-123', actorName: 'Test User', count: 100 }],
         period: { start: null, end: null },
       };
 
-      auditLogsService.getStats.mockResolvedValue(mockStats as any);
+      auditLogsService.getStats.mockResolvedValue(mockStats);
 
-      const result = await controller.getStats(mockTenantContext as any, query as any);
+      const result = await controller.getStats(mockTenantContext, query);
 
       expect(result).toEqual(mockStats);
       expect(auditLogsService.getStats).toHaveBeenCalledWith(mockTenantContext, query);
@@ -120,9 +121,9 @@ describe('AuditLogsController', () => {
 
   describe('findOne', () => {
     it('should return audit log by ID', async () => {
-      auditLogsService.findById.mockResolvedValue(mockAuditLog as any);
+      auditLogsService.findById.mockResolvedValue(mockAuditLog);
 
-      const result = await controller.findOne(mockTenantContext as any, 'log-123');
+      const result = await controller.findOne(mockTenantContext, 'log-123');
 
       expect(result).toEqual(mockAuditLog);
       expect(auditLogsService.findById).toHaveBeenCalledWith(mockTenantContext, 'log-123');
@@ -136,7 +137,7 @@ describe('AuditLogsController', () => {
 
       auditLogsService.export.mockResolvedValue(mockExport);
 
-      const result = await controller.export(mockTenantContext as any, query as any, 'json');
+      const result = await controller.export(mockTenantContext, query, 'json');
 
       expect(result).toEqual(mockExport);
       expect(auditLogsService.export).toHaveBeenCalledWith(mockTenantContext, query, 'json');
@@ -148,7 +149,7 @@ describe('AuditLogsController', () => {
 
       auditLogsService.export.mockResolvedValue(mockExport);
 
-      const result = await controller.export(mockTenantContext as any, query as any, 'csv');
+      const result = await controller.export(mockTenantContext, query, 'csv');
 
       expect(result).toEqual(mockExport);
       expect(auditLogsService.export).toHaveBeenCalledWith(mockTenantContext, query, 'csv');

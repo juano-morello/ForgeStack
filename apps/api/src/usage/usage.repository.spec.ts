@@ -4,6 +4,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsageRepository } from './usage.repository';
+import type { TenantContext } from '@forgestack/db';
 
 // Mock @forgestack/db
 const mockDb = {
@@ -84,7 +85,7 @@ describe('UsageRepository', () => {
       mockDb.values.mockReturnValueOnce(mockDb);
       mockDb.returning.mockResolvedValueOnce([mockUsageRecord]);
 
-      const result = await repository.upsertUsageRecord(newRecord as any);
+      const result = await repository.upsertUsageRecord(newRecord);
 
       expect(result).toEqual(mockUsageRecord);
       expect(mockDb.insert).toHaveBeenCalled();
@@ -110,7 +111,7 @@ describe('UsageRepository', () => {
       mockDb.where.mockReturnValueOnce(mockDb);
       mockDb.returning.mockResolvedValueOnce([{ ...existingRecord, quantity: 2000 }]);
 
-      const result = await repository.upsertUsageRecord(updateData as any);
+      const result = await repository.upsertUsageRecord(updateData);
 
       expect(result.quantity).toBe(2000);
       expect(mockDb.update).toHaveBeenCalled();
@@ -199,13 +200,13 @@ describe('UsageRepository', () => {
   describe('getUsageLimits', () => {
     it('should return usage limits for an organization', async () => {
       const limits = [mockUsageLimit];
-      const ctx = { orgId: 'org-123', userId: 'user-123', permissions: [] };
+      const ctx: TenantContext = { orgId: 'org-123', userId: 'user-123', role: 'MEMBER' };
 
       mockDb.select.mockReturnValueOnce(mockDb);
       mockDb.from.mockReturnValueOnce(mockDb);
       mockDb.where.mockResolvedValueOnce(limits);
 
-      const result = await repository.getUsageLimits(ctx as any);
+      const result = await repository.getUsageLimits(ctx);
 
       expect(result).toEqual(limits);
     });

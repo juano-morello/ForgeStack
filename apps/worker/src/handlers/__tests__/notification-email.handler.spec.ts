@@ -72,12 +72,12 @@ describe('NotificationEmailHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         return callback({
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockUpdate.mockReturnValue({ set: mockSet });
@@ -150,7 +150,7 @@ describe('NotificationEmailHandler', () => {
               where: jest.fn().mockResolvedValue(undefined),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: NotificationEmailJobData = {
@@ -189,7 +189,7 @@ describe('NotificationEmailHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: NotificationEmailJobData = {
@@ -222,7 +222,7 @@ describe('NotificationEmailHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: NotificationEmailJobData = {
@@ -259,7 +259,7 @@ describe('NotificationEmailHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         throw new Error('Database error');
@@ -300,7 +300,7 @@ describe('NotificationEmailHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockSendEmail.mockRejectedValue(new Error('Email service error'));

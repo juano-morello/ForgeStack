@@ -7,15 +7,7 @@ import { ActivitiesRepository } from '../activities/activities.repository';
 import { FilesRepository } from '../files/files.repository';
 import { BillingService } from '../billing/billing.service';
 import { UsageService } from '../usage/usage.service';
-
-import type { OrgRole } from '@forgestack/shared';
-
-// Mock TenantContext type
-interface TenantContext {
-  orgId: string;
-  userId: string;
-  role: OrgRole;
-}
+import type { TenantContext } from '@forgestack/db';
 
 describe('DashboardService', () => {
   let service: DashboardService;
@@ -100,14 +92,37 @@ describe('DashboardService', () => {
   describe('getSummary', () => {
     it('should return dashboard summary with stats and recent data', async () => {
       // Arrange
-      const mockProjects = [{ id: 'p1', name: 'Project 1' }];
-      const mockActivities = [{ id: 'a1', type: 'project.created' }];
+      const mockProjects = [{
+        id: 'p1',
+        name: 'Project 1',
+        orgId: 'org-123',
+        createdAt: new Date(),
+        description: 'Test project',
+        updatedAt: new Date(),
+      }];
+      const mockActivities = [{
+        id: 'a1',
+        createdAt: new Date(),
+        orgId: 'org-123',
+        description: 'Created project',
+        actorId: 'user-123',
+        actorName: 'Test User',
+        actorAvatar: null,
+        type: 'project.created',
+        title: 'Project Created',
+        resourceType: 'project',
+        resourceId: 'p1',
+        resourceName: 'Project 1',
+        metadata: null,
+        aggregationKey: null,
+        aggregationCount: 1,
+      }];
 
       projectsRepository.count.mockResolvedValue(5);
       membersRepository.count.mockResolvedValue(3);
       apiKeysRepository.count.mockResolvedValue(2);
-      activitiesRepository.findRecent.mockResolvedValue(mockActivities as any);
-      projectsRepository.findRecent.mockResolvedValue(mockProjects as any);
+      activitiesRepository.findRecent.mockResolvedValue(mockActivities);
+      projectsRepository.findRecent.mockResolvedValue(mockProjects);
       filesRepository.getStorageUsed.mockResolvedValue(1024000);
 
       // Act

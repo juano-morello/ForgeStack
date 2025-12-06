@@ -33,7 +33,7 @@ describe('UsageTrackingInterceptor', () => {
     jest.clearAllMocks();
   });
 
-  const createMockExecutionContext = (request: any): ExecutionContext => {
+  const createMockExecutionContext = (request: unknown): ExecutionContext => {
     return {
       switchToHttp: () => ({
         getRequest: () => request,
@@ -47,10 +47,10 @@ describe('UsageTrackingInterceptor', () => {
       switchToRpc: jest.fn(),
       switchToWs: jest.fn(),
       getType: jest.fn(),
-    } as any;
+    } as ExecutionContext;
   };
 
-  const createMockCallHandler = (response: any = {}): CallHandler => {
+  const createMockCallHandler = (response: unknown = {}): CallHandler => {
     return {
       handle: () => of(response),
     };

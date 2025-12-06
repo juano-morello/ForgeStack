@@ -69,8 +69,8 @@ describe('Separator', () => {
   });
 
   it('forwards ref correctly', () => {
-    const ref = { current: null };
-    render(<Separator ref={ref as any} data-testid="separator" />);
+    const ref = { current: null as HTMLDivElement | null };
+    render(<Separator ref={ref} data-testid="separator" />);
     
     expect(ref.current).not.toBeNull();
   });

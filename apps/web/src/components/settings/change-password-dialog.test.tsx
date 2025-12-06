@@ -220,11 +220,11 @@ describe('ChangePasswordDialog', () => {
 
   it('shows loading state during submission', async () => {
     const user = userEvent.setup();
-    let resolvePromise: (value: any) => void;
-    const promise = new Promise((resolve) => {
-      resolvePromise = resolve;
+    let resolvePromise: (value: unknown) => void;
+    const promise = new Promise<{ success: boolean }>((resolve) => {
+      resolvePromise = resolve as (value: unknown) => void;
     });
-    vi.mocked(userApi.changePassword).mockReturnValue(promise as any);
+    vi.mocked(userApi.changePassword).mockReturnValue(promise);
 
     render(
       <ChangePasswordDialog

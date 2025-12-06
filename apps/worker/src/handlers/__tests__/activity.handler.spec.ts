@@ -43,7 +43,7 @@ describe('ActivityHandler', () => {
           values: mockValues,
         };
         mockInsert.mockReturnValue({ values: mockValues });
-        return callback(mockDb as any);
+        return callback(mockDb as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: ActivityJobData = {
@@ -102,7 +102,7 @@ describe('ActivityHandler', () => {
           values: mockValues,
         };
         mockInsert.mockReturnValue({ values: mockValues });
-        return callback(mockDb as any);
+        return callback(mockDb as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: ActivityJobData = {
@@ -155,7 +155,7 @@ describe('ActivityHandler', () => {
         mockFrom.mockReturnValue({ where: mockWhere });
         mockWhere.mockReturnValue({ limit: mockLimit });
         mockInsert.mockReturnValue({ values: mockValues });
-        return callback(mockDb as any);
+        return callback(mockDb as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: ActivityJobData = {

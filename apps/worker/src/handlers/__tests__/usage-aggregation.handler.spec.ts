@@ -85,7 +85,7 @@ describe('UsageAggregationHandler', () => {
             }),
           }),
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
@@ -135,7 +135,7 @@ describe('UsageAggregationHandler', () => {
             }),
           }),
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockUpdate.mockReturnValue({ set: mockSet });
@@ -167,7 +167,7 @@ describe('UsageAggregationHandler', () => {
       mockGet.mockResolvedValue('0');
 
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
-        return callback({} as any);
+        return callback({} as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: UsageAggregationJobData = {
@@ -208,7 +208,7 @@ describe('UsageAggregationHandler', () => {
             }),
           }),
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
@@ -261,7 +261,7 @@ describe('UsageAggregationHandler', () => {
             }),
           }),
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: UsageAggregationJobData = {
@@ -283,7 +283,7 @@ describe('UsageAggregationHandler', () => {
       mockKeys.mockResolvedValue([]);
 
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
-        return callback({} as any);
+        return callback({} as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: UsageAggregationJobData = {};

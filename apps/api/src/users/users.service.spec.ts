@@ -104,7 +104,7 @@ describe('UsersService', () => {
 
     // Setup default withServiceContext mock
     (withServiceContext as jest.Mock).mockImplementation(
-      async (_name: string, callback: (tx: any) => Promise<any>) => {
+      async <T>(_name: string, callback: (tx: unknown) => Promise<T>) => {
         return callback({
           select: jest.fn().mockReturnThis(),
           from: jest.fn().mockReturnThis(),
@@ -214,7 +214,7 @@ describe('UsersService', () => {
     beforeEach(() => {
       // Mock withServiceContext for account operations
       (withServiceContext as jest.Mock).mockImplementation(
-        async (_name: string, callback: (tx: any) => Promise<any>) => {
+        async <T>(_name: string, callback: (tx: unknown) => Promise<T>) => {
           const mockTx = {
             select: jest.fn().mockReturnThis(),
             from: jest.fn().mockReturnThis(),
@@ -291,7 +291,7 @@ describe('UsersService', () => {
       repository.findById.mockResolvedValueOnce(mockUser);
 
       (withServiceContext as jest.Mock).mockImplementationOnce(
-        async (_name: string, callback: (tx: any) => Promise<any>) => {
+        async <T>(_name: string, callback: (tx: unknown) => Promise<T>) => {
           const mockTx = {
             select: jest.fn().mockReturnThis(),
             from: jest.fn().mockReturnThis(),
@@ -332,11 +332,11 @@ describe('UsersService', () => {
       // Mock crypto.randomUUID
       global.crypto = {
         randomUUID: jest.fn().mockReturnValue('mock-uuid-token'),
-      } as any;
+      } as unknown as typeof globalThis.crypto;
 
       // Mock withServiceContext for verification insert
       (withServiceContext as jest.Mock).mockImplementation(
-        async (_name: string, callback: (tx: any) => Promise<any>) => {
+        async <T>(_name: string, callback: (tx: unknown) => Promise<T>) => {
           const mockTx = {
             insert: jest.fn().mockReturnThis(),
             values: jest.fn().mockResolvedValue(undefined),

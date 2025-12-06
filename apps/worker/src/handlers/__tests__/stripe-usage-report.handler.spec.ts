@@ -123,9 +123,9 @@ describe('StripeUsageReportHandler', () => {
                 where: () => mockUsageRecords,
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Second call: get subscription
         if (callCount === 2) {
           return callback({
@@ -136,13 +136,13 @@ describe('StripeUsageReportHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Third call: mark as reported
         return callback({
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockUpdate.mockReturnValue({ set: mockSet });
@@ -208,7 +208,7 @@ describe('StripeUsageReportHandler', () => {
                 where: () => mockUsageRecords,
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // No subscription found
@@ -220,7 +220,7 @@ describe('StripeUsageReportHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: StripeUsageReportJobData = {
@@ -289,7 +289,7 @@ describe('StripeUsageReportHandler', () => {
                 where: () => mockUsageRecords,
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         return callback({
@@ -300,7 +300,7 @@ describe('StripeUsageReportHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockRetrieve.mockResolvedValue(mockStripeSubscription);
@@ -371,7 +371,7 @@ describe('StripeUsageReportHandler', () => {
                 where: () => mockUsageRecords,
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         return callback({
@@ -382,7 +382,7 @@ describe('StripeUsageReportHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockRetrieve.mockResolvedValue(mockStripeSubscription);
@@ -414,7 +414,7 @@ describe('StripeUsageReportHandler', () => {
               where: () => [],
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: StripeUsageReportJobData = {};

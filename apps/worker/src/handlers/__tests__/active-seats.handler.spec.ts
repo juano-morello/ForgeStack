@@ -47,9 +47,9 @@ describe('ActiveSeatsHandler', () => {
         
         // First call: get organizations
         if (callCount === 1) {
-          return callback({ select: () => ({ from: () => mockOrgs }) } as any);
+          return callback({ select: () => ({ from: () => mockOrgs }) } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Second call: count members for org-1
         if (callCount === 2) {
           return callback({
@@ -58,9 +58,9 @@ describe('ActiveSeatsHandler', () => {
                 where: () => [{ count: 5 }],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Third call: upsert record for org-1
         if (callCount === 3) {
           return callback({
@@ -74,9 +74,9 @@ describe('ActiveSeatsHandler', () => {
             insert: () => ({
               values: jest.fn().mockResolvedValue(undefined),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Fourth call: count members for org-2
         if (callCount === 4) {
           return callback({
@@ -85,9 +85,9 @@ describe('ActiveSeatsHandler', () => {
                 where: () => [{ count: 3 }],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Fifth call: upsert record for org-2
         if (callCount === 5) {
           return callback({
@@ -101,10 +101,10 @@ describe('ActiveSeatsHandler', () => {
             insert: () => ({
               values: jest.fn().mockResolvedValue(undefined),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
-        return callback({} as any);
+        return callback({} as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: ActiveSeatsJobData = {};
@@ -126,7 +126,7 @@ describe('ActiveSeatsHandler', () => {
       const mockOrgs: { id: string }[] = [];
 
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
-        return callback({ select: () => ({ from: () => mockOrgs }) } as any);
+        return callback({ select: () => ({ from: () => mockOrgs }) } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: ActiveSeatsJobData = {
@@ -157,9 +157,9 @@ describe('ActiveSeatsHandler', () => {
         callCount++;
         
         if (callCount === 1) {
-          return callback({ select: () => ({ from: () => mockOrgs }) } as any);
+          return callback({ select: () => ({ from: () => mockOrgs }) } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         if (callCount === 2) {
           return callback({
             select: () => ({
@@ -167,7 +167,7 @@ describe('ActiveSeatsHandler', () => {
                 where: () => [{ count: 5 }],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         if (callCount === 3) {
@@ -180,10 +180,10 @@ describe('ActiveSeatsHandler', () => {
               }),
             }),
             update: mockUpdate,
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
-        return callback({} as any);
+        return callback({} as unknown as Parameters<typeof callback>[0]);
       });
 
       mockUpdate.mockReturnValue({ set: mockSet });
@@ -216,7 +216,7 @@ describe('ActiveSeatsHandler', () => {
         callCount++;
 
         if (callCount === 1) {
-          return callback({ select: () => ({ from: () => mockOrgs }) } as any);
+          return callback({ select: () => ({ from: () => mockOrgs }) } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Fail for org-1
@@ -232,7 +232,7 @@ describe('ActiveSeatsHandler', () => {
                 where: () => [{ count: 3 }],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         if (callCount === 4) {
@@ -247,10 +247,10 @@ describe('ActiveSeatsHandler', () => {
             insert: () => ({
               values: jest.fn().mockResolvedValue(undefined),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
-        return callback({} as any);
+        return callback({} as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: ActiveSeatsJobData = {};

@@ -7,16 +7,17 @@ import { NotFoundException } from '@nestjs/common';
 import { AuditLogsService } from './audit-logs.service';
 import { AuditLogsRepository } from './audit-logs.repository';
 import { QueueService } from '../queue/queue.service';
+import type { TenantContext } from '@forgestack/db';
 
 describe('AuditLogsService', () => {
   let service: AuditLogsService;
   let auditLogsRepository: jest.Mocked<AuditLogsRepository>;
   let queueService: jest.Mocked<QueueService>;
 
-  const mockTenantContext = {
+  const mockTenantContext: TenantContext = {
     orgId: 'org-123',
     userId: 'user-123',
-    permissions: [],
+    role: 'MEMBER',
   };
 
   const mockAuditLog = {
@@ -130,7 +131,7 @@ describe('AuditLogsService', () => {
         resourceName: 'Test Project',
       };
 
-      auditLogsRepository.create.mockResolvedValue(mockAuditLog as any);
+      auditLogsRepository.create.mockResolvedValue(mockAuditLog);
 
       await service.processAuditEvent(auditEvent);
 
@@ -159,9 +160,9 @@ describe('AuditLogsService', () => {
         total: 1,
       };
 
-      auditLogsRepository.findAll.mockResolvedValue(mockResult as any);
+      auditLogsRepository.findAll.mockResolvedValue(mockResult);
 
-      const result = await service.findAll(mockTenantContext as any, query as any);
+      const result = await service.findAll(mockTenantContext, query);
 
       expect(result.data).toHaveLength(1);
       expect(result.pagination).toEqual({
@@ -175,9 +176,9 @@ describe('AuditLogsService', () => {
 
   describe('findById', () => {
     it('should return audit log by ID', async () => {
-      auditLogsRepository.findById.mockResolvedValue(mockAuditLog as any);
+      auditLogsRepository.findById.mockResolvedValue(mockAuditLog);
 
-      const result = await service.findById(mockTenantContext as any, 'log-123');
+      const result = await service.findById(mockTenantContext, 'log-123');
 
       expect(result).toMatchObject({
         id: 'log-123',
@@ -194,7 +195,7 @@ describe('AuditLogsService', () => {
       auditLogsRepository.findById.mockResolvedValue(null);
 
       await expect(
-        service.findById(mockTenantContext as any, 'log-123'),
+        service.findById(mockTenantContext, 'log-123'),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -205,12 +206,12 @@ describe('AuditLogsService', () => {
         totalLogs: 100,
         byAction: { 'project.created': 50, 'project.updated': 50 },
         byResourceType: { project: 100 },
-        byActor: { 'user-123': 100 },
+        byActor: [{ actorId: 'user-123', actorName: 'Test User', count: 100 }],
       };
 
-      auditLogsRepository.getStats.mockResolvedValue(mockStats as any);
+      auditLogsRepository.getStats.mockResolvedValue(mockStats);
 
-      const result = await service.getStats(mockTenantContext as any, {});
+      const result = await service.getStats(mockTenantContext, {});
 
       expect(result).toMatchObject({
         totalLogs: 100,
@@ -230,9 +231,9 @@ describe('AuditLogsService', () => {
         total: 1,
       };
 
-      auditLogsRepository.findAll.mockResolvedValue(mockResult as any);
+      auditLogsRepository.findAll.mockResolvedValue(mockResult);
 
-      const result = await service.export(mockTenantContext as any, {} as any, 'json');
+      const result = await service.export(mockTenantContext, {}, 'json');
 
       expect(result).toContain('log-123');
       expect(result).toContain('project.created');
@@ -246,9 +247,9 @@ describe('AuditLogsService', () => {
         total: 1,
       };
 
-      auditLogsRepository.findAll.mockResolvedValue(mockResult as any);
+      auditLogsRepository.findAll.mockResolvedValue(mockResult);
 
-      const result = await service.export(mockTenantContext as any, {} as any, 'csv');
+      const result = await service.export(mockTenantContext, {}, 'csv');
 
       expect(result).toContain('ID,Created At');
       expect(result).toContain('log-123');

@@ -26,6 +26,8 @@ describe('RolesService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     permissions: [],
+    permissionCount: 0,
+    memberCount: 0,
   };
 
   const mockSystemRole = {
@@ -37,6 +39,8 @@ describe('RolesService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     permissions: [],
+    permissionCount: 0,
+    memberCount: 0,
   };
 
   const mockPermission = {
@@ -128,7 +132,7 @@ describe('RolesService', () => {
   describe('findAllForOrg', () => {
     it('should return all roles for an organization', async () => {
       const roles = [mockRole, mockSystemRole];
-      rolesRepository.findAllForOrg.mockResolvedValue(roles as any);
+      rolesRepository.findAllForOrg.mockResolvedValue(roles);
 
       const result = await service.findAllForOrg('org-123');
 
@@ -254,7 +258,7 @@ describe('RolesService', () => {
   describe('getMemberRoles', () => {
     it('should return member roles', async () => {
       const roles = [mockRole];
-      rolesRepository.getMemberRoles.mockResolvedValue(roles as any);
+      rolesRepository.getMemberRoles.mockResolvedValue(roles);
 
       const result = await service.getMemberRoles('org-123', 'user-123');
 
@@ -289,8 +293,8 @@ describe('RolesService', () => {
       const roleIds = ['role-123']; // Not including owner role
 
       rolesRepository.findOne.mockResolvedValue(mockRole);
-      rolesRepository.findSystemRole.mockResolvedValue(ownerRole as any);
-      rolesRepository.getMemberRoles.mockResolvedValue([ownerRole] as any);
+      rolesRepository.findSystemRole.mockResolvedValue(ownerRole);
+      rolesRepository.getMemberRoles.mockResolvedValue([ownerRole]);
 
       await expect(
         service.assignRolesToMember('org-123', 'user-123', roleIds, 'user-123'),
@@ -302,8 +306,8 @@ describe('RolesService', () => {
       const roleIds = ['role-123'];
 
       rolesRepository.findOne.mockResolvedValue(mockRole);
-      rolesRepository.findSystemRole.mockResolvedValue(ownerRole as any);
-      rolesRepository.getMemberRoles.mockResolvedValue([ownerRole] as any);
+      rolesRepository.findSystemRole.mockResolvedValue(ownerRole);
+      rolesRepository.getMemberRoles.mockResolvedValue([ownerRole]);
       rolesRepository.assignRolesToMember.mockResolvedValue(undefined);
 
       await service.assignRolesToMember('org-123', 'user-456', roleIds, 'user-123');

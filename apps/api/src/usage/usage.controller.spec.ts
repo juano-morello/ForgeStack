@@ -5,15 +5,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsageController } from './usage.controller';
 import { UsageService } from './usage.service';
+import type { TenantContext } from '@forgestack/db';
 
 describe('UsageController', () => {
   let controller: UsageController;
   let usageService: jest.Mocked<UsageService>;
 
-  const mockTenantContext = {
+  const mockTenantContext: TenantContext = {
     orgId: 'org-123',
     userId: 'user-123',
-    permissions: [],
+    role: 'MEMBER',
   };
 
   const mockUsageSummary = {
@@ -68,7 +69,7 @@ describe('UsageController', () => {
     it('should return formatted usage summary', async () => {
       usageService.getCurrentUsage.mockResolvedValue(mockUsageSummary);
 
-      const result = await controller.getUsageSummary(mockTenantContext as any);
+      const result = await controller.getUsageSummary(mockTenantContext);
 
       expect(result).toMatchObject({
         billingPeriod: {
@@ -114,7 +115,7 @@ describe('UsageController', () => {
 
       usageService.getCurrentUsage.mockResolvedValue(overageSummary);
 
-      const result = await controller.getUsageSummary(mockTenantContext as any);
+      const result = await controller.getUsageSummary(mockTenantContext);
 
       expect(result.usage.apiCalls.overage).toBe(5000);
     });
@@ -133,7 +134,7 @@ describe('UsageController', () => {
 
       usageService.getUsageHistory.mockResolvedValue(mockHistory);
 
-      const result = await controller.getUsageHistory(mockTenantContext as any);
+      const result = await controller.getUsageHistory(mockTenantContext);
 
       expect(result.history).toHaveLength(1);
       expect(result.history[0]).toMatchObject({
@@ -148,7 +149,7 @@ describe('UsageController', () => {
     it('should accept custom months parameter', async () => {
       usageService.getUsageHistory.mockResolvedValue([]);
 
-      await controller.getUsageHistory(mockTenantContext as any, '12');
+      await controller.getUsageHistory(mockTenantContext, '12');
 
       expect(usageService.getUsageHistory).toHaveBeenCalledWith(mockTenantContext, 12);
     });
@@ -158,7 +159,7 @@ describe('UsageController', () => {
     it('should return API calls breakdown', async () => {
       usageService.getCurrentUsage.mockResolvedValue(mockUsageSummary);
 
-      const result = await controller.getApiCallsBreakdown(mockTenantContext as any);
+      const result = await controller.getApiCallsBreakdown(mockTenantContext);
 
       expect(result).toEqual({
         total: 1000,
@@ -172,7 +173,7 @@ describe('UsageController', () => {
     it('should return storage usage', async () => {
       usageService.getCurrentUsage.mockResolvedValue(mockUsageSummary);
 
-      const result = await controller.getStorageUsage(mockTenantContext as any);
+      const result = await controller.getStorageUsage(mockTenantContext);
 
       expect(result).toEqual({
         usedBytes: 5000000,
@@ -186,7 +187,7 @@ describe('UsageController', () => {
     it('should return seats usage', async () => {
       usageService.getCurrentUsage.mockResolvedValue(mockUsageSummary);
 
-      const result = await controller.getSeatsUsage(mockTenantContext as any);
+      const result = await controller.getSeatsUsage(mockTenantContext);
 
       expect(result).toEqual({
         active: 5,
@@ -210,9 +211,9 @@ describe('UsageController', () => {
         },
       ];
 
-      usageService.getUsageLimits.mockResolvedValue(mockLimits as any);
+      usageService.getUsageLimits.mockResolvedValue(mockLimits);
 
-      const result = await controller.getUsageLimits(mockTenantContext as any);
+      const result = await controller.getUsageLimits(mockTenantContext);
 
       expect(result.limits).toHaveLength(1);
       expect(result.limits[0]).toMatchObject({

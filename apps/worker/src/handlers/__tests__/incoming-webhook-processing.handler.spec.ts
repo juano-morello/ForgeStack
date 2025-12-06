@@ -61,7 +61,7 @@ describe('IncomingWebhookProcessingHandler', () => {
               where: () => [mockEvent],
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: IncomingWebhookJobData = {
@@ -99,7 +99,7 @@ describe('IncomingWebhookProcessingHandler', () => {
               where: () => [mockEvent],
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: IncomingWebhookJobData = {
@@ -130,7 +130,7 @@ describe('IncomingWebhookProcessingHandler', () => {
               where: () => [],
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: IncomingWebhookJobData = {
@@ -158,9 +158,9 @@ describe('IncomingWebhookProcessingHandler', () => {
             id: 'cs_123',
             customer: 'cus_123',
             subscription: 'sub_123',
-          } as any,
+          } as unknown as Stripe.Checkout.Session,
         },
-      } as any;
+      } as unknown as Stripe.CheckoutSessionCompletedEvent;
 
       const mockEvent = {
         id: 'event-123',
@@ -185,12 +185,12 @@ describe('IncomingWebhookProcessingHandler', () => {
                 where: () => [mockEvent],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         return callback({
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockUpdate.mockReturnValue({ set: mockSet });
@@ -233,16 +233,16 @@ describe('IncomingWebhookProcessingHandler', () => {
                   price: {
                     id: 'price_123',
                   },
-                } as any,
+                } as unknown as Stripe.SubscriptionItem,
               ],
             },
             current_period_start: 1704067200,
             current_period_end: 1706745600,
             cancel_at_period_end: false,
             canceled_at: null,
-          } as any,
+          } as unknown as Stripe.Subscription,
         },
-      } as any;
+      } as unknown as Stripe.CustomerSubscriptionCreatedEvent;
 
       const mockEvent = {
         id: 'event-123',
@@ -277,7 +277,7 @@ describe('IncomingWebhookProcessingHandler', () => {
                 where: () => [mockEvent],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Second call: find customer
@@ -288,20 +288,20 @@ describe('IncomingWebhookProcessingHandler', () => {
                 where: () => [mockCustomer],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Third call: upsert subscription
         if (callCount === 3) {
           return callback({
             insert: mockInsert,
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Fourth call: mark as processed
         return callback({
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
@@ -350,12 +350,12 @@ describe('IncomingWebhookProcessingHandler', () => {
                 where: () => [mockEvent],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         return callback({
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockUpdate.mockReturnValue({ set: mockSet });
@@ -398,12 +398,12 @@ describe('IncomingWebhookProcessingHandler', () => {
                   price: {
                     id: 'price_pro',
                   },
-                } as any,
+                } as unknown as Stripe.SubscriptionItem,
               ],
             },
-          } as any,
+          } as unknown as Stripe.Subscription,
         },
-      } as any;
+      } as unknown as Stripe.CustomerSubscriptionUpdatedEvent;
 
       const mockEvent = {
         id: 'event-123',
@@ -438,7 +438,7 @@ describe('IncomingWebhookProcessingHandler', () => {
                 where: () => [mockEvent],
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Second call: find customer
@@ -450,7 +450,7 @@ describe('IncomingWebhookProcessingHandler', () => {
               }),
             }),
             update: mockUpdate,
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Third call: upsert subscription
@@ -458,13 +458,13 @@ describe('IncomingWebhookProcessingHandler', () => {
           return callback({
             insert: mockInsert,
             update: mockUpdate,
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Fourth call: mark as processed
         return callback({
           update: mockUpdate,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });

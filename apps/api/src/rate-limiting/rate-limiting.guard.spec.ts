@@ -47,7 +47,7 @@ describe('RateLimitGuard', () => {
     RATE_LIMIT_CONFIG.enabled = true;
   });
 
-  const createMockExecutionContext = (request: any, response: any = {}): ExecutionContext => {
+  const createMockExecutionContext = (request: unknown, response: Record<string, unknown> = {}): ExecutionContext => {
     const mockResponse = {
       setHeader: jest.fn(),
       ...response,
@@ -66,7 +66,7 @@ describe('RateLimitGuard', () => {
       switchToRpc: jest.fn(),
       switchToWs: jest.fn(),
       getType: jest.fn(),
-    } as any;
+    } as ExecutionContext;
   };
 
   describe('canActivate', () => {

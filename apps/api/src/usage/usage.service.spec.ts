@@ -6,15 +6,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsageService } from './usage.service';
 import { UsageRepository } from './usage.repository';
 import { UsageTrackingService } from './usage-tracking.service';
+import type { TenantContext } from '@forgestack/db';
 
 describe('UsageService', () => {
   let service: UsageService;
   let usageRepository: jest.Mocked<UsageRepository>;
 
-  const mockTenantContext = {
+  const mockTenantContext: TenantContext = {
     orgId: 'org-123',
     userId: 'user-123',
-    permissions: [],
+    role: 'MEMBER',
   };
 
   const mockUsageSummary = {
@@ -91,9 +92,9 @@ describe('UsageService', () => {
   describe('getCurrentUsage', () => {
     it('should return current usage summary with limits', async () => {
       usageRepository.getUsageSummary.mockResolvedValue(mockUsageSummary);
-      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits as any);
+      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits);
 
-      const result = await service.getCurrentUsage(mockTenantContext as any);
+      const result = await service.getCurrentUsage(mockTenantContext);
 
       expect(result).toMatchObject({
         billingPeriod: {
@@ -124,7 +125,7 @@ describe('UsageService', () => {
       usageRepository.getUsageSummary.mockResolvedValue(mockUsageSummary);
       usageRepository.getUsageLimits.mockResolvedValue([]);
 
-      const result = await service.getCurrentUsage(mockTenantContext as any);
+      const result = await service.getCurrentUsage(mockTenantContext);
 
       expect(result.usage.apiCalls.limit).toBeNull();
       expect(result.usage.apiCalls.percentUsed).toBe(0);
@@ -143,6 +144,9 @@ describe('UsageService', () => {
           periodEnd: new Date('2024-01-31'),
           metricType: 'api_calls',
           quantity: 500,
+          reportedToStripe: false,
+          stripeUsageRecordId: '',
+          reportedAt: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -153,14 +157,17 @@ describe('UsageService', () => {
           periodEnd: new Date('2024-01-31'),
           metricType: 'storage_bytes',
           quantity: 1000000,
+          reportedToStripe: false,
+          stripeUsageRecordId: '',
+          reportedAt: new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
 
-      usageRepository.getUsageHistory.mockResolvedValue(mockRecords as any);
+      usageRepository.getUsageHistory.mockResolvedValue(mockRecords);
 
-      const result = await service.getUsageHistory(mockTenantContext as any, 6);
+      const result = await service.getUsageHistory(mockTenantContext, 6);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -173,9 +180,9 @@ describe('UsageService', () => {
 
   describe('getUsageLimits', () => {
     it('should return usage limits', async () => {
-      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits as any);
+      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits);
 
-      const result = await service.getUsageLimits(mockTenantContext as any);
+      const result = await service.getUsageLimits(mockTenantContext);
 
       expect(result).toEqual(mockUsageLimits);
       expect(usageRepository.getUsageLimits).toHaveBeenCalledWith(mockTenantContext);
@@ -184,14 +191,14 @@ describe('UsageService', () => {
 
   describe('checkLimit', () => {
     it('should return exceeded true when limit is exceeded', async () => {
-      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits as any);
+      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits);
       usageRepository.getUsageSummary.mockResolvedValue({
         apiCalls: 15000, // Exceeds limit of 10000
         storageBytes: 5000000,
         activeSeats: 5,
       });
 
-      const result = await service.checkLimit(mockTenantContext as any, 'api_calls_monthly');
+      const result = await service.checkLimit(mockTenantContext, 'api_calls_monthly');
 
       expect(result).toEqual({
         exceeded: true,
@@ -201,10 +208,10 @@ describe('UsageService', () => {
     });
 
     it('should return exceeded false when under limit', async () => {
-      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits as any);
+      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits);
       usageRepository.getUsageSummary.mockResolvedValue(mockUsageSummary);
 
-      const result = await service.checkLimit(mockTenantContext as any, 'api_calls_monthly');
+      const result = await service.checkLimit(mockTenantContext, 'api_calls_monthly');
 
       expect(result).toEqual({
         exceeded: false,
@@ -216,7 +223,7 @@ describe('UsageService', () => {
     it('should return exceeded false when no limit exists', async () => {
       usageRepository.getUsageLimits.mockResolvedValue([]);
 
-      const result = await service.checkLimit(mockTenantContext as any, 'api_calls_monthly');
+      const result = await service.checkLimit(mockTenantContext, 'api_calls_monthly');
 
       expect(result).toEqual({
         exceeded: false,
@@ -226,10 +233,10 @@ describe('UsageService', () => {
     });
 
     it('should check storage_bytes limit', async () => {
-      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits as any);
+      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits);
       usageRepository.getUsageSummary.mockResolvedValue(mockUsageSummary);
 
-      const result = await service.checkLimit(mockTenantContext as any, 'storage_bytes');
+      const result = await service.checkLimit(mockTenantContext, 'storage_bytes');
 
       expect(result).toEqual({
         exceeded: false,
@@ -239,10 +246,10 @@ describe('UsageService', () => {
     });
 
     it('should check seats limit', async () => {
-      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits as any);
+      usageRepository.getUsageLimits.mockResolvedValue(mockUsageLimits);
       usageRepository.getUsageSummary.mockResolvedValue(mockUsageSummary);
 
-      const result = await service.checkLimit(mockTenantContext as any, 'seats');
+      const result = await service.checkLimit(mockTenantContext, 'seats');
 
       expect(result).toEqual({
         exceeded: false,

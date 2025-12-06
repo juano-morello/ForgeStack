@@ -21,25 +21,24 @@ jest.mock('@forgestack/db', () => ({
   verifications: {},
 }));
 
-interface RequestWithUser {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
-}
+import type { RequestWithUser } from '../core/types';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let service: jest.Mocked<UsersService>;
 
-  const mockRequest: RequestWithUser = {
+  const mockRequest = {
     user: {
       id: 'user-123',
       email: 'test@example.com',
       name: 'Test User',
     },
-  };
+    session: {
+      id: 'session-123',
+      userId: 'user-123',
+      expiresAt: new Date(),
+    },
+  } as RequestWithUser;
 
   beforeEach(async () => {
     const mockService = {
@@ -83,7 +82,7 @@ describe('UsersController', () => {
 
       service.updateProfile.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.updateProfile(updateDto, mockRequest as any);
+      const result = await controller.updateProfile(updateDto, mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.updateProfile).toHaveBeenCalledWith('user-123', updateDto);
@@ -94,7 +93,7 @@ describe('UsersController', () => {
       service.updateProfile.mockRejectedValueOnce(new NotFoundException('User not found'));
 
       await expect(
-        controller.updateProfile(updateDto, mockRequest as any),
+        controller.updateProfile(updateDto, mockRequest),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -110,7 +109,7 @@ describe('UsersController', () => {
       const expectedResult = { message: 'Password changed successfully' };
       service.changePassword.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.changePassword(changePasswordDto, mockRequest as any);
+      const result = await controller.changePassword(changePasswordDto, mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.changePassword).toHaveBeenCalledWith('user-123', changePasswordDto);
@@ -128,7 +127,7 @@ describe('UsersController', () => {
       );
 
       await expect(
-        controller.changePassword(changePasswordDto, mockRequest as any),
+        controller.changePassword(changePasswordDto, mockRequest),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -144,7 +143,7 @@ describe('UsersController', () => {
       );
 
       await expect(
-        controller.changePassword(changePasswordDto, mockRequest as any),
+        controller.changePassword(changePasswordDto, mockRequest),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
@@ -162,7 +161,7 @@ describe('UsersController', () => {
 
       service.changeEmail.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.changeEmail(changeEmailDto, mockRequest as any);
+      const result = await controller.changeEmail(changeEmailDto, mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.changeEmail).toHaveBeenCalledWith('user-123', changeEmailDto);
@@ -178,7 +177,7 @@ describe('UsersController', () => {
       );
 
       await expect(
-        controller.changeEmail(changeEmailDto, mockRequest as any),
+        controller.changeEmail(changeEmailDto, mockRequest),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -190,7 +189,7 @@ describe('UsersController', () => {
       service.changeEmail.mockRejectedValueOnce(new NotFoundException('User not found'));
 
       await expect(
-        controller.changeEmail(changeEmailDto, mockRequest as any),
+        controller.changeEmail(changeEmailDto, mockRequest),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -204,7 +203,7 @@ describe('UsersController', () => {
 
       service.getOnboardingStatus.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.getOnboardingStatus(mockRequest as any);
+      const result = await controller.getOnboardingStatus(mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.getOnboardingStatus).toHaveBeenCalledWith('user-123');
@@ -219,7 +218,7 @@ describe('UsersController', () => {
 
       service.getOnboardingStatus.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.getOnboardingStatus(mockRequest as any);
+      const result = await controller.getOnboardingStatus(mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.getOnboardingStatus).toHaveBeenCalledWith('user-123');
@@ -230,7 +229,7 @@ describe('UsersController', () => {
         new NotFoundException('User not found'),
       );
 
-      await expect(controller.getOnboardingStatus(mockRequest as any)).rejects.toThrow(
+      await expect(controller.getOnboardingStatus(mockRequest)).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -243,7 +242,7 @@ describe('UsersController', () => {
 
       service.completeOnboarding.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.completeOnboarding(mockRequest as any);
+      const result = await controller.completeOnboarding(mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.completeOnboarding).toHaveBeenCalledWith('user-123');
@@ -255,7 +254,7 @@ describe('UsersController', () => {
 
       service.completeOnboarding.mockResolvedValueOnce(expectedResult);
 
-      const result = await controller.completeOnboarding(mockRequest as any);
+      const result = await controller.completeOnboarding(mockRequest);
 
       expect(result).toEqual(expectedResult);
       expect(service.completeOnboarding).toHaveBeenCalledWith('user-123');
@@ -266,7 +265,7 @@ describe('UsersController', () => {
         new NotFoundException('User not found'),
       );
 
-      await expect(controller.completeOnboarding(mockRequest as any)).rejects.toThrow(
+      await expect(controller.completeOnboarding(mockRequest)).rejects.toThrow(
         NotFoundException,
       );
     });

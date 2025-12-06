@@ -200,11 +200,11 @@ describe('ChangeEmailDialog', () => {
 
   it('shows loading state during submission', async () => {
     const user = userEvent.setup();
-    let resolvePromise: (value: any) => void;
-    const promise = new Promise((resolve) => {
-      resolvePromise = resolve;
+    let resolvePromise: (value: unknown) => void;
+    const promise = new Promise<{ success: boolean }>((resolve) => {
+      resolvePromise = resolve as (value: unknown) => void;
     });
-    vi.mocked(userApi.requestEmailChange).mockReturnValue(promise as any);
+    vi.mocked(userApi.requestEmailChange).mockReturnValue(promise);
 
     render(
       <ChangeEmailDialog

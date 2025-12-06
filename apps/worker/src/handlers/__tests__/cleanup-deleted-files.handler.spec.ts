@@ -90,13 +90,13 @@ describe('CleanupDeletedFilesHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
-        
+
         // Subsequent calls: delete individual files
         return callback({
           delete: mockDelete,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockDelete.mockReturnValue({ where: mockWhere });
@@ -141,7 +141,7 @@ describe('CleanupDeletedFilesHandler', () => {
               }),
             }),
           }),
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       const jobData: CleanupDeletedFilesJobData = {};
@@ -197,12 +197,12 @@ describe('CleanupDeletedFilesHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         return callback({
           delete: mockDelete,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockDelete.mockReturnValue({ where: mockWhere });
@@ -254,7 +254,7 @@ describe('CleanupDeletedFilesHandler', () => {
                 }),
               }),
             }),
-          } as any);
+          } as unknown as Parameters<typeof callback>[0]);
         }
 
         // Database delete fails

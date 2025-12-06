@@ -69,7 +69,7 @@ describe('StripeWebhookHandler', () => {
         };
         mockUpdate.mockReturnValue({ set: mockSet });
         mockSet.mockReturnValue({ where: mockWhere });
-        return callback(mockDb as any);
+        return callback(mockDb as unknown as Parameters<typeof callback>[0]);
       });
 
       const payload = {
@@ -135,7 +135,7 @@ describe('StripeWebhookHandler', () => {
           };
           mockSelect.mockReturnValue({ from: mockFrom });
           mockFrom.mockReturnValue({ where: mockWhere });
-          return callback(mockDb as any);
+          return callback(mockDb as unknown as Parameters<typeof callback>[0]);
         } else if (callCount === 2) {
           // Second call: upsert subscription
           const mockDb = {
@@ -145,7 +145,7 @@ describe('StripeWebhookHandler', () => {
           };
           mockInsert.mockReturnValue({ values: mockValues });
           mockValues.mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
-          return callback(mockDb as any);
+          return callback(mockDb as unknown as Parameters<typeof callback>[0]);
         } else {
           // Third call: mark event as processed
           const mockDb = {
@@ -155,7 +155,7 @@ describe('StripeWebhookHandler', () => {
           };
           mockUpdate.mockReturnValue({ set: mockSet });
           mockSet.mockReturnValue({ where: mockDb.where });
-          return callback(mockDb as any);
+          return callback(mockDb as unknown as Parameters<typeof callback>[0]);
         }
       });
 

@@ -37,7 +37,7 @@ describe('AuditLogHandler', () => {
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
         return callback({
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
@@ -97,7 +97,7 @@ describe('AuditLogHandler', () => {
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
         return callback({
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
@@ -141,7 +141,7 @@ describe('AuditLogHandler', () => {
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
         return callback({
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
@@ -189,7 +189,7 @@ describe('AuditLogHandler', () => {
       mockWithServiceContext.mockImplementation(async (_name, callback) => {
         return callback({
           insert: mockInsert,
-        } as any);
+        } as unknown as Parameters<typeof callback>[0]);
       });
 
       mockInsert.mockReturnValue({ values: mockValues });
