@@ -14,6 +14,12 @@ export default defineConfig({
         'src/**/__tests__/**',
         'src/types/**', // Type definitions don't need coverage
       ],
+      thresholds: {
+        branches: 80,
+        functions: 85,
+        lines: 90,
+        statements: 90,
+      },
     },
   },
 });

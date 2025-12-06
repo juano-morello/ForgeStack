@@ -28,6 +28,14 @@ module.exports = {
     '!**/test/**',
   ],
   coverageDirectory: '../coverage',
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 75,
+      lines: 80,
+      statements: 80,
+    },
+  },
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',

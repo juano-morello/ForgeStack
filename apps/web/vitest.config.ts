@@ -25,6 +25,12 @@ export default defineConfig({
         'src/components/members/pending-invitations.tsx',
         'src/components/members/invite-member-dialog.tsx',
       ],
+      thresholds: {
+        branches: 75,
+        functions: 80,
+        lines: 85,
+        statements: 85,
+      },
     },
   },
   resolve: {

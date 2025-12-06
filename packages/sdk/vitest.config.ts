@@ -15,6 +15,12 @@ export default defineConfig({
         'src/types.ts', // Type re-exports don't need coverage
         'src/index.ts', // Simple re-exports
       ],
+      thresholds: {
+        branches: 90,
+        functions: 90,
+        lines: 95,
+        statements: 95,
+      },
     },
   },
 });
