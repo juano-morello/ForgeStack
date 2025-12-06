@@ -17,7 +17,7 @@ interface SkeletonProps {
  */
 export function CardSkeleton({ className }: SkeletonProps) {
   return (
-    <Card className={cn('overflow-hidden', className)}>
+    <Card className={cn('overflow-hidden', className)} data-testid="card-skeleton">
       <CardHeader className="gap-2">
         <Skeleton className="h-5 w-1/2" />
         <Skeleton className="h-4 w-4/5" />

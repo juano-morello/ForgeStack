@@ -193,5 +193,176 @@ describe('ChangePasswordDialog', () => {
       expect(mockOnOpenChange).toHaveBeenCalledWith(false);
     });
   });
+
+  it('shows error message when API call fails', async () => {
+    const user = userEvent.setup();
+    vi.mocked(userApi.changePassword).mockRejectedValue(new Error('Current password is incorrect'));
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'wrongpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'newpassword123');
+
+    const submitButton = screen.getByRole('button', { name: /Change Password/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Current password is incorrect')).toBeInTheDocument();
+    });
+  });
+
+  it('shows loading state during submission', async () => {
+    const user = userEvent.setup();
+    let resolvePromise: (value: any) => void;
+    const promise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+    vi.mocked(userApi.changePassword).mockReturnValue(promise as any);
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'newpassword123');
+
+    const submitButton = screen.getByRole('button', { name: /Change Password/i });
+    await user.click(submitButton);
+
+    // Button should be disabled during loading
+    expect(submitButton).toBeDisabled();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+
+    // Inputs should be disabled
+    const inputsAfter = getInputs();
+    expect(inputsAfter.currentPassword).toBeDisabled();
+    expect(inputsAfter.newPassword).toBeDisabled();
+    expect(inputsAfter.confirmPassword).toBeDisabled();
+
+    // Resolve the promise
+    resolvePromise!({ message: 'Success' });
+  });
+
+  it('calls onOpenChange when cancel button is clicked', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await user.click(cancelButton);
+
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('resets form when dialog is closed', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'newpassword123');
+
+    expect(inputs.currentPassword.value).toBe('oldpassword');
+    expect(inputs.newPassword.value).toBe('newpassword123');
+    expect(inputs.confirmPassword.value).toBe('newpassword123');
+
+    // Click cancel to close the dialog
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await user.click(cancelButton);
+
+    // Verify onOpenChange was called with false
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('validates confirm password is required', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+
+    const submitButton = screen.getByRole('button', { name: /Change Password/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Please confirm your new password/i)).toBeInTheDocument();
+    });
+  });
+
+  it('validates new password is required', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+
+    const submitButton = screen.getByRole('button', { name: /Change Password/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/New password is required/i)).toBeInTheDocument();
+    });
+  });
+
+  it('shows generic error message for non-Error objects', async () => {
+    const user = userEvent.setup();
+    vi.mocked(userApi.changePassword).mockRejectedValue('Some error');
+
+    render(
+      <ChangePasswordDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+      />
+    );
+
+    const inputs = getInputs();
+    await user.type(inputs.currentPassword, 'oldpassword');
+    await user.type(inputs.newPassword, 'newpassword123');
+    await user.type(inputs.confirmPassword, 'newpassword123');
+
+    const submitButton = screen.getByRole('button', { name: /Change Password/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to change password')).toBeInTheDocument();
+    });
+  });
 });
 

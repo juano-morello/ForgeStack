@@ -171,5 +171,198 @@ describe('ChangeEmailDialog', () => {
       expect(screen.getByText(/Verification email sent!/i)).toBeInTheDocument();
     });
   });
+
+  it('shows error message when API call fails', async () => {
+    const user = userEvent.setup();
+    vi.mocked(userApi.requestEmailChange).mockRejectedValue(new Error('Invalid password'));
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const newEmailInput = screen.getByLabelText(/New Email/i);
+    await user.type(newEmailInput, 'newemail@example.com');
+
+    const passwordInput = screen.getByLabelText(/Current Password/i);
+    await user.type(passwordInput, 'wrongpassword');
+
+    const submitButton = screen.getByRole('button', { name: /Send Verification Email/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Invalid password')).toBeInTheDocument();
+    });
+  });
+
+  it('shows loading state during submission', async () => {
+    const user = userEvent.setup();
+    let resolvePromise: (value: any) => void;
+    const promise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+    vi.mocked(userApi.requestEmailChange).mockReturnValue(promise as any);
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const newEmailInput = screen.getByLabelText(/New Email/i);
+    await user.type(newEmailInput, 'newemail@example.com');
+
+    const passwordInput = screen.getByLabelText(/Current Password/i);
+    await user.type(passwordInput, 'password123');
+
+    const submitButton = screen.getByRole('button', { name: /Send Verification Email/i });
+    await user.click(submitButton);
+
+    // Button should be disabled during loading
+    expect(submitButton).toBeDisabled();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+
+    // Resolve the promise
+    resolvePromise!({ message: 'Success' });
+  });
+
+  it('calls onOpenChange when cancel button is clicked', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await user.click(cancelButton);
+
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('resets form when dialog is closed', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const newEmailInput = screen.getByLabelText(/New Email/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText(/Current Password/i) as HTMLInputElement;
+
+    await user.type(newEmailInput, 'newemail@example.com');
+    await user.type(passwordInput, 'password123');
+
+    expect(newEmailInput.value).toBe('newemail@example.com');
+    expect(passwordInput.value).toBe('password123');
+
+    // Click cancel to close the dialog
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await user.click(cancelButton);
+
+    // Verify onOpenChange was called with false
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('validates password is required', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const newEmailInput = screen.getByLabelText(/New Email/i);
+    await user.type(newEmailInput, 'newemail@example.com');
+
+    const submitButton = screen.getByRole('button', { name: /Send Verification Email/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Current password is required/i)).toBeInTheDocument();
+    });
+  });
+
+  it('trims and lowercases email before validation', async () => {
+    const user = userEvent.setup();
+    vi.mocked(userApi.requestEmailChange).mockResolvedValue({ message: 'Success' });
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const newEmailInput = screen.getByLabelText(/New Email/i);
+    await user.type(newEmailInput, '  NewEmail@Example.COM  ');
+
+    const passwordInput = screen.getByLabelText(/Current Password/i);
+    await user.type(passwordInput, 'password123');
+
+    const submitButton = screen.getByRole('button', { name: /Send Verification Email/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(userApi.requestEmailChange).toHaveBeenCalledWith({
+        newEmail: 'newemail@example.com',
+        password: 'password123',
+      });
+    });
+  });
+
+  it('shows close button in success state', async () => {
+    const user = userEvent.setup();
+    vi.mocked(userApi.requestEmailChange).mockResolvedValue({ message: 'Success' });
+
+    render(
+      <ChangeEmailDialog
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        currentEmail={currentEmail}
+      />
+    );
+
+    const newEmailInput = screen.getByLabelText(/New Email/i);
+    await user.type(newEmailInput, 'newemail@example.com');
+
+    const passwordInput = screen.getByLabelText(/Current Password/i);
+    await user.type(passwordInput, 'password123');
+
+    const submitButton = screen.getByRole('button', { name: /Send Verification Email/i });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Verification email sent!/i)).toBeInTheDocument();
+    });
+
+    // Close button should be visible (not the X button, but the actual Close button)
+    const closeButtons = screen.getAllByRole('button', { name: /close/i });
+    // There should be at least one close button
+    expect(closeButtons.length).toBeGreaterThan(0);
+
+    // Click the main close button (not the X)
+    const mainCloseButton = closeButtons.find(btn => btn.textContent === 'Close');
+    expect(mainCloseButton).toBeInTheDocument();
+
+    await user.click(mainCloseButton!);
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
 });
 
