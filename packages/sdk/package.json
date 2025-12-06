@@ -24,15 +24,15 @@
     "@forgestack/shared": "workspace:*"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.15",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@vitest/coverage-v8": "^2.1.8"
+    "vitest": "^4.0.15"
   },
-  "peerDependencies": {},
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   }
 }
-

@@ -37,57 +37,54 @@ test.describe('Projects', () => {
     });
   });
 
-  // Note: The following tests would require authentication
-  // They are commented out as placeholders for future implementation
-  
-  /*
   test.describe('Projects Page (Authenticated)', () => {
-    test.use({ 
-      // Add authentication fixture here
-    });
-
-    test('should display projects page header', async ({ page }) => {
+    test('should display projects page header', async ({ authenticatedPage: page }) => {
       await page.goto('/projects');
-      
+
       await expect(page.getByRole('heading', { name: /projects/i })).toBeVisible();
     });
 
-    test('should show new project button', async ({ page }) => {
+    test('should show new project button', async ({ authenticatedPage: page }) => {
       await page.goto('/projects');
-      
+
       // Look for new/create project button
       const newButton = page.getByRole('link', { name: /new.*project/i })
         .or(page.getByRole('button', { name: /new.*project/i }));
-      
+
       await expect(newButton).toBeVisible();
     });
 
-    test('should display empty state when no projects exist', async ({ page }) => {
+    test('should display empty state or project list', async ({ authenticatedPage: page }) => {
       await page.goto('/projects');
-      
+
       // Check for empty state or project list
       const emptyState = page.getByText(/no projects/i);
-      const isVisible = await emptyState.isVisible().catch(() => false);
-      
-      if (isVisible) {
-        await expect(emptyState).toBeVisible();
-      }
+      const projectList = page.getByRole('list');
+
+      // Either empty state or project list should be visible
+      const emptyVisible = await emptyState.isVisible().catch(() => false);
+      const listVisible = await projectList.isVisible().catch(() => false);
+
+      expect(emptyVisible || listVisible).toBeTruthy();
     });
 
-    test('should display message when no organization selected', async ({ page }) => {
-      // This test assumes user has no current organization
+    test('should handle no organization selected state', async ({ authenticatedPage: page }) => {
       await page.goto('/projects');
-      
-      const noOrgMessage = page.getByText(/no organization selected/i);
+
+      // Check if there's a no organization message
+      const noOrgMessage = page.getByText(/no organization selected/i)
+        .or(page.getByText(/select an organization/i));
       const isVisible = await noOrgMessage.isVisible().catch(() => false);
-      
+
       if (isVisible) {
-        await expect(noOrgMessage).toBeVisible();
-        await expect(page.getByRole('link', { name: /create organization/i })).toBeVisible();
+        // Should show option to create or select organization
+        const createOrgLink = page.getByRole('link', { name: /create organization/i })
+          .or(page.getByRole('button', { name: /create organization/i }));
+        await expect(createOrgLink).toBeVisible();
       }
     });
 
-    test('should have search functionality', async ({ page }) => {
+    test('should have search functionality', async ({ authenticatedPage: page }) => {
       await page.goto('/projects');
 
       // Look for search input
@@ -96,10 +93,11 @@ test.describe('Projects', () => {
 
       if (isVisible) {
         await expect(searchInput).toBeVisible();
+        await expect(searchInput).toBeEditable();
       }
     });
 
-    test('should update URL with search query', async ({ page }) => {
+    test('should update URL with search query', async ({ authenticatedPage: page }) => {
       await page.goto('/projects');
 
       const searchInput = page.getByPlaceholder(/search.*project/i);
@@ -117,7 +115,7 @@ test.describe('Projects', () => {
       }
     });
 
-    test('should preserve search on page reload', async ({ page }) => {
+    test('should preserve search on page reload', async ({ authenticatedPage: page }) => {
       await page.goto('/projects?search=my-project');
 
       const searchInput = page.getByPlaceholder(/search.*project/i);
@@ -135,7 +133,7 @@ test.describe('Projects', () => {
       }
     });
 
-    test('should clear search param when input is cleared', async ({ page }) => {
+    test('should clear search param when input is cleared', async ({ authenticatedPage: page }) => {
       await page.goto('/projects?search=test');
 
       const searchInput = page.getByPlaceholder(/search.*project/i);
@@ -152,52 +150,85 @@ test.describe('Projects', () => {
         expect(page.url()).not.toContain('search=');
       }
     });
+
+    test('should navigate to project details when clicking a project', async ({ authenticatedPage: page }) => {
+      await page.goto('/projects');
+
+      // Look for project links (if any projects exist)
+      const projectLink = page.getByRole('link').filter({ hasText: /project/i }).first();
+      const isVisible = await projectLink.isVisible().catch(() => false);
+
+      if (isVisible) {
+        await projectLink.click();
+        // Should navigate to project detail page
+        await expect(page).toHaveURL(/\/projects\/[a-f0-9-]+/);
+      }
+    });
   });
 
   test.describe('New Project Page (Authenticated)', () => {
-    test.use({ 
-      // Add authentication fixture here
-    });
-
-    test('should display create project form', async ({ page }) => {
+    test('should display create project form', async ({ authenticatedPage: page }) => {
       await page.goto('/projects/new');
-      
+
       await expect(page.getByRole('heading', { name: /create.*project/i })).toBeVisible();
     });
 
-    test('should have project name field', async ({ page }) => {
+    test('should have project name field', async ({ authenticatedPage: page }) => {
       await page.goto('/projects/new');
-      
-      await expect(page.getByLabel(/name/i)).toBeVisible();
+
+      const nameInput = page.getByLabel(/name/i);
+      await expect(nameInput).toBeVisible();
+      await expect(nameInput).toBeEditable();
     });
 
-    test('should have project description field', async ({ page }) => {
+    test('should have project description field', async ({ authenticatedPage: page }) => {
       await page.goto('/projects/new');
-      
+
       const descriptionField = page.getByLabel(/description/i);
       const isVisible = await descriptionField.isVisible().catch(() => false);
-      
+
       if (isVisible) {
         await expect(descriptionField).toBeVisible();
+        await expect(descriptionField).toBeEditable();
       }
     });
 
-    test('should have submit and cancel buttons', async ({ page }) => {
+    test('should have submit and cancel buttons', async ({ authenticatedPage: page }) => {
       await page.goto('/projects/new');
-      
+
       await expect(page.getByRole('button', { name: /create/i })).toBeVisible();
-      await expect(page.getByRole('button', { name: /cancel/i })).toBeVisible();
+
+      const cancelButton = page.getByRole('button', { name: /cancel/i })
+        .or(page.getByRole('link', { name: /cancel/i }));
+      await expect(cancelButton).toBeVisible();
     });
 
-    test('should have back button to projects list', async ({ page }) => {
+    test('should validate required fields', async ({ authenticatedPage: page }) => {
       await page.goto('/projects/new');
-      
+
+      // Try to submit without filling required fields
+      const submitButton = page.getByRole('button', { name: /create/i });
+      await submitButton.click();
+
+      // Should show validation error or prevent submission
+      const nameInput = page.getByLabel(/name/i);
+      const isRequired = await nameInput.getAttribute('required');
+      expect(isRequired).not.toBeNull();
+    });
+
+    test('should navigate back to projects list', async ({ authenticatedPage: page }) => {
+      await page.goto('/projects/new');
+
       const backButton = page.getByRole('link', { name: /back/i })
         .or(page.getByRole('button', { name: /back/i }));
-      
-      await expect(backButton).toBeVisible();
+
+      const isVisible = await backButton.isVisible().catch(() => false);
+
+      if (isVisible) {
+        await backButton.click();
+        await expect(page).toHaveURL(/\/projects$/);
+      }
     });
   });
-  */
 });
 
