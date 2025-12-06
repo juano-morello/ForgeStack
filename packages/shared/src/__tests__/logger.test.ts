@@ -3,7 +3,7 @@
  * Tests for logger factory functions
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { createBaseLogger, createChildLogger } from '../logger';
 import type { Logger } from '../logger';
 

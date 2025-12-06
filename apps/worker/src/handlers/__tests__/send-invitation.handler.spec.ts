@@ -157,7 +157,6 @@ describe('SendInvitationHandler', () => {
       await handleSendInvitation(mockJob);
 
       const acceptUrl = `${config.email.appUrl}/invitations/accept?token=abc123token`;
-      const declineUrl = `${config.email.appUrl}/invitations/decline?token=abc123token`;
 
       expect(mockSendEmail).toHaveBeenCalledWith({
         to: 'newuser@example.com',

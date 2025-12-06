@@ -16,13 +16,7 @@ import type {
   BaseOrganization,
   OrganizationWithRole,
   CreateOrganizationInput,
-  UpdateOrganizationInput,
 } from '../organization';
-import type {
-  BaseProject,
-  CreateProjectInput,
-  UpdateProjectInput,
-} from '../project';
 
 describe('Types', () => {
   describe('Module exports', () => {
