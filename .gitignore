@@ -188,3 +188,10 @@ yarn.lock
 .eslintcache
 .node_repl_history
 .yarn-integrity
+
+# ============================================
+# Template Initialization
+# ============================================
+# User-specific template configuration
+template.config.json
+*.backup
