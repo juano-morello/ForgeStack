@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src",
     "test": "echo 'No tests configured yet'",
     "clean": "rm -rf dist",
     "storybook": "storybook dev -p 6007",

@@ -31,7 +31,7 @@ export function ApiKeyDisplay({ apiKey, keyName }: ApiKeyDisplayProps) {
         description: 'API key copied to clipboard',
       });
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Failed to copy',
         description: 'Please copy the key manually',

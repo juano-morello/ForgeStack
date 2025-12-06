@@ -53,7 +53,7 @@ export default function RoleDetailPage() {
       try {
         const data = await fetchRole(roleId);
         setRole(data);
-      } catch (error) {
+      } catch {
         toast({
           title: 'Error',
           description: 'Failed to load role',

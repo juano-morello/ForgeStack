@@ -77,7 +77,7 @@ export function verifyWebhookSignature(
       return false;
     }
     return timingSafeEqual(Buffer.from(expectedSig), Buffer.from(providedSig));
-  } catch (error) {
+  } catch {
     return false;
   }
 }

@@ -46,7 +46,7 @@ export function SuspendDialog({
       await onConfirm(reason);
       setReason('');
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       // Error handling is done in the parent component
     } finally {
       setIsSubmitting(false);

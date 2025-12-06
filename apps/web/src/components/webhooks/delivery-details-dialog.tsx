@@ -52,7 +52,7 @@ export function DeliveryDetailsDialog({
         description: `${section} has been copied.`,
       });
       setTimeout(() => setCopiedSection(null), 2000);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Failed to copy',
         description: 'Could not copy to clipboard.',

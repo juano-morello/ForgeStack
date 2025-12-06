@@ -84,7 +84,6 @@ function initializeTelemetry() {
       .shutdown()
       // eslint-disable-next-line no-console
       .then(() => console.log('[OTEL] SDK shut down successfully'))
-      // eslint-disable-next-line no-console
       .catch((err) => console.error('[OTEL] SDK shutdown error:', err))
       .finally(() => process.exit(0));
   };
