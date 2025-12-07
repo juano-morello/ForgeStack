@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: Reviews ForgeStack code for quality, security, RLS compliance, and architectural patterns
-model: claude-opus-4-1
+model: claude-opus-4-5
 color: purple
 ---
 

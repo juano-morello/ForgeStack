@@ -8,12 +8,12 @@ ForgeStack uses a **spec-driven, multi-agent workflow** for feature development.
 
 ## Agent Inventory
 
-| Agent | Model | Description | Scope |
-|-------|-------|-------------|-------|
-| [forge-spec-writer](./forge-spec-writer.md) | claude-opus-4-5 | Write feature specifications | `/docs/specs/` |
+| Agent | Model             | Description | Scope |
+|-------|-------------------|-------------|-------|
+| [forge-spec-writer](./forge-spec-writer.md) | claude-opus-4-5   | Write feature specifications | `/docs/specs/` |
 | [forge-backend](./forge-backend.md) | claude-sonnet-4-5 | Implement API, worker, DB | `apps/api/`, `apps/worker/`, `packages/db/`, `packages/shared/` |
 | [forge-frontend](./forge-frontend.md) | claude-sonnet-4-5 | Implement UI, pages, components | `apps/web/`, `packages/ui/` |
-| [code-review](./forge-code-review.md) | claude-opus-4-1 | Review code quality | All files (read + refactor) |
+| [code-review](./forge-code-review.md) | claude-opus-4-5   | Review code quality | All files (read + refactor) |
 
 ---
 
