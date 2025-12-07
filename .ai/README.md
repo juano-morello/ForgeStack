@@ -54,12 +54,15 @@ This directory contains structured context that helps AI assistants understand F
 │   ├── multi-tenancy.md    # RLS and tenant context
 │   ├── billing.md          # Stripe integration
 │   ├── api-keys.md         # API key management
-│   └── webhooks.md         # Outgoing and incoming webhooks
+│   ├── webhooks.md         # Outgoing and incoming webhooks
+│   ├── emails.md           # Email templates with react-email
+│   └── ai-integration.md   # Vercel AI SDK integration
 ├── patterns/               # Development patterns with examples
 │   ├── api-endpoint.md     # How to create NestJS endpoints
 │   ├── database-query.md   # How to use Drizzle with RLS
 │   ├── background-job.md   # How to create BullMQ jobs
-│   └── react-hook.md       # How to create data fetching hooks
+│   ├── react-hook.md       # How to create data fetching hooks
+│   └── seo.md              # SEO patterns (metadata, sitemap, OG)
 ├── prompts/                # Reusable prompt templates
 │   ├── create-endpoint.md  # API endpoint prompt
 │   ├── create-job.md       # Background job prompt
@@ -67,7 +70,8 @@ This directory contains structured context that helps AI assistants understand F
 │   ├── write-tests.md      # Test writing prompt
 │   ├── add-page.md         # Next.js page prompt
 │   ├── add-component.md    # React component prompt
-│   └── debug-issue.md      # Debugging prompt
+│   ├── debug-issue.md      # Debugging prompt
+│   └── write-copy.md       # Marketing copy generation
 └── schemas/
     └── overview.md         # Database schema summary
 ```
@@ -99,6 +103,10 @@ This directory contains structured context that helps AI assistants understand F
 | Billing/Stripe | `.ai/features/billing.md` |
 | API keys | `.ai/features/api-keys.md` |
 | Webhooks | `.ai/features/webhooks.md` |
+| Email templates | `.ai/features/emails.md` |
+| AI/LLM integration | `.ai/features/ai-integration.md` |
+| SEO patterns | `.ai/patterns/seo.md` |
+| Marketing copy | `.ai/prompts/write-copy.md` |
 | Complex feature workflow | `.ai/agents/README.md` |
 
 ## Relationship to agents.md
