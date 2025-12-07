@@ -105,6 +105,81 @@ This creates:
 - RBAC permissions and roles
 - Test users and organizations (if seeded)
 
+### 7. Create a Super-Admin User
+
+Super-admin users have platform-wide access and can:
+- Impersonate any user (for support purposes)
+- Access the `/admin` panel
+- Manage platform-wide settings
+- View all organizations (bypasses RLS)
+
+#### Option A: Via Database Seed (Development)
+
+The seed script creates a super-admin user automatically:
+
+```bash
+cd packages/db && pnpm db:seed
+```
+
+This creates:
+- **Email:** `superadmin@forgestack.dev`
+- **Name:** `Super Admin`
+
+**Note:** This user doesn't have a password. You'll need to:
+1. Sign up with this email first, OR
+2. Update the existing user's `is_super_admin` flag (see Option B)
+
+#### Option B: Promote Existing User (Recommended for Production)
+
+After a user signs up normally, promote them to super-admin via SQL:
+
+```bash
+# Connect to your database
+psql $DATABASE_URL
+
+# Find the user by email
+SELECT id, email, name, is_super_admin FROM users WHERE email = 'your-email@example.com';
+
+# Promote to super-admin
+UPDATE users SET is_super_admin = true WHERE email = 'your-email@example.com';
+
+# Verify
+SELECT id, email, name, is_super_admin FROM users WHERE email = 'your-email@example.com';
+```
+
+Or using Docker Compose:
+
+```bash
+docker-compose exec postgres psql -U postgres -d forgestack_dev -c \
+  "UPDATE users SET is_super_admin = true WHERE email = 'your-email@example.com';"
+```
+
+#### Option C: Via Drizzle Studio (Visual)
+
+```bash
+cd packages/db && pnpm db:studio
+```
+
+1. Open http://localhost:4983 in your browser
+2. Navigate to the `users` table
+3. Find your user by email
+4. Set `is_super_admin` to `true`
+5. Save changes
+
+#### Security Notes
+
+⚠️ **Important Security Considerations:**
+
+1. **No API endpoint** - Super-admin status can ONLY be set via direct database access. This is intentional to prevent privilege escalation attacks.
+
+2. **Limit super-admins** - Only create super-admin accounts for trusted platform administrators. Most users should have organization-level roles instead.
+
+3. **Audit access** - All super-admin actions (especially impersonation) are logged in the `audit_logs` table.
+
+4. **Cannot be impersonated** - Super-admin users cannot be impersonated by other super-admins for security.
+
+5. **Session handling** - Super-admin sessions use the same authentication as regular users. Consider using hardware security keys or MFA for super-admin accounts.
+
 ### 7. Start Development Servers
 
 ```bash
