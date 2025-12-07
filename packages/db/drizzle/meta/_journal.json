@@ -127,6 +127,20 @@
       "when": 1764900300000,
       "tag": "0017_allow_null_org_id_audit_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1765139844789,
+      "tag": "0018_cool_madame_web",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1765141374765,
+      "tag": "0019_ambiguous_tarantula",
+      "breakpoints": true
     }
   ]
 }

@@ -40,6 +40,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell';
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/projects', label: 'Projects' },
+  { href: '/ai', label: 'AI Chat' },
   { href: '/activities', label: 'Activity' },
   { href: '/organizations', label: 'Organizations' },
 ];

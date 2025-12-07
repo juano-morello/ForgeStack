@@ -51,6 +51,8 @@ export { platformAuditLogs, platformAuditLogsRelations } from './platform-audit-
 export { usageRecords, usageRecordsRelations } from './usage-records';
 export { usageLimits, usageLimitsRelations } from './usage-limits';
 export { plans } from './plans';
+export { impersonationSessions, impersonationSessionsRelations } from './impersonation-sessions';
+export { aiUsage, aiUsageRelations } from './ai-usage';
 
 // Types
 export type {
@@ -93,4 +95,6 @@ export type { PlatformAuditLog, NewPlatformAuditLog } from './platform-audit-log
 export type { UsageRecord, NewUsageRecord } from './usage-records';
 export type { UsageLimit, NewUsageLimit } from './usage-limits';
 export type { Plan, NewPlan } from './plans';
+export type { ImpersonationSession, NewImpersonationSession } from './impersonation-sessions';
+export type { AiUsage, NewAiUsage } from './ai-usage';
 

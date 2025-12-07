@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { OrgProvider } from '@/components/providers/org-provider';
+import { ImpersonationProvider } from '@/components/providers/impersonation-provider';
 import { AppShell } from '@/components/layout/app-shell';
 
 // Force dynamic rendering for all protected routes to prevent prerendering issues
@@ -22,7 +23,9 @@ export default async function ProtectedLayout({
 
   return (
     <OrgProvider>
-      <AppShell>{children}</AppShell>
+      <ImpersonationProvider>
+        <AppShell>{children}</AppShell>
+      </ImpersonationProvider>
     </OrgProvider>
   );
 }

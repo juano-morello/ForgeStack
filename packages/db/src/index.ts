@@ -90,6 +90,10 @@ export {
   usageLimits,
   usageLimitsRelations,
   plans,
+  impersonationSessions,
+  impersonationSessionsRelations,
+  aiUsage,
+  aiUsageRelations,
 } from './schema/index.js';
 
 // Schema type exports
@@ -149,5 +153,9 @@ export type {
   NewUsageLimit,
   Plan,
   NewPlan,
+  ImpersonationSession,
+  NewImpersonationSession,
+  AiUsage,
+  NewAiUsage,
 } from './schema/index.js';
 

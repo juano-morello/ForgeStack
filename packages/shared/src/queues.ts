@@ -17,6 +17,7 @@ export const QUEUE_NAMES = {
   USAGE_AGGREGATION: 'usage-aggregation',
   STRIPE_USAGE_REPORT: 'stripe-usage-report',
   ACTIVE_SEATS: 'active-seats',
+  AI_TASK: 'ai-task',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];

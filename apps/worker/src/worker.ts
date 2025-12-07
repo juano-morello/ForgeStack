@@ -15,6 +15,7 @@ import { handleNotificationEmail, NotificationEmailJobData } from './handlers/no
 import { handleUsageAggregation, UsageAggregationJobData } from './handlers/usage-aggregation.handler';
 import { handleStripeUsageReport, StripeUsageReportJobData } from './handlers/stripe-usage-report.handler';
 import { handleActiveSeats, ActiveSeatsJobData } from './handlers/active-seats.handler';
+import { handleAITask, AITaskJobData } from './handlers/ai-task.handler';
 import { createLogger } from './telemetry/logger';
 import { withTracing } from './telemetry/tracing';
 
@@ -67,6 +68,7 @@ createWorker<NotificationEmailJobData>(QUEUE_NAMES.NOTIFICATION_EMAIL, handleNot
 createWorker<UsageAggregationJobData>(QUEUE_NAMES.USAGE_AGGREGATION, handleUsageAggregation);
 createWorker<StripeUsageReportJobData>(QUEUE_NAMES.STRIPE_USAGE_REPORT, handleStripeUsageReport);
 createWorker<ActiveSeatsJobData>(QUEUE_NAMES.ACTIVE_SEATS, handleActiveSeats);
+createWorker<AITaskJobData>(QUEUE_NAMES.AI_TASK, handleAITask);
 
 // Graceful shutdown
 async function shutdown() {

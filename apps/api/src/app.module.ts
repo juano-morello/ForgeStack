@@ -35,6 +35,8 @@ import { AdminModule } from './admin/admin.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { UsageModule } from './usage/usage.module';
+import { ImpersonationModule } from './impersonation/impersonation.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -69,9 +71,11 @@ import { UsageModule } from './usage/usage.module';
     PermissionsModule,
     RolesModule,
     AdminModule,
+    ImpersonationModule,
     UsersModule,
     UsageModule,
     DashboardModule,
+    AiModule,
   ],
   providers: [
     {

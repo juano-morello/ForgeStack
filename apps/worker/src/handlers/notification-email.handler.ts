@@ -4,6 +4,8 @@
  */
 
 import { Job } from 'bullmq';
+import { render } from '@react-email/components';
+import { NotificationEmail } from '@forgestack/emails';
 import { sendEmail } from '../services/email.service';
 import { config } from '../config';
 import { withServiceContext, notifications, users, eq, and } from '@forgestack/db';
@@ -48,37 +50,23 @@ export async function handleNotificationEmail(job: Job<NotificationEmailJobData>
     }
 
     // Build email content
-    const actionLink = link ? `${config.email.appUrl}${link}` : undefined;
-    
-    const htmlContent = `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>${title}</h2>
-        ${body ? `<p>${body}</p>` : ''}
-        ${actionLink ? `<p><a href="${actionLink}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">View Details</a></p>` : ''}
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;" />
-        <p style="font-size: 12px; color: #666;">
-          This is an automated notification from ForgeStack.
-        </p>
-      </div>
-    `;
+    const actionUrl = link ? `${config.email.appUrl}${link}` : undefined;
 
-    const textContent = `
-${title}
-
-${body || ''}
-
-${actionLink ? `View details: ${actionLink}` : ''}
-
----
-This is an automated notification from ForgeStack.
-    `.trim();
+    // Render the email template
+    const html = await render(
+      NotificationEmail({
+        title,
+        message: body || '',
+        actionUrl,
+        actionText: actionUrl ? 'View Details' : undefined,
+      })
+    );
 
     // Send email via Resend
     await sendEmail({
       to: user.email,
       subject: title,
-      html: htmlContent,
-      text: textContent,
+      html,
     });
 
     // Update notification record to mark email as sent

@@ -197,3 +197,163 @@ export const dashboardApi = {
   getSummary: () => api.get<DashboardSummary>('/dashboard/summary'),
 };
 
+// Impersonation API Methods
+export interface ImpersonationSession {
+  sessionId: string;
+  targetUser: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+  startedAt: string;
+  expiresAt: string;
+  remainingSeconds: number;
+}
+
+export interface ImpersonationStatusResponse {
+  isImpersonating: boolean;
+  session: ImpersonationSession | null;
+}
+
+export interface StartImpersonationResponse {
+  success: true;
+  impersonation: ImpersonationSession;
+}
+
+export interface EndImpersonationResponse {
+  success: true;
+  session: {
+    duration: number;
+    actionsPerformed: number;
+    endedAt: string;
+  };
+}
+
+export const impersonationApi = {
+  getStatus: () =>
+    api.get<ImpersonationStatusResponse>('/admin/impersonate/session'),
+
+  start: (userId: string) =>
+    api.post<StartImpersonationResponse>(`/admin/impersonate/${userId}`),
+
+  end: () =>
+    api.post<EndImpersonationResponse>('/admin/impersonate/end'),
+};
+
+// AI API Methods
+export interface AiChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface AiChatRequest {
+  messages: AiChatMessage[];
+  model?: string;
+  provider?: 'openai' | 'anthropic';
+  temperature?: number;
+  maxTokens?: number;
+  stream?: boolean;
+}
+
+export interface AiGenerateRequest {
+  prompt: string;
+  model?: string;
+  provider?: 'openai' | 'anthropic';
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface AiGenerateResponse {
+  text: string;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+export interface AiUsageStats {
+  totalTokens: number;
+  inputTokens: number;
+  outputTokens: number;
+  requestCount: number;
+}
+
+export interface AiProviderUsage {
+  tokens: number;
+  requests: number;
+}
+
+export interface AiUsageLimit {
+  tokensPerDay: number;
+  remaining: number;
+}
+
+export interface AiUsageResponse {
+  period: 'day' | 'week' | 'month';
+  usage: AiUsageStats;
+  byProvider: Record<string, AiProviderUsage>;
+  limit: AiUsageLimit;
+}
+
+/**
+ * AI API client methods
+ */
+export const aiApi = {
+  /**
+   * Stream chat completion with SSE
+   * Returns a ReadableStream for Server-Sent Events
+   */
+  chat: async (request: AiChatRequest): Promise<ReadableStream<Uint8Array>> => {
+    const orgId = typeof window !== 'undefined'
+      ? localStorage.getItem('currentOrgId')
+      : null;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (orgId) {
+      (headers as Record<string, string>)['X-Org-Id'] = orgId;
+    }
+
+    const res = await fetch(`${API_BASE}/ai/chat`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({ ...request, stream: true }),
+    });
+
+    if (!res.ok) {
+      let errorData;
+      try {
+        errorData = await res.json();
+      } catch {
+        errorData = null;
+      }
+      throw new ApiError(
+        errorData?.message || `AI Chat Error: ${res.status}`,
+        res.status,
+        errorData
+      );
+    }
+
+    if (!res.body) {
+      throw new ApiError('No response body', 500);
+    }
+
+    return res.body;
+  },
+
+  /**
+   * Generate text (non-streaming)
+   */
+  generate: (request: AiGenerateRequest) =>
+    api.post<AiGenerateResponse>('/ai/generate', request),
+
+  /**
+   * Get AI usage statistics
+   */
+  getUsage: (period?: 'day' | 'week' | 'month') => {
+    const params = period ? `?period=${period}` : '';
+    return api.get<AiUsageResponse>(`/ai/usage${params}`);
+  },
+};
+

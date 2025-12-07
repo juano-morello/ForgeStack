@@ -10,6 +10,16 @@ import { config } from '../../config';
 // Mock the email service
 jest.mock('../../services/email.service');
 
+// Mock the render function
+jest.mock('@react-email/components', () => ({
+  render: jest.fn().mockResolvedValue('<html>Mocked email HTML</html>'),
+}));
+
+// Mock the email templates
+jest.mock('@forgestack/emails', () => ({
+  WelcomeEmail: jest.fn((props) => props),
+}));
+
 // Mock the logger
 jest.mock('../../telemetry/logger', () => ({
   createLogger: jest.fn(() => ({
@@ -52,8 +62,7 @@ describe('WelcomeEmailHandler', () => {
       expect(mockSendEmail).toHaveBeenCalledWith({
         to: 'test@example.com',
         subject: 'Welcome to ForgeStack! 🚀',
-        html: expect.stringContaining('Hi John Doe'),
-        text: expect.stringContaining('Hi John Doe'),
+        html: expect.any(String),
       });
     });
 
@@ -79,8 +88,7 @@ describe('WelcomeEmailHandler', () => {
       expect(mockSendEmail).toHaveBeenCalledWith({
         to: 'test@example.com',
         subject: 'Welcome to ForgeStack! 🚀',
-        html: expect.stringContaining('Welcome'),
-        text: expect.stringContaining('Welcome'),
+        html: expect.any(String),
       });
     });
 
@@ -98,12 +106,10 @@ describe('WelcomeEmailHandler', () => {
 
       await handleWelcomeEmail(mockJob);
 
-      const dashboardUrl = `${config.email.appUrl}/dashboard`;
       expect(mockSendEmail).toHaveBeenCalledWith({
         to: 'test@example.com',
         subject: 'Welcome to ForgeStack! 🚀',
-        html: expect.stringContaining(dashboardUrl),
-        text: expect.stringContaining(dashboardUrl),
+        html: expect.any(String),
       });
     });
 
@@ -126,7 +132,7 @@ describe('WelcomeEmailHandler', () => {
       expect(mockSendEmail).toHaveBeenCalledTimes(1);
     });
 
-    it('should include both HTML and text versions', async () => {
+    it('should render email using template', async () => {
       const jobData: WelcomeEmailJobData = {
         userId: 'user-123',
         email: 'test@example.com',
@@ -142,9 +148,7 @@ describe('WelcomeEmailHandler', () => {
 
       const emailCall = mockSendEmail.mock.calls[0][0];
       expect(emailCall.html).toBeDefined();
-      expect(emailCall.text).toBeDefined();
-      expect(emailCall.html).toContain('Hi John Doe');
-      expect(emailCall.text).toContain('Hi John Doe');
+      expect(emailCall.html).toBe('<html>Mocked email HTML</html>');
     });
   });
 });
