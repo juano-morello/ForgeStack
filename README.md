@@ -1339,6 +1339,68 @@ The repository includes a GitHub Actions workflow for automated Docker builds:
 
 ---
 
+## 🤖 AI-Assisted Development
+
+ForgeStack includes comprehensive AI context documentation in the `.ai/` directory, designed to work with any AI coding assistant (Cursor, Windsurf, Copilot, Augment, Claude, GPT, etc.).
+
+### Quick Start
+
+```bash
+# When starting a new feature, point your AI to:
+"Read .ai/README.md for project context, then help me implement [feature]"
+
+# For specific patterns:
+"Follow .ai/patterns/api-endpoint.md to create a Tasks endpoint"
+
+# For debugging:
+"Use .ai/troubleshooting.md to help debug this RLS issue"
+```
+
+### AI Context Structure
+
+```
+.ai/
+├── README.md              # Usage guide for AI assistants
+├── architecture.md        # System overview
+├── conventions.md         # Code style and naming conventions
+├── troubleshooting.md     # Common issues and solutions
+├── agents/                # Sub-agent workflow definitions
+│   ├── spec-writer.md     # Specification writing agent
+│   ├── backend.md         # Backend implementation agent
+│   ├── frontend.md        # Frontend implementation agent
+│   └── code-review.md     # Code review agent
+├── features/              # Feature-specific documentation
+│   ├── authentication.md  # better-auth integration
+│   ├── multi-tenancy.md   # RLS and tenant context
+│   ├── billing.md         # Stripe integration
+│   ├── api-keys.md        # API key management
+│   └── webhooks.md        # Outgoing and incoming webhooks
+├── patterns/              # Implementation patterns
+│   ├── api-endpoint.md    # NestJS endpoint creation
+│   ├── database-query.md  # Drizzle ORM with RLS
+│   ├── background-job.md  # BullMQ job creation
+│   └── react-hook.md      # SWR data fetching
+├── prompts/               # Reusable prompt templates
+│   ├── create-endpoint.md # API endpoint prompt
+│   ├── create-job.md      # Background job prompt
+│   ├── add-feature.md     # Full-stack feature prompt
+│   ├── write-tests.md     # Test writing prompt
+│   ├── add-page.md        # Next.js page prompt
+│   ├── add-component.md   # React component prompt
+│   └── debug-issue.md     # Debugging prompt
+└── schemas/
+    └── overview.md        # Database schema summary
+```
+
+### Key Benefits
+
+- **Model-Agnostic**: Works with any LLM (Claude, GPT, Gemini, etc.)
+- **IDE-Agnostic**: No vendor lock-in to specific tools
+- **Copy-Paste Friendly**: Plain Markdown for easy sharing
+- **Self-Contained**: Each document provides complete context
+
+---
+
 ## 🤝 Contributing
 
 ### Development Workflow
