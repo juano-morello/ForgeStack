@@ -41,21 +41,35 @@ This directory contains structured context that helps AI assistants understand F
 .ai/
 ├── README.md               # This file
 ├── architecture.md         # System architecture overview
+├── conventions.md          # Code style and naming conventions
+├── troubleshooting.md      # Common issues and solutions
 ├── agents/                 # Sub-agent role specifications
 │   ├── README.md           # Workflow overview
 │   ├── spec-writer.md      # Specification writing agent
 │   ├── backend.md          # Backend implementation agent
 │   ├── frontend.md         # Frontend implementation agent
 │   └── code-review.md      # Code review agent
+├── features/               # Feature-specific documentation
+│   ├── authentication.md   # better-auth integration
+│   ├── multi-tenancy.md    # RLS and tenant context
+│   ├── billing.md          # Stripe integration
+│   ├── api-keys.md         # API key management
+│   └── webhooks.md         # Outgoing and incoming webhooks
 ├── patterns/               # Development patterns with examples
 │   ├── api-endpoint.md     # How to create NestJS endpoints
 │   ├── database-query.md   # How to use Drizzle with RLS
 │   ├── background-job.md   # How to create BullMQ jobs
 │   └── react-hook.md       # How to create data fetching hooks
-└── prompts/                # Reusable prompt templates
-    ├── create-endpoint.md
-    ├── create-job.md
-    └── add-feature.md
+├── prompts/                # Reusable prompt templates
+│   ├── create-endpoint.md  # API endpoint prompt
+│   ├── create-job.md       # Background job prompt
+│   ├── add-feature.md      # Full-stack feature prompt
+│   ├── write-tests.md      # Test writing prompt
+│   ├── add-page.md         # Next.js page prompt
+│   ├── add-component.md    # React component prompt
+│   └── debug-issue.md      # Debugging prompt
+└── schemas/
+    └── overview.md         # Database schema summary
 ```
 
 ## Quick Reference
@@ -73,10 +87,18 @@ This directory contains structured context that helps AI assistants understand F
 | Topic | File |
 |-------|------|
 | Overall architecture | `.ai/architecture.md` |
+| Code conventions | `.ai/conventions.md` |
+| Troubleshooting | `.ai/troubleshooting.md` |
+| Database schema | `.ai/schemas/overview.md` |
 | Creating API endpoints | `.ai/patterns/api-endpoint.md` |
 | Database with RLS | `.ai/patterns/database-query.md` |
 | Background jobs | `.ai/patterns/background-job.md` |
 | React data fetching | `.ai/patterns/react-hook.md` |
+| Authentication | `.ai/features/authentication.md` |
+| Multi-tenancy | `.ai/features/multi-tenancy.md` |
+| Billing/Stripe | `.ai/features/billing.md` |
+| API keys | `.ai/features/api-keys.md` |
+| Webhooks | `.ai/features/webhooks.md` |
 | Complex feature workflow | `.ai/agents/README.md` |
 
 ## Relationship to agents.md
