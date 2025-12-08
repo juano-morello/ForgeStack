@@ -81,7 +81,6 @@ describe('AiService', () => {
     service = module.get<AiService>(AiService);
     aiRepository = module.get(AiRepository);
     rateLimiter = module.get(AiRateLimiterService);
-    configService = module.get(ConfigService);
 
     jest.clearAllMocks();
   });

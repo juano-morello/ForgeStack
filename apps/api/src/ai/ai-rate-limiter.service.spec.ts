@@ -70,7 +70,6 @@ describe('AiRateLimiterService', () => {
 
       service = module.get<AiRateLimiterService>(AiRateLimiterService);
       aiRepository = module.get(AiRepository);
-      configService = module.get(ConfigService);
     });
 
     it('should skip rate limiting when Redis not configured', async () => {
@@ -116,7 +115,6 @@ describe('AiRateLimiterService', () => {
 
       service = module.get<AiRateLimiterService>(AiRateLimiterService);
       aiRepository = module.get(AiRepository);
-      configService = module.get(ConfigService);
     });
 
     describe('free plan', () => {
