@@ -5,7 +5,6 @@
 import { Job } from 'bullmq';
 import { handleSendInvitation, SendInvitationJobData } from '../send-invitation.handler';
 import { sendEmail } from '../../services/email.service';
-import { config } from '../../config';
 
 // Mock the email service
 jest.mock('../../services/email.service');

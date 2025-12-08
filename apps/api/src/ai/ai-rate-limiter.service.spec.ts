@@ -25,7 +25,6 @@ jest.mock('ioredis', () => {
 describe('AiRateLimiterService', () => {
   let service: AiRateLimiterService;
   let aiRepository: jest.Mocked<AiRepository>;
-  let configService: jest.Mocked<ConfigService>;
 
   const mockTenantContext: TenantContext = {
     orgId: 'org-123',

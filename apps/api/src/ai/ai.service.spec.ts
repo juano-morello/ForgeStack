@@ -37,7 +37,6 @@ describe('AiService', () => {
   let service: AiService;
   let aiRepository: jest.Mocked<AiRepository>;
   let rateLimiter: jest.Mocked<AiRateLimiterService>;
-  let configService: jest.Mocked<ConfigService>;
 
   const mockTenantContext: TenantContext = {
     orgId: 'org-123',

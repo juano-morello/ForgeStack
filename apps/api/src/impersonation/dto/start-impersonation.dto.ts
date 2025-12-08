@@ -2,8 +2,8 @@
  * DTO for starting impersonation
  */
 
-import { IsUUID, IsOptional, IsInt, Min } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsInt, Min } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class StartImpersonationDto {
   @ApiPropertyOptional({

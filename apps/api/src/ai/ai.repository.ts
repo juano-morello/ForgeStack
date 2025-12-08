@@ -14,7 +14,6 @@ import {
   withServiceContext,
   aiUsage,
   type TenantContext,
-  type NewAiUsage,
   type AiUsage,
 } from '@forgestack/db';
 

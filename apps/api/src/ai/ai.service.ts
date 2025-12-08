@@ -14,7 +14,6 @@ import { AiRateLimiterService } from './ai-rate-limiter.service';
 import type { TenantContext } from '@forgestack/db';
 import type {
   ChatRequestDto,
-  ChatResponseDto,
   GenerateTextRequestDto,
   GenerateTextResponseDto,
   GenerateObjectRequestDto,

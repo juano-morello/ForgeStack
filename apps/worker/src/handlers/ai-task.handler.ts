@@ -8,7 +8,6 @@ import { generateText, generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
-import { withServiceContext } from '@forgestack/db';
 import { createLogger } from '../telemetry/logger';
 
 const logger = createLogger('AITask');
