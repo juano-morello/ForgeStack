@@ -18,6 +18,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json turbo.js
 COPY apps/worker ./apps/worker
 COPY packages/db ./packages/db
 COPY packages/shared ./packages/shared
+COPY packages/emails ./packages/emails
 
 # Install ALL dependencies (needed for build) - must happen after copying sources
 # so pnpm can properly link workspace packages
@@ -46,6 +47,8 @@ COPY --from=builder --chown=worker:nodejs /app/packages/shared/dist ./packages/s
 COPY --from=builder --chown=worker:nodejs /app/packages/shared/package.json ./packages/shared/
 COPY --from=builder --chown=worker:nodejs /app/packages/db/dist ./packages/db/dist
 COPY --from=builder --chown=worker:nodejs /app/packages/db/package.json ./packages/db/
+COPY --from=builder --chown=worker:nodejs /app/packages/emails/dist ./packages/emails/dist
+COPY --from=builder --chown=worker:nodejs /app/packages/emails/package.json ./packages/emails/
 COPY --from=builder --chown=worker:nodejs /app/apps/worker/dist ./apps/worker/dist
 COPY --from=builder --chown=worker:nodejs /app/apps/worker/package.json ./apps/worker/
 
