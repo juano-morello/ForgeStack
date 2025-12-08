@@ -54,6 +54,12 @@ pnpm test:e2e --grep "Unauthenticated"
 - **`organizations.spec.ts`** - Organization management tests (create, switch, members)
 - **`projects.spec.ts`** - Project management tests (CRUD operations, search)
 - **`settings.spec.ts`** - Settings page tests (profile, organization, account)
+- **`billing.spec.ts`** - Billing and subscription tests (plans, invoices, usage tracking, Stripe integration)
+- **`admin.spec.ts`** - Admin and impersonation tests (super-admin features, user management, audit logs)
+- **`ai-chat.spec.ts`** - AI Chat feature tests (streaming, message handling)
+- **`api-keys.spec.ts`** - API Keys and Webhooks tests (key management, webhook endpoints, deliveries)
+- **`notifications.spec.ts`** - Notifications, Activities, and Audit Logs tests (notification center, activity feed, audit log viewing)
+- **`members.spec.ts`** - Team member management tests (invitations, roles, permissions)
 - **`docs.spec.ts`** - Documentation site tests
 - **`fixtures.ts`** - Custom test fixtures and helpers
 
@@ -71,6 +77,19 @@ Current tests cover:
 - ✅ Project management
 - ✅ Settings management
 - ✅ User profile updates
+- ✅ Billing and subscription management
+- ✅ Usage tracking and limits
+- ✅ Invoice management
+- ✅ Stripe integration (checkout and portal)
+- ✅ Super-admin features (user management, organizations, audit logs)
+- ✅ Feature flags management
+- ✅ Impersonation banner detection
+- ✅ AI Chat functionality
+- ✅ API Keys management (creation, revocation, rotation)
+- ✅ Webhooks management (endpoints, events, deliveries)
+- ✅ Notifications center (notification list, settings, preferences)
+- ✅ Activity feed (activity tracking, filtering)
+- ✅ Audit logs (log viewing, filtering, export)
 
 Future enhancements:
 - 🔲 Full CRUD operations with API integration

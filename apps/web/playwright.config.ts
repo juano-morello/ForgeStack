@@ -7,32 +7,53 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
-  
+
+  /* Global setup file */
+  globalSetup: './e2e/global-setup.ts',
+
+  /* Output directory for test artifacts */
+  outputDir: 'test-results',
+
   /* Run tests in files in parallel */
   fullyParallel: true,
-  
+
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
-  
+
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  
+
   /* Opt out of parallel tests on CI */
   workers: process.env.CI ? 1 : undefined,
-  
-  /* Reporter to use */
-  reporter: 'html',
-  
+
+  /* Reporters to use */
+  reporter: [
+    ['html'],
+    ['list'],
+    ['json', { outputFile: 'test-results/results.json' }],
+  ],
+
   /* Shared settings for all the projects below */
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */
     baseURL: 'http://localhost:3000',
-    
+
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
-    
+
     /* Screenshot on failure */
     screenshot: 'only-on-failure',
+
+    /* Video recording on failure */
+    video: 'retain-on-failure',
+
+    /* Action timeout */
+    actionTimeout: 15000,
+  },
+
+  /* Timeout for expect() assertions */
+  expect: {
+    timeout: 10000,
   },
 
   /* Configure projects for major browsers */
@@ -40,6 +61,11 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] },
     },
 
     // Uncomment to test on other browsers
