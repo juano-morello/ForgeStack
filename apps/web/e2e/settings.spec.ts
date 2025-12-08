@@ -279,12 +279,17 @@ test.describe('Settings', () => {
     test('should navigate between settings sections', async ({ authenticatedPage: page }) => {
       await page.goto('/settings/profile');
 
-      const orgSettingsTab = page.getByRole('link', { name: /organization/i });
+      // Look for organization settings link specifically (not the main organizations link)
+      const orgSettingsTab = page.getByRole('link', { name: /organization settings/i })
+        .or(page.locator('a[href="/settings/organization"]'));
       const isVisible = await orgSettingsTab.isVisible().catch(() => false);
 
       if (isVisible) {
         await orgSettingsTab.click();
         await expect(page).toHaveURL(/\/settings\/organization/);
+      } else {
+        // If no org settings tab, just verify we're on settings page
+        await expect(page).toHaveURL(/\/settings/);
       }
     });
   });

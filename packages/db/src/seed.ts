@@ -9,8 +9,15 @@ import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID } from 'crypto';
-import { users, organizations, organizationMembers, projects, featureFlags } from './schema';
+import * as bcrypt from 'bcrypt';
+import { users, accounts, organizations, organizationMembers, projects, featureFlags } from './schema';
 import { seedRbac } from './seed/rbac-seed';
+
+/**
+ * Test user password for E2E tests
+ * This password is used by Playwright tests in apps/web/e2e/fixtures.ts
+ */
+const TEST_PASSWORD = 'TestPassword123';
 
 async function seed() {
   const pool = new Pool({
@@ -25,11 +32,15 @@ async function seed() {
   // Seed RBAC permissions and system roles first
   await seedRbac(db);
 
+  // Pre-hash the test password for both users
+  const hashedPassword = await bcrypt.hash(TEST_PASSWORD, 10);
+
   // Create super-admin user (for platform administration)
+  const superAdminId = randomUUID();
   const [superAdmin] = await db
     .insert(users)
     .values({
-      id: randomUUID(),
+      id: superAdminId,
       name: 'Super Admin',
       email: 'superadmin@forgestack.dev',
       emailVerified: true,
@@ -40,13 +51,28 @@ async function seed() {
 
   if (superAdmin) {
     console.log('Created super-admin user:', superAdmin.email);
+
+    // Create credential account for super-admin (for E2E tests)
+    await db
+      .insert(accounts)
+      .values({
+        id: randomUUID(),
+        accountId: superAdmin.email,
+        providerId: 'credential',
+        userId: superAdmin.id,
+        password: hashedPassword,
+      })
+      .onConflictDoNothing();
+
+    console.log('Created credential account for super-admin');
   }
 
   // Create test user (better-auth compatible with id, name, email)
+  const userId = randomUUID();
   const [user] = await db
     .insert(users)
     .values({
-      id: randomUUID(),
+      id: userId,
       name: 'Admin User',
       email: 'admin@forgestack.dev',
       emailVerified: true,
@@ -56,6 +82,20 @@ async function seed() {
 
   if (user) {
     console.log('Created user:', user.email);
+
+    // Create credential account for test user (for E2E tests)
+    await db
+      .insert(accounts)
+      .values({
+        id: randomUUID(),
+        accountId: user.email,
+        providerId: 'credential',
+        userId: user.id,
+        password: hashedPassword,
+      })
+      .onConflictDoNothing();
+
+    console.log('Created credential account for test user (password: TestPassword123!)');
 
     // Create test organization
     const [org] = await db

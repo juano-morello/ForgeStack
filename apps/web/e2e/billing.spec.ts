@@ -36,10 +36,10 @@ test.describe('Billing', () => {
         .or(page.getByText(/free/i))
         .or(page.getByText(/starter/i))
         .or(page.getByText(/pro/i));
-      
-      const isVisible = await planInfo.isVisible().catch(() => false);
+
+      const isVisible = await planInfo.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(planInfo).toBeVisible();
+        await expect(planInfo.first()).toBeVisible();
       }
     });
 
@@ -47,10 +47,10 @@ test.describe('Billing', () => {
       await page.goto('/settings/billing');
       const upgradeButton = page.getByRole('button', { name: /upgrade/i })
         .or(page.getByRole('link', { name: /upgrade/i }));
-      
-      const isVisible = await upgradeButton.isVisible().catch(() => false);
+
+      const isVisible = await upgradeButton.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(upgradeButton).toBeVisible();
+        await expect(upgradeButton.first()).toBeVisible();
       }
     });
 
@@ -59,10 +59,10 @@ test.describe('Billing', () => {
       const plans = page.getByText(/starter/i)
         .or(page.getByText(/pro/i))
         .or(page.getByText(/enterprise/i));
-      
-      const isVisible = await plans.isVisible().catch(() => false);
+
+      const isVisible = await plans.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(plans).toBeVisible();
+        await expect(plans.first()).toBeVisible();
       }
     });
 
@@ -71,10 +71,10 @@ test.describe('Billing', () => {
       const features = page.getByText(/features/i)
         .or(page.getByText(/included/i))
         .or(page.getByRole('list'));
-      
-      const isVisible = await features.isVisible().catch(() => false);
+
+      const isVisible = await features.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(features).toBeVisible();
+        await expect(features.first()).toBeVisible();
       }
     });
 
@@ -83,10 +83,10 @@ test.describe('Billing', () => {
       const history = page.getByText(/billing.*history/i)
         .or(page.getByText(/invoices/i))
         .or(page.getByText(/payment.*history/i));
-      
-      const isVisible = await history.isVisible().catch(() => false);
+
+      const isVisible = await history.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(history).toBeVisible();
+        await expect(history.first()).toBeVisible();
       }
     });
 
@@ -95,10 +95,10 @@ test.describe('Billing', () => {
       const manageButton = page.getByRole('button', { name: /manage.*subscription/i })
         .or(page.getByRole('link', { name: /manage.*subscription/i }))
         .or(page.getByRole('button', { name: /billing.*portal/i }));
-      
-      const isVisible = await manageButton.isVisible().catch(() => false);
+
+      const isVisible = await manageButton.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(manageButton).toBeVisible();
+        await expect(manageButton.first()).toBeVisible();
       }
     });
 
@@ -107,10 +107,10 @@ test.describe('Billing', () => {
       const paymentMethod = page.getByText(/payment.*method/i)
         .or(page.getByText(/credit.*card/i))
         .or(page.getByText(/add.*payment/i));
-      
-      const isVisible = await paymentMethod.isVisible().catch(() => false);
+
+      const isVisible = await paymentMethod.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(paymentMethod).toBeVisible();
+        await expect(paymentMethod.first()).toBeVisible();
       }
     });
 
@@ -119,10 +119,10 @@ test.describe('Billing', () => {
       const usage = page.getByText(/usage/i)
         .or(page.getByText(/limits/i))
         .or(page.getByText(/quota/i));
-      
-      const isVisible = await usage.isVisible().catch(() => false);
+
+      const isVisible = await usage.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(usage).toBeVisible();
+        await expect(usage.first()).toBeVisible();
       }
     });
 
@@ -145,9 +145,9 @@ test.describe('Billing', () => {
         .or(page.getByRole('table'))
         .or(page.locator('[data-testid="plan-comparison"]'));
 
-      const isVisible = await comparison.isVisible().catch(() => false);
+      const isVisible = await comparison.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(comparison).toBeVisible();
+        await expect(comparison.first()).toBeVisible();
       }
     });
 
@@ -156,9 +156,9 @@ test.describe('Billing', () => {
       const currentPlan = page.getByText(/current/i)
         .or(page.locator('[data-current="true"]'));
 
-      const isVisible = await currentPlan.isVisible().catch(() => false);
+      const isVisible = await currentPlan.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(currentPlan).toBeVisible();
+        await expect(currentPlan.first()).toBeVisible();
       }
     });
 
@@ -168,9 +168,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/month/i))
         .or(page.getByText(/year/i));
 
-      const isVisible = await pricing.isVisible().catch(() => false);
+      const isVisible = await pricing.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(pricing).toBeVisible();
+        await expect(pricing.first()).toBeVisible();
       }
     });
   });
@@ -181,10 +181,10 @@ test.describe('Billing', () => {
       const upgradeButton = page.getByRole('button', { name: /upgrade/i })
         .or(page.getByRole('button', { name: /subscribe/i }));
 
-      const isVisible = await upgradeButton.isVisible().catch(() => false);
+      const isVisible = await upgradeButton.first().isVisible().catch(() => false);
       if (isVisible) {
         // Click should either open Stripe or show plan selection
-        await upgradeButton.click();
+        await upgradeButton.first().click();
 
         // Wait for either Stripe redirect or modal
         await page.waitForTimeout(2000);
@@ -192,7 +192,7 @@ test.describe('Billing', () => {
         // Check if redirected to Stripe or modal opened
         const stripeRedirect = page.url().includes('stripe.com');
         const modal = page.getByRole('dialog');
-        const modalVisible = await modal.isVisible().catch(() => false);
+        const modalVisible = await modal.first().isVisible().catch(() => false);
 
         expect(stripeRedirect || modalVisible || page.url().includes('/settings/billing')).toBeTruthy();
       }
@@ -204,12 +204,12 @@ test.describe('Billing', () => {
         .or(page.getByRole('button', { name: /manage.*subscription/i }))
         .or(page.getByRole('link', { name: /manage.*billing/i }));
 
-      const isVisible = await portalButton.isVisible().catch(() => false);
+      const isVisible = await portalButton.first().isVisible().catch(() => false);
       if (isVisible) {
         // Clicking should redirect to Stripe portal
         const [newPage] = await Promise.all([
           page.context().waitForEvent('page', { timeout: 5000 }).catch(() => null),
-          portalButton.click()
+          portalButton.first().click()
         ]);
 
         // Either opens new tab or redirects
@@ -228,9 +228,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/api.*calls/i))
         .or(page.getByText(/storage/i));
 
-      const isVisible = await usageSummary.isVisible().catch(() => false);
+      const isVisible = await usageSummary.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(usageSummary).toBeVisible();
+        await expect(usageSummary.first()).toBeVisible();
       }
     });
 
@@ -240,9 +240,9 @@ test.describe('Billing', () => {
         .or(page.locator('canvas'))
         .or(page.locator('[data-testid="usage-chart"]'));
 
-      const isVisible = await chart.isVisible().catch(() => false);
+      const isVisible = await chart.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(chart).toBeVisible();
+        await expect(chart.first()).toBeVisible();
       }
     });
 
@@ -252,9 +252,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/quota/i))
         .or(page.getByText(/remaining/i));
 
-      const isVisible = await limits.isVisible().catch(() => false);
+      const isVisible = await limits.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(limits).toBeVisible();
+        await expect(limits.first()).toBeVisible();
       }
     });
 
@@ -264,9 +264,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/approaching.*limit/i))
         .or(page.getByText(/exceeded/i));
 
-      const isVisible = await alert.isVisible().catch(() => false);
+      const isVisible = await alert.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(alert).toBeVisible();
+        await expect(alert.first()).toBeVisible();
       }
     });
   });
@@ -278,9 +278,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/invoice/i))
         .or(page.getByRole('table'));
 
-      const isVisible = await invoices.isVisible().catch(() => false);
+      const isVisible = await invoices.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(invoices).toBeVisible();
+        await expect(invoices.first()).toBeVisible();
       }
     });
 
@@ -289,9 +289,9 @@ test.describe('Billing', () => {
       const viewAllLink = page.getByRole('link', { name: /view.*all/i })
         .or(page.getByRole('button', { name: /view.*all/i }));
 
-      const isVisible = await viewAllLink.isVisible().catch(() => false);
+      const isVisible = await viewAllLink.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(viewAllLink).toBeVisible();
+        await expect(viewAllLink.first()).toBeVisible();
       }
     });
 
@@ -300,9 +300,9 @@ test.describe('Billing', () => {
       const viewAllLink = page.getByRole('link', { name: /view.*all/i })
         .or(page.getByRole('button', { name: /view.*all/i }));
 
-      const isVisible = await viewAllLink.isVisible().catch(() => false);
+      const isVisible = await viewAllLink.first().isVisible().catch(() => false);
       if (isVisible) {
-        await viewAllLink.click();
+        await viewAllLink.first().click();
         await expect(page).toHaveURL(/\/settings\/billing\/invoices/);
       }
     });
@@ -313,9 +313,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/estimated.*cost/i))
         .or(page.getByText(/next.*bill/i));
 
-      const isVisible = await projected.isVisible().catch(() => false);
+      const isVisible = await projected.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(projected).toBeVisible();
+        await expect(projected.first()).toBeVisible();
       }
     });
 
@@ -325,9 +325,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/pending/i))
         .or(page.getByText(/overdue/i));
 
-      const isVisible = await status.isVisible().catch(() => false);
+      const isVisible = await status.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(status).toBeVisible();
+        await expect(status.first()).toBeVisible();
       }
     });
 
@@ -337,9 +337,9 @@ test.describe('Billing', () => {
         .or(page.getByRole('link', { name: /download/i }))
         .or(page.locator('[aria-label*="download" i]'));
 
-      const isVisible = await downloadButton.isVisible().catch(() => false);
+      const isVisible = await downloadButton.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(downloadButton).toBeVisible();
+        await expect(downloadButton.first()).toBeVisible();
       }
     });
   });
@@ -362,9 +362,9 @@ test.describe('Billing', () => {
         .or(page.getByRole('combobox'))
         .or(page.getByText(/filter/i));
 
-      const isVisible = await filters.isVisible().catch(() => false);
+      const isVisible = await filters.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(filters).toBeVisible();
+        await expect(filters.first()).toBeVisible();
       }
     });
 
@@ -373,9 +373,9 @@ test.describe('Billing', () => {
       const table = page.getByRole('table')
         .or(page.getByText(/no.*invoices/i));
 
-      const isVisible = await table.isVisible().catch(() => false);
+      const isVisible = await table.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(table).toBeVisible();
+        await expect(table.first()).toBeVisible();
       }
     });
 
@@ -384,9 +384,9 @@ test.describe('Billing', () => {
       const backLink = page.getByRole('link', { name: /back/i })
         .or(page.getByRole('button', { name: /back/i }));
 
-      const isVisible = await backLink.isVisible().catch(() => false);
+      const isVisible = await backLink.first().isVisible().catch(() => false);
       if (isVisible) {
-        await backLink.click();
+        await backLink.first().click();
         await expect(page).toHaveURL(/\/settings\/billing$/);
       }
     });
@@ -400,9 +400,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/canceled/i))
         .or(page.getByText(/past.*due/i));
 
-      const isVisible = await badge.isVisible().catch(() => false);
+      const isVisible = await badge.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(badge).toBeVisible();
+        await expect(badge.first()).toBeVisible();
       }
     });
 
@@ -412,9 +412,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/next.*billing/i))
         .or(page.getByText(/expires/i));
 
-      const isVisible = await renewalDate.isVisible().catch(() => false);
+      const isVisible = await renewalDate.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(renewalDate).toBeVisible();
+        await expect(renewalDate.first()).toBeVisible();
       }
     });
 
@@ -424,9 +424,9 @@ test.describe('Billing', () => {
         .or(page.getByText(/past.*due/i))
         .or(page.getByText(/payment.*failed/i));
 
-      const isVisible = await alert.isVisible().catch(() => false);
+      const isVisible = await alert.first().isVisible().catch(() => false);
       if (isVisible) {
-        await expect(alert).toBeVisible();
+        await expect(alert.first()).toBeVisible();
       }
     });
   });

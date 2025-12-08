@@ -7,6 +7,7 @@
 
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
+import bcrypt from 'bcrypt';
 
 // Create a dedicated pool for better-auth
 const pool = new Pool({
@@ -76,6 +77,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    // Use bcrypt for password hashing to match our seed script
+    password: {
+      hash: async (password: string) => {
+        return await bcrypt.hash(password, 10);
+      },
+      verify: async ({ hash, password }: { hash: string; password: string }) => {
+        return await bcrypt.compare(password, hash);
+      },
+    },
   },
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',

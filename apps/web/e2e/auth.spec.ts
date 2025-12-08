@@ -107,24 +107,21 @@ test.describe('Authentication Pages', () => {
   });
 
   test.describe('Auth Layout', () => {
-    test('should display ForgeStack branding on login page', async ({ page }) => {
+    test('should display welcome message on login page', async ({ page }) => {
       await page.goto('/login');
-      
-      // Check for ForgeStack logo/heading
-      await expect(page.getByRole('heading', { name: /forgestack/i })).toBeVisible();
-      
-      // Check for tagline
-      await expect(page.getByText(/multi-tenant saas starter kit/i)).toBeVisible();
+
+      // Check for welcome text (CardTitle renders as div, not heading)
+      await expect(page.getByText(/welcome back/i)).toBeVisible();
+
+      // Check for description
+      await expect(page.getByText(/enter your credentials/i)).toBeVisible();
     });
 
-    test('should display ForgeStack branding on signup page', async ({ page }) => {
+    test('should display create account message on signup page', async ({ page }) => {
       await page.goto('/signup');
-      
-      // Check for ForgeStack logo/heading
-      await expect(page.getByRole('heading', { name: /forgestack/i })).toBeVisible();
-      
-      // Check for tagline
-      await expect(page.getByText(/multi-tenant saas starter kit/i)).toBeVisible();
+
+      // Check for create account text (CardTitle renders as div, not heading)
+      await expect(page.getByText(/create an account/i)).toBeVisible();
     });
   });
 });

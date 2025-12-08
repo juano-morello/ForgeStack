@@ -13,7 +13,7 @@ import { test as base, expect as baseExpect, type Page } from '@playwright/test'
  */
 export const TEST_USER = {
   email: 'admin@forgestack.dev',
-  password: 'TestPassword123!',
+  password: 'TestPassword123',
   name: 'Admin User',
 };
 
@@ -26,7 +26,7 @@ export function createTestUser(prefix = 'test') {
   const random = Math.random().toString(36).substring(7);
   return {
     email: `${prefix}-${timestamp}-${random}@forgestack.test`,
-    password: 'TestPassword123!',
+    password: 'TestPassword123',
     name: `Test User ${timestamp}`,
   };
 }

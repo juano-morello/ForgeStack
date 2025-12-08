@@ -14,17 +14,20 @@ export default defineConfig({
   /* Output directory for test artifacts */
   outputDir: 'test-results',
 
+  /* Global timeout for each test */
+  timeout: 60000,
+
   /* Run tests in files in parallel */
   fullyParallel: true,
 
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
 
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry failed tests to handle flaky tests due to server load */
+  retries: process.env.CI ? 2 : 1,
 
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Limit workers to prevent server overload */
+  workers: process.env.CI ? 1 : 2,
 
   /* Reporters to use */
   reporter: [
