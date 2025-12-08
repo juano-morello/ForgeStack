@@ -85,6 +85,8 @@ ForgeStack is a full-stack, multi-tenant SaaS boilerplate designed to accelerate
 | ⚡ **Rate Limiting** | Plan-based API rate limits with Redis |
 | 📈 **Usage Tracking** | API calls, storage, and seat metering with limits |
 | 🛠️ **Super Admin Panel** | Platform-wide user/org management with suspension |
+| 🎭 **User Impersonation** | Admin impersonation with audit logging and session timeout |
+| 🤖 **AI Integration** | Vercel AI SDK with streaming chat, rate limiting, and usage tracking |
 | 📚 **Documentation Site** | Built-in MDX documentation with API guides |
 | 🎯 **Onboarding Flow** | Guided setup with org creation and team invites |
 | 📡 **Observability** | OpenTelemetry tracing, Pino structured logs, Prometheus metrics |
@@ -165,6 +167,7 @@ ForgeStack/
 | `apps/worker` | Background job processor for emails, webhooks, usage aggregation, and cleanup tasks |
 | `packages/db` | Database schema (26 tables), migrations, RLS policies, RBAC tables, and Drizzle client |
 | `packages/shared` | Centralized types, constants, Pino logger factory, and queue name definitions |
+| `packages/emails` | React Email templates for transactional emails (Welcome, Invitation, Password Reset, etc.) |
 | `packages/sdk` | TypeScript SDK for external API consumption with typed methods |
 | `packages/ui` | Reusable UI component library with shadcn/ui primitives, compound components, and Storybook |
 | `deploy/` | Platform-specific deployment configurations (Fly.io, Railway, Render) |
@@ -365,7 +368,7 @@ ForgeStack/
 │   │
 │   └── worker/
 │       └── src/
-│           ├── handlers/          # 13 job handlers
+│           ├── handlers/          # 14 job handlers
 │           │   ├── welcome-email.handler.ts
 │           │   ├── send-invitation.handler.ts
 │           │   ├── notification-email.handler.ts
@@ -378,7 +381,8 @@ ForgeStack/
 │           │   ├── active-seats.handler.ts
 │           │   ├── cleanup-deleted-files.handler.ts
 │           │   ├── cleanup-orphaned-files.handler.ts
-│           │   └── incoming-webhook-processing.handler.ts
+│           │   ├── incoming-webhook-processing.handler.ts
+│           │   └── ai-task.handler.ts
 │           ├── services/          # Email service (Resend)
 │           └── telemetry/         # OpenTelemetry + logging
 │
@@ -420,7 +424,7 @@ ForgeStack/
 
 ### Worker Job Handlers
 
-The worker processes 13 different job types:
+The worker processes 14 different job types:
 
 | Handler | Queue | Description |
 |---------|-------|-------------|
@@ -437,6 +441,7 @@ The worker processes 13 different job types:
 | `cleanup-deleted-files` | `files` | Remove soft-deleted files from storage |
 | `cleanup-orphaned-files` | `files` | Clean up orphaned file uploads |
 | `incoming-webhook-processing` | `webhooks` | Process incoming webhook events |
+| `ai-task` | `ai-task` | Process background AI tasks (generate, summarize, extract) |
 
 ---
 
@@ -488,6 +493,26 @@ Shared UI component library:
 import { Button, Card, ConfirmDialog, EmptyState, PageHeader, StatCard } from '@forgestack/ui';
 import { useToast } from '@forgestack/ui';
 ```
+
+### @forgestack/emails
+
+React Email templates for transactional emails:
+
+```typescript
+import { WelcomeEmail, InvitationEmail, PasswordResetEmail } from '@forgestack/emails';
+import { render } from '@react-email/render';
+
+// Render to HTML string
+const html = await render(WelcomeEmail({ userName: 'John', appName: 'MyApp' }));
+```
+
+**Available Templates:**
+- `WelcomeEmail` - New user welcome
+- `InvitationEmail` - Team invitation
+- `PasswordResetEmail` - Password reset link
+- `NotificationEmail` - Generic notification
+- `SubscriptionConfirmedEmail` - Subscription confirmation
+- `PaymentFailedEmail` - Payment failure alert
 
 ---
 
@@ -1114,6 +1139,92 @@ Step-by-step onboarding flow for new users:
 | **Choose Plan** | Select subscription plan |
 | **Invite Team** | Invite initial team members |
 | **Complete** | Success and next steps |
+
+### 🤖 AI Integration (Vercel AI SDK)
+
+Built-in AI capabilities powered by Vercel AI SDK:
+
+| Feature | Description |
+|---------|-------------|
+| **Streaming Chat** | Real-time streaming responses with SSE |
+| **Multiple Providers** | OpenAI and Anthropic support out of the box |
+| **Rate Limiting** | Per-org token and request limits with Redis |
+| **Usage Tracking** | Track tokens used, model costs, and API calls |
+| **Background Tasks** | Queue AI tasks for async processing |
+
+```typescript
+// Frontend: Use the AI chat hook
+const { messages, sendMessage, isStreaming } = useAiChat();
+
+// Backend: Stream AI responses
+@Post('chat')
+async chat(@Body() dto: ChatDto, @Req() req: Request) {
+  return this.aiService.streamChat(req.tenantContext, dto.messages);
+}
+```
+
+**API Endpoints:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/ai/chat` | Stream chat completion |
+| `POST` | `/ai/generate` | Generate text (non-streaming) |
+| `POST` | `/ai/generate-object` | Generate structured JSON |
+| `GET` | `/ai/usage` | Get AI usage statistics |
+
+**Frontend Routes:**
+- `/ai` - AI Chat interface
+
+### 🎭 User Impersonation
+
+Admin user impersonation for support and debugging:
+
+| Feature | Description |
+|---------|-------------|
+| **Session Management** | Start/end impersonation with time limits |
+| **Audit Logging** | All impersonation actions logged |
+| **Visual Indicator** | Clear banner showing impersonation status |
+| **Automatic Timeout** | Sessions expire after configurable duration |
+| **Permission Check** | Only super-admins can impersonate |
+
+```typescript
+// Start impersonation (super-admin only)
+await impersonationService.start(adminId, targetUserId, { expiresIn: 3600 });
+
+// Check if currently impersonating
+const isImpersonating = await impersonationService.isActive(sessionId);
+
+// End impersonation
+await impersonationService.end(sessionId);
+```
+
+**API Endpoints:**
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/impersonation/start` | Start impersonating a user |
+| `POST` | `/impersonation/end` | End current impersonation |
+| `GET` | `/impersonation/status` | Check impersonation status |
+
+### 📧 React Email Templates
+
+Transactional email templates with React Email:
+
+| Template | Description |
+|----------|-------------|
+| **WelcomeEmail** | New user welcome message |
+| **InvitationEmail** | Team member invitation |
+| **PasswordResetEmail** | Password reset link |
+| **NotificationEmail** | Generic notification |
+| **SubscriptionConfirmedEmail** | Subscription confirmation |
+| **PaymentFailedEmail** | Payment failure alert |
+
+```typescript
+import { WelcomeEmail, render } from '@forgestack/emails';
+
+const html = await render(WelcomeEmail({ userName: 'John', appName: 'MyApp' }));
+await resend.emails.send({ to, subject, html });
+```
 
 ### 📡 OpenTelemetry Observability
 

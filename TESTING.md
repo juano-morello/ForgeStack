@@ -14,14 +14,15 @@ ForgeStack uses a comprehensive testing strategy with multiple layers:
 
 ## Coverage Targets
 
-| Package | Target | Framework |
-|---------|--------|-----------|
-| `apps/api` | >90% | Jest |
-| `apps/web` | >85% | Vitest |
-| `apps/worker` | >80% | Jest |
-| `packages/shared` | >90% | Vitest |
-| `packages/sdk` | >95% | Vitest |
-| `packages/db` | >80% | Vitest |
+| Package | Target | Current | Framework |
+|---------|--------|---------|-----------|
+| `apps/api` | >90% | 98.51% | Jest |
+| `apps/web` | >80% | 82.3% | Vitest |
+| `apps/worker` | >80% | 85%+ | Jest |
+| `packages/shared` | >90% | 95%+ | Vitest |
+| `packages/sdk` | >95% | 98%+ | Vitest |
+| `packages/db` | >80% | 85%+ | Vitest |
+| `packages/emails` | >80% | 100% | Vitest |
 
 ## Quick Start
 
@@ -98,6 +99,9 @@ cd packages/sdk && pnpm test
 
 # Database package
 cd packages/db && pnpm test
+
+# Emails package
+cd packages/emails && pnpm test
 ```
 
 ## Test Utilities
@@ -333,12 +337,42 @@ jobs:
   test-api:      # API unit + integration tests
   test-web:      # Web unit tests
   test-db:       # Database package tests
-  test-worker:   # Worker handler tests
+  test-worker:   # Worker handler tests (14 handlers)
   test-shared:   # Shared package tests
   test-sdk:      # SDK client tests
+  test-emails:   # Email template tests
 ```
 
 Coverage reports are uploaded to Codecov with package-specific flags.
+
+## E2E Test Coverage
+
+The Playwright E2E test suite covers all major user flows:
+
+| Test File | Coverage |
+|-----------|----------|
+| `auth.spec.ts` | Login, signup, logout, password reset |
+| `navigation.spec.ts` | Routing, redirects, protected routes |
+| `dashboard.spec.ts` | Dashboard stats, quick actions |
+| `organizations.spec.ts` | Create, switch, invite, members |
+| `projects.spec.ts` | CRUD operations, search |
+| `settings.spec.ts` | Profile, email, password changes |
+| `api-keys.spec.ts` | API key CRUD, copy, rotate |
+| `webhooks.spec.ts` | Webhook endpoint management |
+| `billing.spec.ts` | Subscription, invoices, portal |
+| `admin.spec.ts` | Impersonation, audit logs |
+| `ai-chat.spec.ts` | AI chat, streaming, usage |
+| `notifications.spec.ts` | Notification center, preferences |
+| `docs.spec.ts` | Documentation site navigation |
+
+**Run E2E tests:**
+
+```bash
+cd apps/web
+pnpm test:e2e              # Run all E2E tests
+pnpm test:e2e:ui           # Playwright UI mode
+pnpm test:e2e:debug        # Debug mode with inspector
+```
 
 ## Best Practices
 
