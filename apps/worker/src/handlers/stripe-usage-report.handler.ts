@@ -17,6 +17,7 @@ export interface StripeUsageReportJobData {
 }
 
 export async function handleStripeUsageReport(job: Job<StripeUsageReportJobData>) {
+  const startTime = Date.now();
   const { date: specifiedDate } = job.data;
 
   // Default to yesterday if not specified
@@ -26,7 +27,7 @@ export async function handleStripeUsageReport(job: Job<StripeUsageReportJobData>
   }
 
   const dateStr = targetDate.toISOString().split('T')[0];
-  logger.info({ date: dateStr }, 'Starting Stripe usage report');
+  logger.info({ jobId: job.id, date: dateStr }, 'Starting Stripe usage report job');
 
   // Initialize Stripe
   const stripe = new Stripe(config.stripe.secretKey, {
@@ -135,11 +136,13 @@ export async function handleStripeUsageReport(job: Job<StripeUsageReportJobData>
       }
     }
 
-    logger.info({ date: dateStr, reportedOrgs: reportedCount }, 'Stripe usage report completed');
+    const duration = Date.now() - startTime;
+    logger.info({ jobId: job.id, date: dateStr, reportedOrgs: reportedCount, durationMs: duration }, 'Stripe usage report completed successfully');
 
     return { success: true, date: dateStr, reportedOrgs: reportedCount };
   } catch (error) {
-    logger.error({ date: dateStr, error }, 'Error during Stripe usage report');
+    const duration = Date.now() - startTime;
+    logger.error({ jobId: job.id, date: dateStr, durationMs: duration, error }, 'Stripe usage report job failed');
     throw error;
   }
 }

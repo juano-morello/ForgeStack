@@ -6,10 +6,15 @@
 import { Injectable, Logger, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ImpersonationRepository } from './impersonation.repository';
 import { PlatformAuditService, type PlatformAuditContext } from '../admin/platform-audit/platform-audit.service';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import type { ImpersonationSession } from '@forgestack/db';
 
 const DEFAULT_SESSION_DURATION_MINUTES = 60;
+
+/**
+ * Impersonation session with plain token (only returned on creation)
+ */
+export type ImpersonationSessionWithToken = ImpersonationSession & { token: string };
 
 @Injectable()
 export class ImpersonationService {
@@ -35,7 +40,7 @@ export class ImpersonationService {
     ipAddress: string | null,
     userAgent: string | null,
     auditContext: PlatformAuditContext,
-  ): Promise<ImpersonationSession> {
+  ): Promise<ImpersonationSessionWithToken> {
     this.logger.log(`Starting impersonation: ${actorId} -> ${targetUserId}`);
 
     // Validate actor is super-admin
@@ -75,7 +80,8 @@ export class ImpersonationService {
     }
 
     // Generate secure token
-    const token = this.generateToken();
+    const plainToken = this.generateToken();
+    const tokenHash = this.hashToken(plainToken);
 
     // Calculate expiration
     const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
@@ -84,7 +90,7 @@ export class ImpersonationService {
     const session = await this.impersonationRepository.create({
       actorId,
       targetUserId,
-      token,
+      tokenHash,
       startedAt: new Date(),
       expiresAt,
       endedAt: null,
@@ -106,7 +112,12 @@ export class ImpersonationService {
     });
 
     this.logger.log(`Impersonation session created: ${session.id}`);
-    return session;
+
+    // Return session with plain token (only time it's available)
+    return {
+      ...session,
+      token: plainToken,
+    };
   }
 
   /**
@@ -118,7 +129,8 @@ export class ImpersonationService {
   ): Promise<ImpersonationSession> {
     this.logger.log('Ending impersonation session');
 
-    const session = await this.impersonationRepository.findByToken(token);
+    const tokenHash = this.hashToken(token);
+    const session = await this.impersonationRepository.findByTokenHash(tokenHash);
     if (!session) {
       throw new NotFoundException('Impersonation session not found');
     }
@@ -155,7 +167,8 @@ export class ImpersonationService {
    * Validate impersonation session
    */
   async validateSession(token: string): Promise<ImpersonationSession | null> {
-    const session = await this.impersonationRepository.findByToken(token);
+    const tokenHash = this.hashToken(token);
+    const session = await this.impersonationRepository.findByTokenHash(tokenHash);
 
     if (!session) {
       return null;
@@ -241,6 +254,14 @@ export class ImpersonationService {
    */
   private generateToken(): string {
     return randomBytes(32).toString('base64url');
+  }
+
+  /**
+   * Hash a token using SHA-256
+   * Tokens are stored as hashes, never in plain text
+   */
+  private hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 }
 

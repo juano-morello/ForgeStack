@@ -23,12 +23,14 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, headers } = request;
     const startTime = Date.now();
 
-    // Get trace context
+    // Get trace context and request ID
     const span = trace.getActiveSpan();
     const traceId = span?.spanContext().traceId;
+    const requestId = request.id || 'unknown';
 
     logger.info(
       {
+        requestId,
         method,
         path: url,
         userAgent: headers['user-agent'],
@@ -45,6 +47,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
           logger.info(
             {
+              requestId,
               method,
               path: url,
               statusCode: response.statusCode,
@@ -59,6 +62,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
           logger.error(
             {
+              requestId,
               method,
               path: url,
               statusCode: error.status || 500,

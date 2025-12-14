@@ -15,8 +15,11 @@ import {
   ParseUUIDPipe,
   Logger,
   BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Request } from 'express';
 import { type TenantContext } from '@forgestack/db';
 import { InvitationsService } from './invitations.service';
 import {
@@ -29,6 +32,7 @@ import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { NoOrgRequired } from '../core/decorators/no-org-required.decorator';
 import { Public } from '../core/decorators/public.decorator';
 import type { RequestWithUser } from '../core/types';
+import { RateLimitingService } from '../rate-limiting/rate-limiting.service';
 
 @ApiTags('Invitations')
 @ApiBearerAuth()
@@ -99,7 +103,10 @@ export class InvitationsController {
 export class PublicInvitationsController {
   private readonly logger = new Logger(PublicInvitationsController.name);
 
-  constructor(private readonly invitationsService: InvitationsService) {}
+  constructor(
+    private readonly invitationsService: InvitationsService,
+    private readonly rateLimitingService: RateLimitingService,
+  ) {}
 
   /**
    * Accept an invitation
@@ -108,10 +115,33 @@ export class PublicInvitationsController {
    */
   @Post('accept')
   @NoOrgRequired()
+  @ApiOperation({ summary: 'Accept invitation' })
+  @ApiResponse({ status: 200, description: 'Invitation accepted' })
+  @ApiResponse({ status: 400, description: 'Invalid token or user email' })
+  @ApiResponse({ status: 429, description: 'Too many attempts' })
   async accept(
     @Body() acceptInvitationDto: AcceptInvitationDto,
     @Req() request: RequestWithUser,
   ) {
+    // Rate limit: 5 attempts per minute per IP
+    const ip = this.getClientIp(request);
+    const rateLimitResult = await this.rateLimitingService.checkLimit(
+      `invitation_accept:${ip}`,
+      5,
+      'minute',
+    );
+
+    if (!rateLimitResult.allowed) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          message: 'Too many invitation acceptance attempts. Please try again later.',
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
     const userId = request.user.id;
     const userEmail = request.user.email;
 
@@ -130,9 +160,54 @@ export class PublicInvitationsController {
    */
   @Post('decline')
   @Public()
-  async decline(@Body() declineInvitationDto: DeclineInvitationDto) {
+  @ApiOperation({ summary: 'Decline invitation' })
+  @ApiResponse({ status: 200, description: 'Invitation declined' })
+  @ApiResponse({ status: 400, description: 'Invalid token' })
+  @ApiResponse({ status: 429, description: 'Too many attempts' })
+  async decline(
+    @Body() declineInvitationDto: DeclineInvitationDto,
+    @Req() request: Request,
+  ) {
+    // Rate limit: 5 attempts per minute per IP
+    const ip = this.getClientIp(request);
+    const rateLimitResult = await this.rateLimitingService.checkLimit(
+      `invitation_decline:${ip}`,
+      5,
+      'minute',
+    );
+
+    if (!rateLimitResult.allowed) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          message: 'Too many invitation decline attempts. Please try again later.',
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
     this.logger.log('Declining invitation');
     return this.invitationsService.decline(declineInvitationDto.token);
+  }
+
+  /**
+   * Extract client IP address from request
+   */
+  private getClientIp(request: {
+    headers: Record<string, string | string[] | undefined>;
+    connection?: { remoteAddress?: string };
+    ip?: string;
+  }): string {
+    const forwardedFor = request.headers['x-forwarded-for'];
+    const forwardedForStr = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+    return (
+      forwardedForStr?.split(',')[0]?.trim() ||
+      (request.headers['x-real-ip'] as string) ||
+      request.connection?.remoteAddress ||
+      request.ip ||
+      '0.0.0.0'
+    );
   }
 }
 

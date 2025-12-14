@@ -3,8 +3,11 @@
  * Handles session verification with better-auth
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
+import { createHash } from 'crypto';
+import { AUTH_CONSTANTS } from '@forgestack/shared';
 
 export interface BetterAuthUser {
   id: string;
@@ -29,17 +32,11 @@ export interface SessionVerificationResult {
   user: BetterAuthUser;
 }
 
-// Simple in-memory cache for session verification
-interface CacheEntry {
-  result: SessionVerificationResult;
-  expiresAt: number;
-}
-
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleDestroy {
   private readonly logger = new Logger(AuthService.name);
-  private readonly sessionCache = new Map<string, CacheEntry>();
-  private readonly cacheTtlMs = 30000; // 30 seconds cache
+  private redis: Redis | null = null;
+  private readonly cacheTtlSeconds = AUTH_CONSTANTS.SESSION_CACHE_TTL_SECONDS;
   private readonly authServerUrl: string;
 
   constructor(private readonly configService: ConfigService) {
@@ -47,6 +44,51 @@ export class AuthService {
       'authServerUrl',
       'http://localhost:3000',
     );
+    this.initializeRedis();
+  }
+
+  private initializeRedis(): void {
+    const redisUrl = this.configService.get<string>('redis.url');
+    if (!redisUrl) {
+      this.logger.warn('Session caching disabled - Redis not configured');
+      return;
+    }
+
+    try {
+      this.redis = new Redis(redisUrl, {
+        enableOfflineQueue: false,
+        maxRetriesPerRequest: 1,
+      });
+
+      this.redis.on('error', (err) => {
+        this.logger.error(`Redis error: ${err.message}`);
+      });
+
+      this.logger.log('Redis session cache initialized');
+    } catch (error) {
+      this.logger.error(`Failed to connect to Redis: ${error}`);
+    }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit();
+    }
+  }
+
+  /**
+   * Hash session token for secure Redis key storage
+   */
+  private hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
+  /**
+   * Get Redis key for session cache
+   */
+  private getCacheKey(token: string): string {
+    const hashedToken = this.hashToken(token);
+    return `session:${hashedToken}`;
   }
 
   /**
@@ -61,7 +103,7 @@ export class AuthService {
     }
 
     // Check cache first
-    const cached = this.getFromCache(sessionToken);
+    const cached = await this.getFromCache(sessionToken);
     if (cached) {
       this.logger.debug(`Session cache hit for token: ${sessionToken.slice(0, 8)}...`);
       return cached;
@@ -130,7 +172,7 @@ export class AuthService {
       };
 
       // Cache the result
-      this.setCache(sessionToken, result);
+      await this.setCache(sessionToken, result);
       this.logger.debug(
         `Session verified for user: ${result.user.email}`,
       );
@@ -165,38 +207,56 @@ export class AuthService {
     return undefined;
   }
 
-  private getFromCache(token: string): SessionVerificationResult | null {
-    const entry = this.sessionCache.get(token);
-    if (!entry) {
+  /**
+   * Get session from Redis cache
+   * Fails open if Redis is unavailable
+   */
+  private async getFromCache(token: string): Promise<SessionVerificationResult | null> {
+    if (!this.redis) {
       return null;
     }
 
-    if (Date.now() > entry.expiresAt) {
-      this.sessionCache.delete(token);
-      return null;
-    }
+    try {
+      const key = this.getCacheKey(token);
+      const cached = await this.redis.get(key);
 
-    return entry.result;
-  }
-
-  private setCache(token: string, result: SessionVerificationResult): void {
-    this.sessionCache.set(token, {
-      result,
-      expiresAt: Date.now() + this.cacheTtlMs,
-    });
-
-    // Cleanup old entries periodically (simple cleanup on each write)
-    if (this.sessionCache.size > 100) {
-      this.cleanupCache();
-    }
-  }
-
-  private cleanupCache(): void {
-    const now = Date.now();
-    for (const [key, entry] of this.sessionCache.entries()) {
-      if (now > entry.expiresAt) {
-        this.sessionCache.delete(key);
+      if (!cached) {
+        return null;
       }
+
+      const result = JSON.parse(cached) as SessionVerificationResult;
+
+      // Parse date strings back to Date objects
+      result.session.expiresAt = new Date(result.session.expiresAt);
+      result.user.createdAt = new Date(result.user.createdAt);
+      result.user.updatedAt = new Date(result.user.updatedAt);
+
+      return result;
+    } catch (error) {
+      // Fail open - if Redis is down, don't block authentication
+      this.logger.warn(`Failed to get session from cache: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * Set session in Redis cache with TTL
+   * Fails open if Redis is unavailable
+   */
+  private async setCache(token: string, result: SessionVerificationResult): Promise<void> {
+    if (!this.redis) {
+      return;
+    }
+
+    try {
+      const key = this.getCacheKey(token);
+      const value = JSON.stringify(result);
+
+      // Use SETEX to set value with TTL in one atomic operation
+      await this.redis.setex(key, this.cacheTtlSeconds, value);
+    } catch (error) {
+      // Fail open - if Redis is down, don't block authentication
+      this.logger.warn(`Failed to set session in cache: ${error}`);
     }
   }
 }

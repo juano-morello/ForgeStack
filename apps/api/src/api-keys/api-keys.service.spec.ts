@@ -61,7 +61,7 @@ describe('ApiKeysService', () => {
       findAll: jest.fn(),
       update: jest.fn(),
       revoke: jest.fn(),
-      updateLastUsed: jest.fn(),
+      updateLastUsed: jest.fn().mockResolvedValue(undefined),
     };
 
     const mockAuditLogsService = {
@@ -170,6 +170,89 @@ describe('ApiKeysService', () => {
 
       expect(result).toHaveProperty('name', 'Updated Key');
       expect(repository.update).toHaveBeenCalledWith(mockTenantContext, mockApiKey.id, dto);
+    });
+  });
+
+  describe('validateKey', () => {
+    it('should validate a valid API key with timing-safe comparison', async () => {
+      const plainKey = 'fsk_live_abcdefghijklmnopqrstuvwxyz123456';
+      const keyHash = 'a'.repeat(64); // Valid hex hash (SHA-256 is 64 hex chars)
+
+      (keyUtils.hashApiKey as jest.Mock).mockReturnValue(keyHash);
+      repository.findByKeyHash.mockResolvedValue({
+        ...mockApiKey,
+        keyHash,
+      });
+
+      const result = await service.validateKey(plainKey);
+
+      expect(result).toEqual({
+        id: mockApiKey.id,
+        orgId: mockApiKey.orgId,
+        createdBy: mockApiKey.createdBy,
+        scopes: mockApiKey.scopes,
+      });
+      expect(repository.updateLastUsed).toHaveBeenCalledWith(mockApiKey.id);
+    });
+
+    it('should return null if key not found', async () => {
+      const plainKey = 'fsk_live_nonexistent';
+
+      (keyUtils.hashApiKey as jest.Mock).mockReturnValue('hash123');
+      repository.findByKeyHash.mockResolvedValue(null);
+
+      const result = await service.validateKey(plainKey);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null if hash mismatch (timing-safe)', async () => {
+      const plainKey = 'fsk_live_abcdefghijklmnopqrstuvwxyz123456';
+      const computedHash = 'a'.repeat(64);
+      const storedHash = 'b'.repeat(64);
+
+      (keyUtils.hashApiKey as jest.Mock).mockReturnValue(computedHash);
+      repository.findByKeyHash.mockResolvedValue({
+        ...mockApiKey,
+        keyHash: storedHash,
+      });
+
+      const result = await service.validateKey(plainKey);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null if key is expired', async () => {
+      const plainKey = 'fsk_live_abcdefghijklmnopqrstuvwxyz123456';
+      const keyHash = 'a'.repeat(64);
+      const expiredDate = new Date('2020-01-01');
+
+      (keyUtils.hashApiKey as jest.Mock).mockReturnValue(keyHash);
+      repository.findByKeyHash.mockResolvedValue({
+        ...mockApiKey,
+        keyHash,
+        expiresAt: expiredDate,
+      });
+
+      const result = await service.validateKey(plainKey);
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle invalid hash format gracefully', async () => {
+      const plainKey = 'fsk_live_abcdefghijklmnopqrstuvwxyz123456';
+      const computedHash = 'a'.repeat(64);
+      const invalidHash = 'not-a-valid-hex-hash';
+
+      (keyUtils.hashApiKey as jest.Mock).mockReturnValue(computedHash);
+      repository.findByKeyHash.mockResolvedValue({
+        ...mockApiKey,
+        keyHash: invalidHash,
+      });
+
+      const result = await service.validateKey(plainKey);
+
+      expect(result).toBeNull();
     });
   });
 });

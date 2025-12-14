@@ -42,6 +42,7 @@ function getHourBucket(date: Date): string {
 }
 
 export async function handleUsageAggregation(job: Job<UsageAggregationJobData>) {
+  const startTime = Date.now();
   const { hourBucket: specifiedBucket } = job.data;
 
   // Default to previous hour if not specified
@@ -49,7 +50,7 @@ export async function handleUsageAggregation(job: Job<UsageAggregationJobData>) 
   targetDate.setHours(targetDate.getHours() - 1);
   const hourBucket = specifiedBucket || getHourBucket(targetDate);
 
-  logger.info({ hourBucket }, 'Starting usage aggregation');
+  logger.info({ jobId: job.id, hourBucket }, 'Starting usage aggregation job');
 
   const redis = new IORedis(config.redis.url, { maxRetriesPerRequest: null });
 
@@ -130,11 +131,13 @@ export async function handleUsageAggregation(job: Job<UsageAggregationJobData>) 
       }
     }
 
-    logger.info({ hourBucket, processedKeys: keys.length }, 'Usage aggregation completed');
+    const duration = Date.now() - startTime;
+    logger.info({ jobId: job.id, hourBucket, processedKeys: keys.length, durationMs: duration }, 'Usage aggregation completed successfully');
 
     return { success: true, hourBucket, processedKeys: keys.length };
   } catch (error) {
-    logger.error({ hourBucket, error }, 'Error during usage aggregation');
+    const duration = Date.now() - startTime;
+    logger.error({ jobId: job.id, hourBucket, durationMs: duration, error }, 'Usage aggregation job failed');
     throw error;
   } finally {
     await redis.quit();

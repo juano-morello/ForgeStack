@@ -2,7 +2,8 @@
  * Create API Key DTO
  */
 
-import { IsString, IsNotEmpty, MaxLength, IsArray, IsOptional, IsISO8601 } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsArray, IsOptional, IsISO8601, ArrayNotEmpty, IsIn } from 'class-validator';
+import { AVAILABLE_SCOPES } from '../key-utils';
 
 export class CreateApiKeyDto {
   @IsString()
@@ -11,7 +12,8 @@ export class CreateApiKeyDto {
   name!: string;
 
   @IsArray()
-  @IsString({ each: true })
+  @ArrayNotEmpty({ message: 'At least one scope is required' })
+  @IsIn(AVAILABLE_SCOPES, { each: true, message: 'Invalid scope provided' })
   scopes!: string[];
 
   @IsOptional()

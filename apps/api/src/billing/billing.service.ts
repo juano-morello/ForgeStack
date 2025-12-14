@@ -188,23 +188,42 @@ export class BillingService {
   /**
    * Get invoices for an organization
    */
-  async getInvoices(orgId: string): Promise<Stripe.Invoice[]> {
+  async getInvoices(
+    orgId: string,
+    options?: { limit?: number; startingAfter?: string }
+  ): Promise<{
+    invoices: Stripe.Invoice[];
+    hasMore: boolean;
+    nextCursor?: string;
+  }> {
     this.logger.debug(`Getting invoices for org ${orgId}`);
 
     // Get customer
     const customer = await this.billingRepository.findCustomerByOrgId(orgId);
     if (!customer) {
-      return [];
+      return {
+        invoices: [],
+        hasMore: false,
+      };
     }
 
     // Get invoices from Stripe
     const stripe = this.stripeService.getStripeInstance();
+    const limit = options?.limit ?? 10;
+
     const invoices = await stripe.invoices.list({
       customer: customer.stripeCustomerId,
-      limit: 100,
+      limit,
+      starting_after: options?.startingAfter,
     });
 
-    return invoices.data;
+    return {
+      invoices: invoices.data,
+      hasMore: invoices.has_more,
+      nextCursor: invoices.has_more && invoices.data.length > 0
+        ? invoices.data[invoices.data.length - 1]?.id
+        : undefined,
+    };
   }
 
   /**

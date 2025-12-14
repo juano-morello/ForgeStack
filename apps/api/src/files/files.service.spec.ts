@@ -148,6 +148,30 @@ describe('FilesService', () => {
       await expect(service.getPresignedUploadUrl(ctx, dto)).rejects.toThrow(BadRequestException);
     });
 
+    it('should reject malformed content type format', async () => {
+      const dto = {
+        filename: 'file.jpg',
+        contentType: 'invalid-content-type!@#',
+        size: 1024 * 1024,
+        purpose: 'avatar',
+      };
+
+      await expect(service.getPresignedUploadUrl(ctx, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.getPresignedUploadUrl(ctx, dto)).rejects.toThrow('Invalid content type format');
+    });
+
+    it('should reject empty content type', async () => {
+      const dto = {
+        filename: 'file.jpg',
+        contentType: '',
+        size: 1024 * 1024,
+        purpose: 'avatar',
+      };
+
+      await expect(service.getPresignedUploadUrl(ctx, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.getPresignedUploadUrl(ctx, dto)).rejects.toThrow('Invalid content type format');
+    });
+
     it('should require entityType and entityId for attachments', async () => {
       const dto = {
         filename: 'doc.pdf',

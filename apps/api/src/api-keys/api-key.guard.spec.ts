@@ -142,7 +142,7 @@ describe('ApiKeyGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should set tenant context on request', async () => {
+    it('should set tenant context with MEMBER role for limited scopes', async () => {
       const mockRequest = { headers: { 'x-api-key': 'fsk_live_validkey123456789012345678' } };
       const context = {
         switchToHttp: () => ({
@@ -152,7 +152,37 @@ describe('ApiKeyGuard', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any;
 
-      service.validateKey.mockResolvedValue(mockKeyData);
+      service.validateKey.mockResolvedValue({
+        ...mockKeyData,
+        scopes: ['projects:read', 'files:read'],
+      });
+      reflector.get.mockReturnValue([]);
+
+      await guard.canActivate(context);
+
+      expect(mockRequest).toHaveProperty('tenantContext');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((mockRequest as any).tenantContext).toEqual({
+        orgId: mockKeyData.orgId,
+        userId: mockKeyData.createdBy,
+        role: 'MEMBER',
+      });
+    });
+
+    it('should set tenant context with OWNER role for wildcard scope', async () => {
+      const mockRequest = { headers: { 'x-api-key': 'fsk_live_validkey123456789012345678' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+        getHandler: jest.fn(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      service.validateKey.mockResolvedValue({
+        ...mockKeyData,
+        scopes: ['*'],
+      });
       reflector.get.mockReturnValue([]);
 
       await guard.canActivate(context);
@@ -163,6 +193,114 @@ describe('ApiKeyGuard', () => {
         orgId: mockKeyData.orgId,
         userId: mockKeyData.createdBy,
         role: 'OWNER',
+      });
+    });
+
+    it('should set tenant context with OWNER role for members:write scope', async () => {
+      const mockRequest = { headers: { 'x-api-key': 'fsk_live_validkey123456789012345678' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+        getHandler: jest.fn(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      service.validateKey.mockResolvedValue({
+        ...mockKeyData,
+        scopes: ['members:write'],
+      });
+      reflector.get.mockReturnValue([]);
+
+      await guard.canActivate(context);
+
+      expect(mockRequest).toHaveProperty('tenantContext');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((mockRequest as any).tenantContext).toEqual({
+        orgId: mockKeyData.orgId,
+        userId: mockKeyData.createdBy,
+        role: 'OWNER',
+      });
+    });
+
+    it('should set tenant context with OWNER role for billing:write scope', async () => {
+      const mockRequest = { headers: { 'x-api-key': 'fsk_live_validkey123456789012345678' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+        getHandler: jest.fn(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      service.validateKey.mockResolvedValue({
+        ...mockKeyData,
+        scopes: ['billing:write'],
+      });
+      reflector.get.mockReturnValue([]);
+
+      await guard.canActivate(context);
+
+      expect(mockRequest).toHaveProperty('tenantContext');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((mockRequest as any).tenantContext).toEqual({
+        orgId: mockKeyData.orgId,
+        userId: mockKeyData.createdBy,
+        role: 'OWNER',
+      });
+    });
+
+    it('should set tenant context with OWNER role for api-keys:write scope', async () => {
+      const mockRequest = { headers: { 'x-api-key': 'fsk_live_validkey123456789012345678' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+        getHandler: jest.fn(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      service.validateKey.mockResolvedValue({
+        ...mockKeyData,
+        scopes: ['api-keys:write'],
+      });
+      reflector.get.mockReturnValue([]);
+
+      await guard.canActivate(context);
+
+      expect(mockRequest).toHaveProperty('tenantContext');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((mockRequest as any).tenantContext).toEqual({
+        orgId: mockKeyData.orgId,
+        userId: mockKeyData.createdBy,
+        role: 'OWNER',
+      });
+    });
+
+    it('should set tenant context with MEMBER role for projects:write scope', async () => {
+      const mockRequest = { headers: { 'x-api-key': 'fsk_live_validkey123456789012345678' } };
+      const context = {
+        switchToHttp: () => ({
+          getRequest: () => mockRequest,
+        }),
+        getHandler: jest.fn(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+
+      service.validateKey.mockResolvedValue({
+        ...mockKeyData,
+        scopes: ['projects:write'],
+      });
+      reflector.get.mockReturnValue([]);
+
+      await guard.canActivate(context);
+
+      expect(mockRequest).toHaveProperty('tenantContext');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((mockRequest as any).tenantContext).toEqual({
+        orgId: mockKeyData.orgId,
+        userId: mockKeyData.createdBy,
+        role: 'MEMBER',
       });
     });
   });

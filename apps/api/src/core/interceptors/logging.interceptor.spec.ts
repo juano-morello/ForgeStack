@@ -47,6 +47,7 @@ describe('LoggingInterceptor', () => {
     mockRequest = {
       method: 'GET',
       url: '/api/v1/test',
+      id: 'test-request-id',
       user: { id: 'user-123' },
       headers: {
         'user-agent': 'test-agent',
@@ -99,6 +100,7 @@ describe('LoggingInterceptor', () => {
           // Verify request received log
           expect(mockLogger.info).toHaveBeenCalledWith(
             expect.objectContaining({
+              requestId: 'test-request-id',
               method: 'GET',
               path: '/api/v1/test',
             }),
@@ -107,6 +109,7 @@ describe('LoggingInterceptor', () => {
           // Verify request completed log
           expect(mockLogger.info).toHaveBeenCalledWith(
             expect.objectContaining({
+              requestId: 'test-request-id',
               method: 'GET',
               path: '/api/v1/test',
               statusCode: 200,
@@ -176,6 +179,7 @@ describe('LoggingInterceptor', () => {
         error: () => {
           expect(mockLogger.error).toHaveBeenCalledWith(
             expect.objectContaining({
+              requestId: 'test-request-id',
               method: 'GET',
               path: '/api/v1/test',
               statusCode: 404,
@@ -203,6 +207,7 @@ describe('LoggingInterceptor', () => {
         error: () => {
           expect(mockLogger.error).toHaveBeenCalledWith(
             expect.objectContaining({
+              requestId: 'test-request-id',
               method: 'GET',
               path: '/api/v1/test',
               statusCode: 500,

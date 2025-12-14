@@ -21,8 +21,8 @@ export const impersonationSessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
 
-    // Session token (stored in cookie)
-    token: text('token').notNull().unique(),
+    // Session token hash (SHA-256 hash of the token)
+    tokenHash: text('token_hash').notNull().unique(),
 
     // Session timing
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
@@ -45,7 +45,7 @@ export const impersonationSessions = pgTable(
   (table) => ({
     actorIdIdx: index('idx_impersonation_sessions_actor_id').on(table.actorId),
     targetUserIdIdx: index('idx_impersonation_sessions_target_user_id').on(table.targetUserId),
-    tokenIdx: index('idx_impersonation_sessions_token').on(table.token),
+    tokenHashIdx: index('idx_impersonation_sessions_token_hash').on(table.tokenHash),
     expiresAtIdx: index('idx_impersonation_sessions_expires_at').on(table.expiresAt),
   }),
 );

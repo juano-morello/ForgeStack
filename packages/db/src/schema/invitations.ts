@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { organizations } from './organizations';
 import { orgRoleEnum } from './organization-members';
@@ -16,7 +16,12 @@ export const invitations = pgTable('invitations', {
   token: varchar('token', { length: 255 }).notNull().unique(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => ({
+  orgIdIdx: index('idx_invitations_org_id').on(table.orgId),
+  emailIdx: index('idx_invitations_email').on(table.email),
+  tokenIdx: index('idx_invitations_token').on(table.token),
+  expiresAtIdx: index('idx_invitations_expires_at').on(table.expiresAt),
+}));
 
 /**
  * Invitation relations

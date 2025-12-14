@@ -11,6 +11,12 @@ import {
   PAGINATION,
   INVITATION_VALIDATION,
   EMAIL_REGEX,
+  AUTH_CONSTANTS,
+  WEBHOOK_CONSTANTS,
+  API_KEY_CONSTANTS,
+  RATE_LIMIT_CONSTANTS,
+  FILE_CONSTANTS,
+  INVITATION_CONSTANTS,
 } from '../constants';
 
 describe('Constants', () => {
@@ -143,6 +149,77 @@ describe('Constants', () => {
       invalidEmails.forEach((email) => {
         expect(EMAIL_REGEX.test(email)).toBe(false);
       });
+    });
+  });
+
+  describe('AUTH_CONSTANTS', () => {
+    it('should have expected properties', () => {
+      expect(AUTH_CONSTANTS).toBeDefined();
+      expect(AUTH_CONSTANTS.SESSION_CACHE_TTL_MS).toBe(30000);
+      expect(AUTH_CONSTANTS.SESSION_CACHE_TTL_SECONDS).toBe(30);
+    });
+
+    it('should have consistent TTL values', () => {
+      expect(AUTH_CONSTANTS.SESSION_CACHE_TTL_MS).toBe(AUTH_CONSTANTS.SESSION_CACHE_TTL_SECONDS * 1000);
+    });
+  });
+
+  describe('WEBHOOK_CONSTANTS', () => {
+    it('should have expected properties', () => {
+      expect(WEBHOOK_CONSTANTS).toBeDefined();
+      expect(WEBHOOK_CONSTANTS.MAX_DELIVERY_ATTEMPTS).toBe(5);
+      expect(WEBHOOK_CONSTANTS.RETRY_DELAYS_MS).toHaveLength(5);
+      expect(WEBHOOK_CONSTANTS.CIRCUIT_BREAKER_THRESHOLD).toBe(10);
+      expect(WEBHOOK_CONSTANTS.SIGNATURE_ALGORITHM).toBe('sha256');
+    });
+
+    it('should have correct retry delays', () => {
+      expect(WEBHOOK_CONSTANTS.RETRY_DELAYS_MS).toEqual([
+        1 * 60 * 1000,      // 1 minute
+        5 * 60 * 1000,      // 5 minutes
+        30 * 60 * 1000,     // 30 minutes
+        2 * 60 * 60 * 1000, // 2 hours
+        24 * 60 * 60 * 1000 // 24 hours
+      ]);
+    });
+  });
+
+  describe('API_KEY_CONSTANTS', () => {
+    it('should have expected properties', () => {
+      expect(API_KEY_CONSTANTS).toBeDefined();
+      expect(API_KEY_CONSTANTS.PREFIX_LIVE).toBe('fsk_live_');
+      expect(API_KEY_CONSTANTS.PREFIX_TEST).toBe('fsk_test_');
+      expect(API_KEY_CONSTANTS.KEY_LENGTH).toBe(32);
+      expect(API_KEY_CONSTANTS.CLEANUP_DAYS_OLD).toBe(90);
+    });
+  });
+
+  describe('RATE_LIMIT_CONSTANTS', () => {
+    it('should have expected properties', () => {
+      expect(RATE_LIMIT_CONSTANTS).toBeDefined();
+      expect(RATE_LIMIT_CONSTANTS.DEFAULT_WINDOW_MS).toBe(60000);
+      expect(RATE_LIMIT_CONSTANTS.INVITATION_LIMIT_PER_MINUTE).toBe(5);
+    });
+  });
+
+  describe('FILE_CONSTANTS', () => {
+    it('should have expected properties', () => {
+      expect(FILE_CONSTANTS).toBeDefined();
+      expect(FILE_CONSTANTS.MAX_SIZE_BYTES).toBe(100 * 1024 * 1024);
+      expect(FILE_CONSTANTS.PRESIGNED_URL_EXPIRY_SECONDS).toBe(3600);
+    });
+  });
+
+  describe('INVITATION_CONSTANTS', () => {
+    it('should have expected properties', () => {
+      expect(INVITATION_CONSTANTS).toBeDefined();
+      expect(INVITATION_CONSTANTS.TOKEN_LENGTH).toBe(64);
+      expect(INVITATION_CONSTANTS.EXPIRY_DAYS).toBe(7);
+    });
+
+    it('should match INVITATION_VALIDATION values', () => {
+      expect(INVITATION_CONSTANTS.TOKEN_LENGTH).toBe(INVITATION_VALIDATION.TOKEN_LENGTH);
+      expect(INVITATION_CONSTANTS.EXPIRY_DAYS).toBe(INVITATION_VALIDATION.EXPIRY_DAYS);
     });
   });
 });

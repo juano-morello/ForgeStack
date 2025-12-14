@@ -13,6 +13,12 @@ describe('@forgestack/shared', () => {
       expect(shared.PROJECT_VALIDATION).toBeDefined();
       expect(shared.ORGANIZATION_VALIDATION).toBeDefined();
       expect(shared.PAGINATION).toBeDefined();
+      expect(shared.AUTH_CONSTANTS).toBeDefined();
+      expect(shared.WEBHOOK_CONSTANTS).toBeDefined();
+      expect(shared.API_KEY_CONSTANTS).toBeDefined();
+      expect(shared.RATE_LIMIT_CONSTANTS).toBeDefined();
+      expect(shared.FILE_CONSTANTS).toBeDefined();
+      expect(shared.INVITATION_CONSTANTS).toBeDefined();
     });
 
     it('should export queue names', () => {

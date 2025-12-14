@@ -3,6 +3,7 @@ import { INestApplication, ForbiddenException, NotFoundException } from '@nestjs
 import request from 'supertest';
 import { InvitationsController, PublicInvitationsController } from './invitations.controller';
 import { InvitationsService } from './invitations.service';
+import { RateLimitingService } from '../rate-limiting/rate-limiting.service';
 import {
   createMockInvitation,
   createMockOrganization,
@@ -198,6 +199,7 @@ describe('InvitationsController (Integration)', () => {
 describe('PublicInvitationsController (Integration)', () => {
   let app: INestApplication;
   let invitationsService: jest.Mocked<InvitationsService>;
+  let rateLimitingService: jest.Mocked<RateLimitingService>;
 
   const mockUserId = mockUUID();
   const mockUserEmail = 'test@example.com';
@@ -211,12 +213,25 @@ describe('PublicInvitationsController (Integration)', () => {
       decline: jest.fn(),
     };
 
+    const mockRateLimitingService = {
+      checkLimit: jest.fn().mockResolvedValue({
+        allowed: true,
+        limit: 5,
+        remaining: 4,
+        reset: Math.floor(Date.now() / 1000) + 60,
+      }),
+    };
+
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [PublicInvitationsController],
       providers: [
         {
           provide: InvitationsService,
           useValue: mockInvitationsService,
+        },
+        {
+          provide: RateLimitingService,
+          useValue: mockRateLimitingService,
         },
       ],
     }).compile();
@@ -233,6 +248,7 @@ describe('PublicInvitationsController (Integration)', () => {
     await app.init();
 
     invitationsService = moduleRef.get(InvitationsService);
+    rateLimitingService = moduleRef.get(RateLimitingService);
   });
 
   afterEach(async () => {
@@ -266,6 +282,11 @@ describe('PublicInvitationsController (Integration)', () => {
         mockUserEmail,
         acceptDto.token,
       );
+      expect(rateLimitingService.checkLimit).toHaveBeenCalledWith(
+        expect.stringContaining('invitation_accept:'),
+        5,
+        'minute',
+      );
     });
 
     it('should return 404 when invitation not found', async () => {
@@ -279,6 +300,31 @@ describe('PublicInvitationsController (Integration)', () => {
         .post('/invitations/accept')
         .send(acceptDto)
         .expect(404);
+    });
+
+    it('should return 429 when rate limit exceeded', async () => {
+      const acceptDto = { token: 'a'.repeat(64) };
+
+      rateLimitingService.checkLimit.mockResolvedValueOnce({
+        allowed: false,
+        limit: 5,
+        remaining: 0,
+        reset: Math.floor(Date.now() / 1000) + 60,
+        retryAfter: 60,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/invitations/accept')
+        .send(acceptDto)
+        .expect(429);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 429,
+          message: expect.stringContaining('Too many invitation acceptance attempts'),
+        }),
+      );
+      expect(invitationsService.accept).not.toHaveBeenCalled();
     });
   });
 
@@ -295,6 +341,11 @@ describe('PublicInvitationsController (Integration)', () => {
 
       expect(response.body).toEqual({ deleted: true });
       expect(invitationsService.decline).toHaveBeenCalledWith(declineDto.token);
+      expect(rateLimitingService.checkLimit).toHaveBeenCalledWith(
+        expect.stringContaining('invitation_decline:'),
+        5,
+        'minute',
+      );
     });
 
     it('should return 404 when invitation not found', async () => {
@@ -308,6 +359,31 @@ describe('PublicInvitationsController (Integration)', () => {
         .post('/invitations/decline')
         .send(declineDto)
         .expect(404);
+    });
+
+    it('should return 429 when rate limit exceeded', async () => {
+      const declineDto = { token: 'a'.repeat(64) };
+
+      rateLimitingService.checkLimit.mockResolvedValueOnce({
+        allowed: false,
+        limit: 5,
+        remaining: 0,
+        reset: Math.floor(Date.now() / 1000) + 60,
+        retryAfter: 60,
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/invitations/decline')
+        .send(declineDto)
+        .expect(429);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 429,
+          message: expect.stringContaining('Too many invitation decline attempts'),
+        }),
+      );
+      expect(invitationsService.decline).not.toHaveBeenCalled();
     });
   });
 });

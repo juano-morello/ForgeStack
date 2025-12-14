@@ -14,13 +14,14 @@ import {
   Logger,
   RawBodyRequest,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { type TenantContext } from '@forgestack/db';
 import { BillingService } from './billing.service';
 import { StripeService } from './stripe.service';
 import { QueueService } from '../queue/queue.service';
-import { CreateCheckoutDto, CreatePortalDto, SubscriptionDto } from './dto';
+import { CreateCheckoutDto, CreatePortalDto, SubscriptionDto, ListInvoicesDto } from './dto';
 import { CurrentTenant } from '../core/decorators/tenant-context.decorator';
 import { Public } from '../core/decorators/public.decorator';
 import type { RequestWithUser } from '../core/types';
@@ -111,7 +112,14 @@ export class BillingController {
    * List organization invoices
    */
   @Get('invoices')
-  async getInvoices(@CurrentTenant() ctx: TenantContext) {
+  @ApiOperation({ summary: 'List invoices', description: 'List organization invoices with pagination' })
+  @ApiResponse({ status: 200, description: 'Invoices retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Only organization owners can view invoices' })
+  async getInvoices(
+    @CurrentTenant() ctx: TenantContext,
+    @Query() query: ListInvoicesDto,
+  ) {
     this.logger.log(`Getting invoices for org ${ctx.orgId}`);
 
     // Only OWNER can view invoices
@@ -119,10 +127,13 @@ export class BillingController {
       throw new ForbiddenException('Only organization owners can view invoices');
     }
 
-    const invoices = await this.billingService.getInvoices(ctx.orgId);
+    const result = await this.billingService.getInvoices(ctx.orgId, {
+      limit: query.limit,
+      startingAfter: query.startingAfter,
+    });
 
     return {
-      invoices: invoices.map((invoice) => ({
+      invoices: result.invoices.map((invoice) => ({
         id: invoice.id,
         number: invoice.number,
         status: invoice.status,
@@ -137,6 +148,8 @@ export class BillingController {
         hostedInvoiceUrl: invoice.hosted_invoice_url,
         invoicePdf: invoice.invoice_pdf,
       })),
+      hasMore: result.hasMore,
+      nextCursor: result.nextCursor,
     };
   }
 

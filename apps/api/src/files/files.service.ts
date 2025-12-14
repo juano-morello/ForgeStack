@@ -264,6 +264,16 @@ export class FilesService {
       throw new BadRequestException(`Invalid file purpose: ${purpose}`);
     }
 
+    // Validate content type format (basic sanitization)
+    // This prevents malformed content types but does NOT prevent spoofing
+    if (!contentType || !/^[a-z]+\/[a-z0-9.+-]+$/i.test(contentType)) {
+      throw new BadRequestException('Invalid content type format');
+    }
+
+    // TODO: In a production system, validate actual file content after upload
+    // by reading magic bytes. Client-provided content-type can be spoofed.
+    // A malicious user could upload an executable with 'image/png' content type.
+
     // Check file size
     if (size > validation.maxSize) {
       throw new BadRequestException(

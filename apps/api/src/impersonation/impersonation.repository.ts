@@ -38,14 +38,14 @@ export class ImpersonationRepository {
   }
 
   /**
-   * Find session by token
+   * Find session by token hash
    */
-  async findByToken(token: string): Promise<ImpersonationSession | null> {
-    return withServiceContext('ImpersonationRepository.findByToken', async (tx) => {
+  async findByTokenHash(tokenHash: string): Promise<ImpersonationSession | null> {
+    return withServiceContext('ImpersonationRepository.findByTokenHash', async (tx) => {
       const [session] = await tx
         .select()
         .from(impersonationSessions)
-        .where(eq(impersonationSessions.token, token))
+        .where(eq(impersonationSessions.tokenHash, tokenHash))
         .limit(1);
 
       return session || null;

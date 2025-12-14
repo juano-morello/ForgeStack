@@ -31,7 +31,7 @@ describe('ImpersonationService', () => {
     id: mockUUID(),
     actorId: mockUUID(),
     targetUserId: mockUUID(),
-    token: 'mock-token-' + Math.random().toString(36),
+    tokenHash: 'mock-token-hash-' + Math.random().toString(36),
     startedAt: new Date(),
     expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
     endedAt: null,
@@ -46,7 +46,7 @@ describe('ImpersonationService', () => {
   beforeEach(async () => {
     const mockRepository = {
       create: jest.fn(),
-      findByToken: jest.fn(),
+      findByTokenHash: jest.fn(),
       findActiveByActor: jest.fn(),
       findAllActive: jest.fn(),
       endSession: jest.fn(),
@@ -104,7 +104,11 @@ describe('ImpersonationService', () => {
         mockAuditContext,
       );
 
-      expect(result).toEqual(mockSession);
+      // Result should have the plain token added by the service
+      expect(result).toEqual(expect.objectContaining({
+        ...mockSession,
+        token: expect.any(String),
+      }));
       expect(repository.findUserById).toHaveBeenCalledWith(actorId);
       expect(repository.findUserById).toHaveBeenCalledWith(targetUserId);
       expect(repository.findActiveByActor).toHaveBeenCalledWith(actorId);
@@ -112,7 +116,7 @@ describe('ImpersonationService', () => {
         expect.objectContaining({
           actorId,
           targetUserId,
-          token: expect.any(String),
+          tokenHash: expect.any(String), // Now expects tokenHash instead of token
           startedAt: expect.any(Date),
           expiresAt: expect.any(Date),
           endedAt: null,
@@ -253,7 +257,6 @@ describe('ImpersonationService', () => {
 
       const session = createMockSession({
         id: sessionId,
-        token,
         targetUserId,
         startedAt,
         endedAt: null,
@@ -266,14 +269,14 @@ describe('ImpersonationService', () => {
 
       const targetUser = createMockUser({ id: targetUserId, email: 'target@example.com' });
 
-      repository.findByToken.mockResolvedValueOnce(session);
+      repository.findByTokenHash.mockResolvedValueOnce(session);
       repository.endSession.mockResolvedValueOnce(updatedSession);
       repository.findUserById.mockResolvedValueOnce(targetUser);
 
       const result = await service.endImpersonation(token, mockAuditContext);
 
       expect(result).toEqual(updatedSession);
-      expect(repository.findByToken).toHaveBeenCalledWith(token);
+      expect(repository.findByTokenHash).toHaveBeenCalledWith(expect.any(String)); // Called with hash
       expect(repository.endSession).toHaveBeenCalledWith(sessionId);
       expect(platformAuditService.log).toHaveBeenCalledWith(
         mockAuditContext,
@@ -292,7 +295,7 @@ describe('ImpersonationService', () => {
     });
 
     it('should throw NotFoundException when session not found', async () => {
-      repository.findByToken.mockResolvedValueOnce(null);
+      repository.findByTokenHash.mockResolvedValueOnce(null);
 
       await expect(service.endImpersonation(token, mockAuditContext)).rejects.toThrow(NotFoundException);
       await expect(service.endImpersonation(token, mockAuditContext)).rejects.toThrow(
@@ -302,16 +305,15 @@ describe('ImpersonationService', () => {
 
     it('should throw BadRequestException when session already ended', async () => {
       const session = createMockSession({
-        token,
         endedAt: new Date(),
       });
 
-      repository.findByToken.mockResolvedValueOnce(session);
+      repository.findByTokenHash.mockResolvedValueOnce(session);
 
       await expect(service.endImpersonation(token, mockAuditContext)).rejects.toThrow(BadRequestException);
 
       // Reset mocks and test again for error message
-      repository.findByToken.mockResolvedValueOnce(session);
+      repository.findByTokenHash.mockResolvedValueOnce(session);
 
       await expect(service.endImpersonation(token, mockAuditContext)).rejects.toThrow('Session already ended');
     });
@@ -322,21 +324,20 @@ describe('ImpersonationService', () => {
 
     it('should return session when valid', async () => {
       const session = createMockSession({
-        token,
         endedAt: null,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
       });
 
-      repository.findByToken.mockResolvedValueOnce(session);
+      repository.findByTokenHash.mockResolvedValueOnce(session);
 
       const result = await service.validateSession(token);
 
       expect(result).toEqual(session);
-      expect(repository.findByToken).toHaveBeenCalledWith(token);
+      expect(repository.findByTokenHash).toHaveBeenCalledWith(expect.any(String)); // Called with hash
     });
 
     it('should return null when session not found', async () => {
-      repository.findByToken.mockResolvedValueOnce(null);
+      repository.findByTokenHash.mockResolvedValueOnce(null);
 
       const result = await service.validateSession(token);
 
@@ -345,11 +346,10 @@ describe('ImpersonationService', () => {
 
     it('should return null when session ended', async () => {
       const session = createMockSession({
-        token,
         endedAt: new Date(),
       });
 
-      repository.findByToken.mockResolvedValueOnce(session);
+      repository.findByTokenHash.mockResolvedValueOnce(session);
 
       const result = await service.validateSession(token);
 
@@ -358,12 +358,11 @@ describe('ImpersonationService', () => {
 
     it('should return null when session expired', async () => {
       const session = createMockSession({
-        token,
         endedAt: null,
         expiresAt: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
       });
 
-      repository.findByToken.mockResolvedValueOnce(session);
+      repository.findByTokenHash.mockResolvedValueOnce(session);
 
       const result = await service.validateSession(token);
 

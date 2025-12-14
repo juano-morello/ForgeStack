@@ -51,7 +51,7 @@ export class ApiKeyGuard implements CanActivate {
     request.tenantContext = {
       orgId: keyData.orgId,
       userId: keyData.createdBy,
-      role: 'OWNER', // API keys have OWNER-level access
+      role: this.determineRoleFromScopes(keyData.scopes),
     };
 
     // Also set API key metadata
@@ -61,6 +61,25 @@ export class ApiKeyGuard implements CanActivate {
     };
 
     return true;
+  }
+
+  /**
+   * Determine the appropriate role for an API key based on its scopes
+   * Keys with admin/write scopes for all resources get OWNER, otherwise MEMBER
+   */
+  private determineRoleFromScopes(scopes: string[]): 'OWNER' | 'MEMBER' {
+    // Admin scopes that warrant OWNER access
+    const adminScopes = [
+      '*',
+      'members:write',
+      'billing:write',
+      'api-keys:write',
+    ];
+
+    // If key has any admin scope, grant OWNER
+    const hasAdminScope = scopes.some(scope => adminScopes.includes(scope));
+
+    return hasAdminScope ? 'OWNER' : 'MEMBER';
   }
 
   /**

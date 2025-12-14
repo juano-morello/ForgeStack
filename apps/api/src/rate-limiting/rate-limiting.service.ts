@@ -3,7 +3,7 @@
  * Handles rate limit checks using Redis
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import Redis from 'ioredis';
@@ -103,12 +103,23 @@ export class RateLimitingService implements OnModuleDestroy {
         return this.formatRejection(error, limit, windowName);
       }
 
-      // Redis error - fail open or closed based on config
-      this.logger.error(`Rate limit check failed: ${error}`);
-      if (RATE_LIMIT_CONFIG.failOpen) {
-        return { allowed: true, limit, remaining: limit, reset: Date.now() / 1000 };
+      // Redis error - fail open or closed based on config and environment
+      const isProduction = process.env.NODE_ENV === 'production';
+      const shouldFailOpen = RATE_LIMIT_CONFIG.failOpen &&
+        (!isProduction || RATE_LIMIT_CONFIG.failOpenInProduction);
+
+      if (shouldFailOpen) {
+        this.logger.warn('Rate limiting unavailable, failing open');
+        return {
+          allowed: true,
+          limit,
+          remaining: limit,
+          reset: Math.floor(Date.now() / 1000) + this.getWindowDuration(windowName),
+        };
+      } else {
+        this.logger.error('Rate limiting unavailable, failing closed');
+        throw new ServiceUnavailableException('Service temporarily unavailable');
       }
-      throw error;
     }
   }
 

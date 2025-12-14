@@ -33,6 +33,19 @@ interface ExceptionResponseObject {
   error?: string;
 }
 
+/**
+ * Check if the exception response should be passed through as-is
+ * (e.g., health check responses with specific structure)
+ */
+function isPassThroughResponse(response: unknown): boolean {
+  if (typeof response !== 'object' || response === null) {
+    return false;
+  }
+  const obj = response as Record<string, unknown>;
+  // Health check response has 'status', 'timestamp', and 'checks' properties
+  return 'status' in obj && 'timestamp' in obj && 'checks' in obj;
+}
+
 const logger = createLogger('HttpExceptionFilter');
 
 @Catch()
@@ -51,6 +64,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
+      // Pass through structured responses (e.g., health check) as-is
+      if (isPassThroughResponse(exceptionResponse)) {
+        response.status(status).json(exceptionResponse);
+        return;
+      }
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
         error = exception.name;
@@ -64,9 +83,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
-      // Don't leak error details in production
-      const isProduction = process.env.NODE_ENV === 'production';
-      message = isProduction ? 'Internal server error' : exception.message;
+      // Don't leak error details in production (explicit config or NODE_ENV)
+      const hideErrorDetails = process.env.HIDE_ERROR_DETAILS === 'true' ||
+        process.env.NODE_ENV === 'production';
+      message = hideErrorDetails ? 'Internal server error' : exception.message;
       error = 'Internal Server Error';
 
       logger.error(

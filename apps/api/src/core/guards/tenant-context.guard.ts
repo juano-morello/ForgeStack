@@ -84,23 +84,23 @@ export class TenantContextGuard implements CanActivate {
       throw new ForbiddenException('Not a member of this organization');
     }
 
+    // Fetch plan for rate limiting (await to ensure it's set before guard returns)
+    let plan: string;
+    try {
+      plan = await this.getOrgPlan(orgId);
+    } catch (err) {
+      this.logger.warn({ orgId, error: err }, 'Failed to fetch org plan, defaulting to free');
+      plan = 'free';
+    }
+
     // Attach context to request
     const tenantContext: TenantContext & { plan?: string } = {
       orgId,
       userId,
       role: membership.role,
+      plan,
     };
     request.tenantContext = tenantContext;
-
-    // Fetch and attach plan for rate limiting (non-blocking, defaults to 'free' on error)
-    this.getOrgPlan(orgId)
-      .then((plan) => {
-        request.tenantContext.plan = plan;
-      })
-      .catch((err) => {
-        this.logger.debug(`Could not fetch plan for org ${orgId}: ${err.message}`);
-        request.tenantContext.plan = 'free';
-      });
 
     return true;
   }

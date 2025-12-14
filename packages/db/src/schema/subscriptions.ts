@@ -23,6 +23,7 @@ export const subscriptions = pgTable('subscriptions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   orgIdIdx: index('idx_subscriptions_org_id').on(table.orgId),
+  customerIdIdx: index('idx_subscriptions_customer_id').on(table.customerId),
   stripeSubscriptionIdIdx: index('idx_subscriptions_stripe_subscription_id').on(table.stripeSubscriptionId),
   statusIdx: index('idx_subscriptions_status').on(table.status),
 }));

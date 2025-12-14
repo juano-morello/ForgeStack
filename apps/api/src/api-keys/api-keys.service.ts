@@ -4,6 +4,7 @@
  */
 
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { timingSafeEqual } from 'crypto';
 import { type TenantContext } from '@forgestack/db';
 import { ApiKeysRepository } from './api-keys.repository';
 import { CreateApiKeyDto, UpdateApiKeyDto, ApiKeyDto, ApiKeyCreatedDto } from './dto';
@@ -93,17 +94,7 @@ export class ApiKeysService {
 
     const keys = await this.apiKeysRepository.findAll(ctx);
 
-    const data = keys.map((key) => ({
-      id: key.id,
-      name: key.name,
-      keyPrefix: key.keyPrefix,
-      scopes: key.scopes,
-      lastUsedAt: key.lastUsedAt?.toISOString() || null,
-      expiresAt: key.expiresAt?.toISOString() || null,
-      revokedAt: key.revokedAt?.toISOString() || null,
-      createdAt: key.createdAt.toISOString(),
-      isRevoked: !!key.revokedAt,
-    }));
+    const data = keys.map((key) => this.toApiKeyDto(key));
 
     return { data, total: data.length };
   }
@@ -119,17 +110,7 @@ export class ApiKeysService {
       throw new NotFoundException('API key not found');
     }
 
-    return {
-      id: key.id,
-      name: key.name,
-      keyPrefix: key.keyPrefix,
-      scopes: key.scopes,
-      lastUsedAt: key.lastUsedAt?.toISOString() || null,
-      expiresAt: key.expiresAt?.toISOString() || null,
-      revokedAt: key.revokedAt?.toISOString() || null,
-      createdAt: key.createdAt.toISOString(),
-      isRevoked: !!key.revokedAt,
-    };
+    return this.toApiKeyDto(key);
   }
 
   /**
@@ -148,17 +129,7 @@ export class ApiKeysService {
       throw new NotFoundException('API key not found');
     }
 
-    return {
-      id: key.id,
-      name: key.name,
-      keyPrefix: key.keyPrefix,
-      scopes: key.scopes,
-      lastUsedAt: key.lastUsedAt?.toISOString() || null,
-      expiresAt: key.expiresAt?.toISOString() || null,
-      revokedAt: key.revokedAt?.toISOString() || null,
-      createdAt: key.createdAt.toISOString(),
-      isRevoked: !!key.revokedAt,
-    };
+    return this.toApiKeyDto(key);
   }
 
   /**
@@ -189,6 +160,14 @@ export class ApiKeysService {
         },
       },
     );
+
+    // TODO: Implement scheduled cleanup job to hard-delete API keys
+    // that have been revoked for more than 90 days to prevent database bloat.
+    // See apps/worker/src/handlers/ for job handler pattern.
+    // The job should:
+    // 1. Query for API keys where revokedAt < (now - 90 days)
+    // 2. Hard delete those records from the database
+    // 3. Log the number of deleted keys for monitoring
 
     return {
       message: 'API key has been revoked',
@@ -264,6 +243,23 @@ export class ApiKeysService {
       return null;
     }
 
+    // Timing-safe comparison of the hash
+    // This prevents timing attacks even if DB query timing varies
+    try {
+      const storedHashBuffer = Buffer.from(key.keyHash, 'hex');
+      const computedHashBuffer = Buffer.from(keyHash, 'hex');
+
+      if (storedHashBuffer.length !== computedHashBuffer.length ||
+          !timingSafeEqual(storedHashBuffer, computedHashBuffer)) {
+        this.logger.warn({ keyPrefix: key.keyPrefix }, 'API key hash mismatch');
+        return null;
+      }
+    } catch (err) {
+      // If buffers can't be compared (different lengths), key is invalid
+      this.logger.warn({ keyPrefix: key.keyPrefix, error: err }, 'API key hash comparison failed');
+      return null;
+    }
+
     // Check if expired
     if (key.expiresAt && new Date(key.expiresAt) < new Date()) {
       this.logger.debug('API key has expired');
@@ -280,6 +276,32 @@ export class ApiKeysService {
       orgId: key.orgId,
       createdBy: key.createdBy,
       scopes: key.scopes,
+    };
+  }
+
+  /**
+   * Maps an API key entity to an API key DTO
+   */
+  private toApiKeyDto(key: {
+    id: string;
+    name: string;
+    keyPrefix: string;
+    scopes: string[];
+    lastUsedAt: Date | null;
+    expiresAt: Date | null;
+    revokedAt: Date | null;
+    createdAt: Date;
+  }): ApiKeyDto {
+    return {
+      id: key.id,
+      name: key.name,
+      keyPrefix: key.keyPrefix,
+      scopes: key.scopes,
+      lastUsedAt: key.lastUsedAt?.toISOString() || null,
+      expiresAt: key.expiresAt?.toISOString() || null,
+      revokedAt: key.revokedAt?.toISOString() || null,
+      createdAt: key.createdAt.toISOString(),
+      isRevoked: !!key.revokedAt,
     };
   }
 }

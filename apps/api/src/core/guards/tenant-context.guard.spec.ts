@@ -13,6 +13,15 @@ jest.mock('../../organizations/organizations.repository', () => ({
   })),
 }));
 
+// Mock @forgestack/db for withServiceContext
+jest.mock('@forgestack/db', () => ({
+  withServiceContext: jest.fn(),
+  subscriptions: {},
+  eq: jest.fn(),
+}));
+
+import { withServiceContext } from '@forgestack/db';
+
 describe('TenantContextGuard', () => {
   let guard: TenantContextGuard;
   let reflector: jest.Mocked<Reflector>;
@@ -23,6 +32,19 @@ describe('TenantContextGuard', () => {
   let mockRequest: any;
 
   beforeEach(async () => {
+    // Mock withServiceContext to return a subscription with plan
+    (withServiceContext as jest.Mock).mockImplementation(
+      async (_name: string, callback: (tx: unknown) => Promise<unknown>) => {
+        const mockTx = {
+          select: jest.fn().mockReturnThis(),
+          from: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          limit: jest.fn().mockResolvedValue([{ plan: 'pro' }]),
+        };
+        return callback(mockTx);
+      },
+    );
+
     // Create mock services
     const mockReflector = {
       getAllAndOverride: jest.fn(),
@@ -258,6 +280,7 @@ describe('TenantContextGuard', () => {
         orgId,
         userId,
         role: 'OWNER',
+        plan: 'pro',
       });
       expect(mockRequest.user).toEqual(mockUser);
     });
@@ -274,6 +297,7 @@ describe('TenantContextGuard', () => {
         orgId,
         userId,
         role: 'MEMBER',
+        plan: 'pro',
       });
       expect(mockRequest.user).toEqual(mockUser);
     });
@@ -286,6 +310,54 @@ describe('TenantContextGuard', () => {
       await expect(guard.canActivate(mockExecutionContext)).rejects.toThrow(
         new ForbiddenException('Not a member of this organization'),
       );
+    });
+
+    it('should default to free plan when subscription fetch fails', async () => {
+      mockRequest.headers['x-org-id'] = orgId;
+
+      organizationsRepository.findMembership.mockResolvedValue({ role: 'OWNER' });
+
+      // Mock withServiceContext to throw an error
+      (withServiceContext as jest.Mock).mockRejectedValueOnce(new Error('Database error'));
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(true);
+      expect(mockRequest.tenantContext).toEqual({
+        orgId,
+        userId,
+        role: 'OWNER',
+        plan: 'free',
+      });
+    });
+
+    it('should default to free plan when no subscription exists', async () => {
+      mockRequest.headers['x-org-id'] = orgId;
+
+      organizationsRepository.findMembership.mockResolvedValue({ role: 'OWNER' });
+
+      // Mock withServiceContext to return empty result
+      (withServiceContext as jest.Mock).mockImplementationOnce(
+        async (_name: string, callback: (tx: unknown) => Promise<unknown>) => {
+          const mockTx = {
+            select: jest.fn().mockReturnThis(),
+            from: jest.fn().mockReturnThis(),
+            where: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockResolvedValue([]),
+          };
+          return callback(mockTx);
+        },
+      );
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(true);
+      expect(mockRequest.tenantContext).toEqual({
+        orgId,
+        userId,
+        role: 'OWNER',
+        plan: 'free',
+      });
     });
   });
 

@@ -1,4 +1,4 @@
-import { IsString, MinLength, MaxLength, IsOptional, IsUrl } from 'class-validator';
+import { IsString, MinLength, MaxLength, IsOptional, IsUrl, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateOrganizationDto {
@@ -18,7 +18,11 @@ export class UpdateOrganizationDto {
   @ApiProperty({ description: 'Organization timezone (IANA format)', required: false, example: 'America/New_York' })
   @IsOptional()
   @IsString()
-  timezone?: string; // TODO: Add IANA timezone validation
+  @Matches(
+    /^[A-Za-z_]+\/[A-Za-z_]+(?:\/[A-Za-z_]+)?$/,
+    { message: 'Timezone must be in IANA format (e.g., America/New_York, Europe/London)' }
+  )
+  timezone?: string;
 
   @ApiProperty({ description: 'Organization language (locale format)', required: false, example: 'en' })
   @IsOptional()

@@ -4,7 +4,8 @@
 
 export interface RateLimitConfig {
   enabled: boolean;
-  failOpen: boolean; // Allow requests if Redis is down
+  failOpen: boolean; // Allow requests if Redis is down (non-production)
+  failOpenInProduction: boolean; // Allow requests if Redis is down in production (must explicitly opt-in)
   limits: {
     free: { minute: number; hour: number; day: number };
     starter: { minute: number; hour: number; day: number };
@@ -16,6 +17,7 @@ export interface RateLimitConfig {
 export const RATE_LIMIT_CONFIG: RateLimitConfig = {
   enabled: process.env.RATE_LIMIT_ENABLED !== 'false',
   failOpen: process.env.RATE_LIMIT_FAIL_OPEN !== 'false',
+  failOpenInProduction: process.env.RATE_LIMIT_FAIL_OPEN_PRODUCTION === 'true', // Must explicitly opt-in
   limits: {
     free: { minute: 100, hour: 1000, day: 10000 },
     starter: { minute: 500, hour: 10000, day: 100000 },

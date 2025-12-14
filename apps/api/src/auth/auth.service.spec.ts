@@ -5,8 +5,19 @@ import { AuthService, SessionVerificationResult } from './auth.service';
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock ioredis
+jest.mock('ioredis', () => {
+  return jest.fn().mockImplementation(() => ({
+    get: jest.fn(),
+    setex: jest.fn(),
+    quit: jest.fn(),
+    on: jest.fn(),
+  }));
+});
+
 describe('AuthService', () => {
   let service: AuthService;
+  let mockRedis: any;
   const mockAuthServerUrl = 'http://localhost:3000';
 
   beforeEach(async () => {
@@ -15,6 +26,9 @@ describe('AuthService', () => {
       get: jest.fn((key: string, defaultValue?: string) => {
         if (key === 'authServerUrl') {
           return mockAuthServerUrl;
+        }
+        if (key === 'redis.url') {
+          return 'redis://localhost:6379';
         }
         return defaultValue;
       }),
@@ -32,14 +46,17 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
 
+    // Get the mock Redis instance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockRedis = (service as any).redis;
+
     // Clear all mocks before each test
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    // Clear the session cache after each test
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (service as any).sessionCache.clear();
+  afterEach(async () => {
+    // Clean up
+    await service.onModuleDestroy();
   });
 
   describe('verifySession', () => {
@@ -194,18 +211,22 @@ describe('AuthService', () => {
 
       (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-      // First call - should hit the auth server
+      // First call - should hit the auth server and cache the result
+      mockRedis.get.mockResolvedValueOnce(null); // Cache miss
       const result1 = await service.verifySession(validToken);
       expect(result1).toBeDefined();
       expect(fetch).toHaveBeenCalledTimes(1);
+      expect(mockRedis.setex).toHaveBeenCalledTimes(1);
 
       // Second call - should use cache
+      mockRedis.get.mockResolvedValueOnce(JSON.stringify(result1));
       const result2 = await service.verifySession(validToken);
       expect(result2).toBeDefined();
       expect(result2?.user.email).toBe(result1?.user.email);
       expect(fetch).toHaveBeenCalledTimes(1); // Still only 1 call
 
       // Third call - should still use cache
+      mockRedis.get.mockResolvedValueOnce(JSON.stringify(result1));
       const result3 = await service.verifySession(validToken);
       expect(result3).toBeDefined();
       expect(fetch).toHaveBeenCalledTimes(1); // Still only 1 call
@@ -236,19 +257,13 @@ describe('AuthService', () => {
 
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-      // First call
+      // First call - cache miss
+      mockRedis.get.mockResolvedValueOnce(null);
       await service.verifySession(validToken);
       expect(fetch).toHaveBeenCalledTimes(1);
 
-      // Manually expire the cache entry
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cache = (service as any).sessionCache;
-      const entry = cache.get(validToken);
-      if (entry) {
-        entry.expiresAt = Date.now() - 1000; // Set to past
-      }
-
-      // Second call - should fetch again because cache is expired
+      // Second call - cache expired (Redis returns null)
+      mockRedis.get.mockResolvedValueOnce(null);
       await service.verifySession(validToken);
       expect(fetch).toHaveBeenCalledTimes(2);
     });
@@ -412,7 +427,68 @@ describe('AuthService', () => {
   });
 
   describe('cache management', () => {
-    it('should cleanup old cache entries when cache size exceeds 100', async () => {
+    it('should use Redis SETEX with 30 second TTL', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          session: {
+            id: 'session-123',
+            userId: 'user-456',
+            expiresAt: '2025-12-31T23:59:59Z',
+          },
+          user: {
+            id: 'user-456',
+            email: 'test@example.com',
+            createdAt: '2025-01-01T00:00:00Z',
+            updatedAt: '2025-01-15T00:00:00Z',
+          },
+        }),
+      };
+
+      (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+      mockRedis.get.mockResolvedValueOnce(null);
+
+      await service.verifySession('test-token');
+
+      // Verify SETEX was called with 30 second TTL
+      expect(mockRedis.setex).toHaveBeenCalledWith(
+        expect.stringMatching(/^session:[a-f0-9]{64}$/), // Hashed token
+        30, // TTL in seconds
+        expect.any(String), // JSON stringified result
+      );
+    });
+
+    it('should hash session tokens before using as Redis keys', async () => {
+      const mockResponse = {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          session: {
+            id: 'session-123',
+            userId: 'user-456',
+            expiresAt: '2025-12-31T23:59:59Z',
+          },
+          user: {
+            id: 'user-456',
+            email: 'test@example.com',
+            createdAt: '2025-01-01T00:00:00Z',
+            updatedAt: '2025-01-15T00:00:00Z',
+          },
+        }),
+      };
+
+      (fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+      mockRedis.get.mockResolvedValueOnce(null);
+
+      const plainToken = 'my-secret-token-12345';
+      await service.verifySession(plainToken);
+
+      // Verify the token was hashed (key should not contain the plain token)
+      const setexCall = mockRedis.setex.mock.calls[0];
+      expect(setexCall[0]).not.toContain(plainToken);
+      expect(setexCall[0]).toMatch(/^session:[a-f0-9]{64}$/);
+    });
+
+    it('should handle Redis failures gracefully (fail open)', async () => {
       const mockResponse = {
         ok: true,
         json: jest.fn().mockResolvedValue({
@@ -432,43 +508,15 @@ describe('AuthService', () => {
 
       (fetch as jest.Mock).mockResolvedValue(mockResponse);
 
-      // Add 101 entries to trigger cleanup
-      for (let i = 0; i < 101; i++) {
-        await service.verifySession(`token-${i}`);
-      }
+      // Simulate Redis failure
+      mockRedis.get.mockRejectedValue(new Error('Redis connection failed'));
+      mockRedis.setex.mockRejectedValue(new Error('Redis connection failed'));
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cache = (service as any).sessionCache;
-
-      // Cache should have been cleaned up
-      expect(cache.size).toBeLessThanOrEqual(101);
-    });
-
-    it('should remove expired entries during cleanup', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cache = (service as any).sessionCache;
-
-      // Manually add some expired entries
-      cache.set('expired-1', {
-        result: {} as SessionVerificationResult,
-        expiresAt: Date.now() - 1000,
-      });
-      cache.set('expired-2', {
-        result: {} as SessionVerificationResult,
-        expiresAt: Date.now() - 2000,
-      });
-      cache.set('valid', {
-        result: {} as SessionVerificationResult,
-        expiresAt: Date.now() + 10000,
-      });
-
-      // Trigger cleanup
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (service as any).cleanupCache();
-
-      expect(cache.has('expired-1')).toBe(false);
-      expect(cache.has('expired-2')).toBe(false);
-      expect(cache.has('valid')).toBe(true);
+      // Should still work and verify session
+      const result = await service.verifySession('test-token');
+      expect(result).toBeDefined();
+      expect(result?.user.email).toBe('test@example.com');
+      expect(fetch).toHaveBeenCalled();
     });
   });
 });

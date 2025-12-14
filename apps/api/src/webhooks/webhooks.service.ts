@@ -260,13 +260,12 @@ export class WebhooksService {
           attemptNumber: 1,
         });
 
-        // Queue delivery job
+        // Queue delivery job (secret will be fetched from DB by worker)
         await this.queueService.addJob(WEBHOOK_DELIVERY_QUEUE, {
           deliveryId: delivery.id,
           endpointId: endpoint.id,
           orgId,
           url: endpoint.url,
-          secret: endpoint.secret,
           eventId,
           eventType,
           payload,
@@ -355,13 +354,12 @@ export class WebhooksService {
       error: null,
     });
 
-    // Queue delivery job
+    // Queue delivery job (secret will be fetched from DB by worker)
     await this.queueService.addJob(WEBHOOK_DELIVERY_QUEUE, {
       deliveryId: delivery.id,
       endpointId: endpoint.id,
       orgId: delivery.orgId,
       url: endpoint.url,
-      secret: endpoint.secret,
       eventId: delivery.eventId,
       eventType: delivery.eventType,
       payload: delivery.payload,

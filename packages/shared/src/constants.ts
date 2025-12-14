@@ -53,3 +53,8 @@ export const INVITATION_VALIDATION = {
  */
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * Export configuration constants
+ */
+export * from './constants/config';
+
