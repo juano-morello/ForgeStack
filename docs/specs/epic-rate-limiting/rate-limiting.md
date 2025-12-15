@@ -506,15 +506,19 @@ export const defaultRateLimitConfig: RateLimitConfig = {
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `RATE_LIMIT_ENABLED` | Enable/disable rate limiting | `true` |
-| `RATE_LIMIT_FAIL_OPEN` | Allow requests if Redis is unavailable | `true` |
+| `RATE_LIMIT_FAIL_OPEN` | Allow requests if Redis is unavailable (development) | `true` |
+| `RATE_LIMIT_FAIL_OPEN_PRODUCTION` | Allow requests if Redis is unavailable in production | `false` |
 | `REDIS_URL` | Redis connection URL | `redis://localhost:6379` |
 
 ```bash
 # .env
 RATE_LIMIT_ENABLED=true
 RATE_LIMIT_FAIL_OPEN=true
+RATE_LIMIT_FAIL_OPEN_PRODUCTION=false  # Defaults to fail-closed in production for security
 REDIS_URL=redis://localhost:6379
 ```
+
+> **Note:** In production (`NODE_ENV=production`), the rate limiter defaults to **fail-closed** behavior for security. This means if Redis is unavailable, requests will be rejected. Set `RATE_LIMIT_FAIL_OPEN_PRODUCTION=true` to override this (not recommended).
 
 
 

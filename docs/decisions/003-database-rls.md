@@ -305,7 +305,7 @@ describe('RLS Policies', () => {
 
 ```typescript
 // For super admin queries that need to see all data
-export async function withoutRLS<T>(
+export async function withServiceContext<T>(
   callback: (tx: Transaction) => Promise<T>
 ): Promise<T> {
   return db.transaction(async (tx) => {
@@ -315,6 +315,27 @@ export async function withoutRLS<T>(
   });
 }
 ```
+
+### RLS Bypass Audit Table
+
+To maintain security visibility when RLS is bypassed, all bypass operations are logged to the `rls_bypass_audit` table:
+
+```sql
+CREATE TABLE rls_bypass_audit (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  operation TEXT NOT NULL,           -- 'SELECT', 'INSERT', 'UPDATE', 'DELETE'
+  table_name TEXT NOT NULL,          -- Table being accessed
+  user_id UUID,                      -- User performing the operation (if known)
+  reason TEXT NOT NULL,              -- Why RLS was bypassed
+  query_context JSONB,               -- Additional context (e.g., affected IDs)
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_rls_bypass_audit_created_at ON rls_bypass_audit(created_at);
+CREATE INDEX idx_rls_bypass_audit_user_id ON rls_bypass_audit(user_id);
+```
+
+This table is used by `withServiceContext()` to log all RLS bypass operations for security auditing and compliance purposes.
 
 ## References
 

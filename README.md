@@ -790,7 +790,8 @@ Alternatively, use API key authentication:
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| `GET` | `/health` | Health check | No |
+| `GET` | `/health` | Liveness check (always returns 200) | No |
+| `GET` | `/health/ready` | Readiness check (verifies DB + Redis connectivity) | No |
 | `GET` | `/auth/me` | Current user info | Yes |
 
 #### Organizations

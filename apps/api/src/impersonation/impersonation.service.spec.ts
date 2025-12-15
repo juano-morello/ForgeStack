@@ -31,7 +31,7 @@ describe('ImpersonationService', () => {
     id: mockUUID(),
     actorId: mockUUID(),
     targetUserId: mockUUID(),
-    tokenHash: 'mock-token-hash-' + Math.random().toString(36),
+    token: 'mock-token-hash-' + Math.random().toString(36),
     startedAt: new Date(),
     expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
     endedAt: null,
@@ -116,7 +116,7 @@ describe('ImpersonationService', () => {
         expect.objectContaining({
           actorId,
           targetUserId,
-          tokenHash: expect.any(String), // Now expects tokenHash instead of token
+          token: expect.any(String), // Stored as hash in the 'token' column
           startedAt: expect.any(Date),
           expiresAt: expect.any(Date),
           endedAt: null,

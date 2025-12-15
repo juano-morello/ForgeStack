@@ -27,7 +27,9 @@ API keys enable programmatic access to ForgeStack for:
 ### Security Approach
 
 - **Hashed storage** – Keys are stored as SHA-256 hashes (never plain text)
+- **Timing-safe comparison** – Uses `crypto.timingSafeEqual` to prevent timing attacks during key verification
 - **Scoped permissions** – Fine-grained access control per key
+- **Scope-based role determination** – API key role is determined by scopes (only admin scopes grant OWNER role)
 - **Rate limiting** – Per-key rate limits to prevent abuse
 - **Audit logging** – Track key usage and access patterns
 - **Revocation** – Instant key invalidation capability
@@ -440,6 +442,17 @@ export class ApiKeyGuard implements CanActivate {
 
   private hashKey(key: string): string {
     return createHash('sha256').update(key).digest('hex');
+  }
+
+  /**
+   * Timing-safe comparison to prevent timing attacks.
+   * Uses crypto.timingSafeEqual for constant-time comparison.
+   */
+  private timingSafeCompare(a: string, b: string): boolean {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return timingSafeEqual(bufA, bufB);
   }
 
   private hasScope(keyScopes: string[], requiredScope: string): boolean {

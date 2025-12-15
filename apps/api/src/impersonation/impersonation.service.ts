@@ -86,11 +86,11 @@ export class ImpersonationService {
     // Calculate expiration
     const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
 
-    // Create session
+    // Create session (store the hash, not the plain token)
     const session = await this.impersonationRepository.create({
       actorId,
       targetUserId,
-      tokenHash,
+      token: tokenHash,  // Store hash in the 'token' column
       startedAt: new Date(),
       expiresAt,
       endedAt: null,
